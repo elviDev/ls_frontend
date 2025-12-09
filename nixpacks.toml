@@ -5,7 +5,7 @@ nixPkgs = ["nodejs"]
 cmds = ["npm install --legacy-peer-deps"]
 
 [phases.build]
-cmds = ["rm -rf .next", "npm run build"]
+cmds = ["npm run build"]
 
 [start]
 cmd = "npm start"
