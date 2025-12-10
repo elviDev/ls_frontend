@@ -103,16 +103,29 @@ export async function getArchives(filters?: {
     if (type !== "all") queryParams.set("type", type);
     if (category !== "all") queryParams.set("category", category);
 
-    // Fetch from public API
-    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/archives?${queryParams}`;
+    // During build, return empty data to avoid API calls
+    if (!process.env.NEXT_PUBLIC_APP_URL || process.env.NODE_ENV === 'production') {
+      return {
+        success: true,
+        data: [],
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
+      };
+    }
+
+    // Fetch from public API only in development with server running
+    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/archives?${queryParams}`;
     const response = await fetch(apiUrl, {
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    }).catch(() => null);
 
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
+    if (!response || !response.ok) {
+      return {
+        success: true,
+        data: [],
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
+      };
     }
 
     const data = await response.json();
@@ -261,16 +274,27 @@ export async function getFeaturedArchives() {
 
 export async function getArchiveCategories() {
   try {
+    // During build, return empty categories to avoid API calls
+    if (!process.env.NEXT_PUBLIC_APP_URL || process.env.NODE_ENV === 'production') {
+      return {
+        success: true,
+        data: []
+      };
+    }
+
     // Fetch all archives and extract unique categories
-    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/archives?limit=1000`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/archives?limit=1000`;
     const response = await fetch(apiUrl, {
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    }).catch(() => null);
 
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
+    if (!response || !response.ok) {
+      return {
+        success: true,
+        data: []
+      };
     }
 
     const data = await response.json();

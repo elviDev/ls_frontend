@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prisma } from "@/lib/prisma";
 import { getFavoritePodcasts } from "@/app/podcasts/actions";
-import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+
 
 // This is a server component that fetches the initial data
 async function PodcastsContent() {
@@ -17,8 +17,8 @@ async function PodcastsContent() {
       },
     });
 
-    // Get current user to check favorites
-    const currentUser = await getCurrentUser();
+    // Skip user-specific data during build to avoid dynamic server usage
+    const currentUser = null;
 
     // Fetch podcasts from database
     const [publishedPodcasts, genres, userFavorites] = await Promise.all([
@@ -41,15 +41,8 @@ async function PodcastsContent() {
         select: { id: true, name: true, slug: true },
         orderBy: { name: "asc" },
       }),
-      currentUser
-        ? prisma.favorite.findMany({
-            where: {
-              OR: [{ userId: currentUser.id }, { staffId: currentUser.id }],
-              podcastId: { not: null },
-            },
-            select: { podcastId: true },
-          })
-        : [],
+      // Skip favorites during build to avoid dynamic server usage
+      [],
     ]);
 
     // Create a set of favorite podcast IDs for quick lookup

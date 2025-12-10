@@ -3,7 +3,6 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
-import { ChatProvider } from "@/contexts/chat-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
@@ -31,15 +30,13 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ErrorBoundary>
             <AuthProvider>
-              <ChatProvider>
-                <GlobalAudioProvider>
-                  <ConditionalLayout>
-                    {children}
-                  </ConditionalLayout>
-                </GlobalAudioProvider>
-                <Toaster />
-                <SonnerToaster position="top-right" />
-              </ChatProvider>
+              <GlobalAudioProvider>
+                <ConditionalLayout>
+                  {children}
+                </ConditionalLayout>
+              </GlobalAudioProvider>
+              <Toaster />
+              <SonnerToaster position="top-right" />
             </AuthProvider>
           </ErrorBoundary>
         </ThemeProvider>

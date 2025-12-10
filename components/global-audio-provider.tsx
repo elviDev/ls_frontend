@@ -35,52 +35,55 @@ export function GlobalAudioProvider({
   const [currentProgram, setCurrentProgram] = useState(null);
   const { user } = useAuth();
 
-  // Try to use broadcast context if available
+  return (
+    <ChatProvider>
+      <BroadcastProvider isBroadcaster={false}>
+        <GlobalAudioContext.Provider
+          value={{
+            isPlaying,
+            currentProgram,
+            setIsPlaying,
+            setCurrentProgram,
+          }}
+        >
+          {children}
+          <GlobalAudioComponents />
+        </GlobalAudioContext.Provider>
+      </BroadcastProvider>
+    </ChatProvider>
+  );
+}
+
+// Separate component to handle broadcast context safely
+function GlobalAudioComponents() {
+  const { user } = useAuth();
   let currentBroadcast: any = null;
   let isLive = false;
 
   try {
     const broadcast = useBroadcast();
-    // keep a reference so we can read id safely where this provider is used
     currentBroadcast = broadcast;
     isLive = Boolean(broadcast?.isStreaming);
-    console.log("🌍 GlobalAudioProvider got broadcast context:", {
-      isStreaming: broadcast.isStreaming,
-      connectionState: broadcast.connectionState,
-    });
   } catch (error) {
-    // BroadcastProvider not available in this context
-    console.log("🌍 BroadcastProvider not available in GlobalAudioProvider");
+    // BroadcastProvider not available - this is expected in some contexts
   }
 
   return (
-    <GlobalAudioContext.Provider
-      value={{
-        isPlaying,
-        currentProgram,
-        setIsPlaying,
-        setCurrentProgram,
-      }}
-    >
-      {children}
-      <ChatProvider>
-        <BroadcastProvider isBroadcaster={false}>
-          <LivePlayer />
-          {user && (
-            <ChatWidget
-              broadcastId={currentBroadcast?.id || "general-chat"}
-              currentUser={{
-                id: user.id,
-                username: user.name || user.email || "User",
-                avatar: user.profilePicture || undefined,
-                role: user.role === "admin" ? "admin" : "listener",
-              }}
-              isLive={isLive}
-              position="bottom-right"
-            />
-          )}
-        </BroadcastProvider>
-      </ChatProvider>
-    </GlobalAudioContext.Provider>
+    <>
+      <LivePlayer />
+      {user && (
+        <ChatWidget
+          broadcastId={currentBroadcast?.id || "general-chat"}
+          currentUser={{
+            id: user.id,
+            username: user.name || user.email || "User",
+            avatar: user.profilePicture || undefined,
+            role: user.role === "admin" ? "admin" : "listener",
+          }}
+          isLive={isLive}
+          position="bottom-right"
+        />
+      )}
+    </>
   );
 }

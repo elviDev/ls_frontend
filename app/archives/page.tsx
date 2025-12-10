@@ -2,26 +2,44 @@ import { Suspense } from "react";
 import { ArchivesList } from "@/components/archives/archives-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  getArchives,
-  getArchiveCategories,
-} from "@/app/archives/actions";
+import { prisma } from "@/lib/prisma";
 
 // This is a server component that fetches the initial data
 async function ArchivesContent() {
   try {
-    // Fetch archives and categories from database
-    const [archivesResult, categoriesResult] = await Promise.all([
-      getArchives(),
-      getArchiveCategories(),
-    ]);
-
-    if (!archivesResult.success) {
-      throw new Error(archivesResult.error);
+    // Fetch directly from database to avoid API calls during build
+    let archives = [];
+    let categories: string[] = [];
+    
+    try {
+      const dbArchives = await prisma.archive.findMany({
+        where: { status: "ACTIVE" },
+        orderBy: { archivedDate: "desc" },
+        take: 50
+      });
+      
+      archives = dbArchives.map((archive: any) => ({
+        id: archive.id,
+        title: archive.title,
+        host: archive.host || "Unknown Host",
+        guests: archive.guests,
+        image: archive.coverImage || "/placeholder.svg?height=400&width=400",
+        duration: archive.duration ? `${Math.floor(archive.duration / 60)} min` : "Unknown",
+        date: new Date(archive.archivedDate).toLocaleDateString(),
+        category: archive.category || "General",
+        description: archive.description || "",
+        type: archive.type?.toLowerCase() || "broadcast",
+        downloadUrl: archive.downloadUrl,
+        audioFile: archive.audioFile,
+        playCount: archive.playCount,
+        isDownloadable: archive.isDownloadable,
+        isFeatured: archive.isFeatured
+      }));
+      
+      categories = [...new Set(dbArchives.map(a => a.category).filter(Boolean))];
+    } catch (dbError) {
+      console.log("No archives found or database not accessible");
     }
-
-    const archives = archivesResult.data;
-    const categories = categoriesResult.success ? categoriesResult.data : [];
 
     console.log("Found archives:", archives.length);
     console.log("Found categories:", categories.length);

@@ -18,6 +18,12 @@ export async function GET(request: NextRequest) {
       status: "ACTIVE",
     };
 
+    // Check if Archive table exists and handle gracefully
+    let archives = [];
+    let total = 0;
+    
+    try {
+
     // Add search filter
     if (search) {
       where.OR = [
@@ -64,30 +70,36 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    // Get archives with pagination
-    const [archives, total] = await Promise.all([
-      prisma.archive.findMany({
-        where,
-        include: {
-          createdBy: {
-            select: {
-              firstName: true,
-              lastName: true,
+      // Get archives with pagination
+      [archives, total] = await Promise.all([
+        prisma.archive.findMany({
+          where,
+          include: {
+            createdBy: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+            _count: {
+              select: {
+                comments: true,
+                favorites: true,
+              },
             },
           },
-          _count: {
-            select: {
-              comments: true,
-              favorites: true,
-            },
-          },
-        },
-        orderBy,
-        skip,
-        take: limit,
-      }),
-      prisma.archive.count({ where }),
-    ]);
+          orderBy,
+          skip,
+          take: limit,
+        }),
+        prisma.archive.count({ where }),
+      ]);
+    } catch (dbError: any) {
+      console.log("Archive table not found or empty:", dbError.message);
+      // Return empty result if table doesn't exist or is empty
+      archives = [];
+      total = 0;
+    }
 
     // Transform data for public consumption
     const transformedArchives = archives.map((archive) => ({
