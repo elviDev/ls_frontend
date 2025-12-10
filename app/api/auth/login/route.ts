@@ -77,13 +77,16 @@ console.log("User found",user);
       );
     }
 
-    const token = await signToken({ userId: user.id });
+    const token = await signToken({ 
+      userId: user.id,
+      role: isStaff ? user.role : 'USER'
+    });
 
     // Set cookie expiration based on remember me option
     const cookieOptions: any = {
       httpOnly: true,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Always use secure cookies
       sameSite: "lax",
     };
 
