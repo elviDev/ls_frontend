@@ -343,7 +343,7 @@ export function BroadcastProvider({
         console.log("📡 Joining broadcast via WebRTC signaling");
         realtimeClient.joinBroadcast(broadcastId, {
           role: "listener",
-          userAgent: navigator.userAgent,
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server',
           timestamp: new Date().toISOString()
         });
 
