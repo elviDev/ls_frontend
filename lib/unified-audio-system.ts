@@ -111,7 +111,7 @@ export class UnifiedAudioSystem {
   private async connectToServer(): Promise<void> {
     return new Promise((resolve) => {
       try {
-        this.socket = io("http://localhost:3001", {
+        this.socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001", {
           transports: ["websocket"],
           autoConnect: true,
           timeout: 10000,
@@ -810,7 +810,7 @@ export class UnifiedAudioListener {
 
   private async connectToServer(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.socket = io("http://localhost:3001", {
+      this.socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001", {
         transports: ["websocket"],
         timeout: 10000,
         reconnection: true,

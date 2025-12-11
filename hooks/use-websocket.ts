@@ -18,7 +18,7 @@ export function useWebSocket(options: UseWebSocketOptions) {
     if (!options.broadcastId) return
 
     // Initialize socket connection to unified audio server
-    const socket = io('http://localhost:3001', {
+    const socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001', {
       transports: ['websocket', 'polling'],
       timeout: 10000,
       forceNew: true
