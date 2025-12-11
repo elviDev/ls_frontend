@@ -21,7 +21,7 @@ export async function GET() {
         maxAge: 0,
         path: "/",
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_APP_URL?.startsWith('https'),
         sameSite: "lax"
       });
       return response;
@@ -46,7 +46,7 @@ export async function GET() {
       maxAge: 0, 
       path: "/",
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_APP_URL?.startsWith('https'),
       sameSite: "lax"
     });
     return response;

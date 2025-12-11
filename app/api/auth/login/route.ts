@@ -86,7 +86,7 @@ console.log("User found",user);
     const cookieOptions: any = {
       httpOnly: true,
       path: "/",
-      secure: true, // Always use secure cookies
+      secure: process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_APP_URL?.startsWith('https'),
       sameSite: "lax",
     };
 

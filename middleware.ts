@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 // Routes that require authentication
-const protectedRoutes: string[] = [];
+const protectedRoutes: string[] = ["/profile"];
 // Routes that authenticated users should not access
 const guestOnlyRoutes = ["/signin", "/signup", "/register"];
 // Routes that require staff access
@@ -44,7 +44,7 @@ export async function middleware(request: NextRequest) {
         maxAge: 0,
         path: "/",
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_APP_URL?.startsWith('https'),
         sameSite: "lax"
       });
       return response;
