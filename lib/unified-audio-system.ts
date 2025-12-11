@@ -111,15 +111,19 @@ export class UnifiedAudioSystem {
   private async connectToServer(): Promise<void> {
     return new Promise((resolve) => {
       try {
-        this.socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001", {
-          transports: ["websocket"],
-          autoConnect: true,
-          timeout: 10000,
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 2000,
-          forceNew: false,
-        });
+        this.socket = io(
+          process.env.NEXT_PUBLIC_WS_URL ||
+            "http://radiostation-backend-ruuhuz-3d7a30-109-123-240-242.traefik.me",
+          {
+            transports: ["websocket"],
+            autoConnect: true,
+            timeout: 10000,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 2000,
+            forceNew: false,
+          }
+        );
 
         this.socket.on("connect", () => {
           console.log("🔗 Connected to TypeScript realtime server");
@@ -810,14 +814,18 @@ export class UnifiedAudioListener {
 
   private async connectToServer(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001", {
-        transports: ["websocket"],
-        timeout: 10000,
-        reconnection: true,
-        reconnectionAttempts: this.maxReconnectAttempts,
-        reconnectionDelay: 2000,
-        forceNew: false,
-      });
+      this.socket = io(
+        process.env.NEXT_PUBLIC_WS_URL ||
+          "http://radiostation-backend-ruuhuz-3d7a30-109-123-240-242.traefik.me",
+        {
+          transports: ["websocket"],
+          timeout: 10000,
+          reconnection: true,
+          reconnectionAttempts: this.maxReconnectAttempts,
+          reconnectionDelay: 2000,
+          forceNew: false,
+        }
+      );
 
       const timeout = setTimeout(() => {
         reject(new Error("Connection timeout"));
@@ -1199,7 +1207,8 @@ export class UnifiedAudioListener {
       console.error("❌ Failed to append buffer:", error);
 
       // Try to recover if SourceBuffer was removed
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       if (errorMessage.includes("removed from the parent media source")) {
         console.log("🔧 SourceBuffer was removed, attempting recovery...");
         this.recoverMediaSource();
