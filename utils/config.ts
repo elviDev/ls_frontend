@@ -1,2 +1,1 @@
-export const WS_URL =
-  "http://radiostation-backend-ruuhuz-3d7a30-109-123-240-242.traefik.me";
+export const WS_URL = "https://lsbackend-production-46d9.up.railway.app";
