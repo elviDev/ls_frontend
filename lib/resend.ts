@@ -1,3 +1,8 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+const apiKey = process.env.RESEND_API_KEY;
+
+// Only initialize Resend if we have a valid API key
+export const resend = apiKey && apiKey !== "your-resend-api-key" 
+  ? new Resend(apiKey) 
+  : null;

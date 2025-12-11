@@ -1,6 +1,11 @@
 import { resend } from "../resend";
 
 export async function sendResetPasswordEmail(email: string, token: string) {
+  if (!resend) {
+    console.warn('Email service not configured - password reset email not sent');
+    return;
+  }
+
   const resetLink = `${process.env.APP_URL}/reset-password?token=${token}`;
 
   await resend.emails.send({
