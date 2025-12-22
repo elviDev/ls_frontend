@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
     });
 
     const response = {
-      archives: archives.map((archive) => ({
+      archives: archives.map((archive: any) => ({
         id: archive.id,
         title: archive.title,
         slug: archive.slug,

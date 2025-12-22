@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform data for public consumption
-    const transformedArchives = archives.map((archive) => ({
+    const transformedArchives = archives.map((archive: any) => ({
       id: archive.id,
       title: archive.title,
       slug: archive.slug,

@@ -37,7 +37,7 @@ export async function GET() {
       take: 10,
     });
 
-    const transformedBroadcasts = upcomingBroadcasts.map(broadcast => ({
+    const transformedBroadcasts = upcomingBroadcasts.map((broadcast: any) => ({
       id: broadcast.id,
       title: broadcast.title,
       description: broadcast.description,

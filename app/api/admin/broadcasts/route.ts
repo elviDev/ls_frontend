@@ -12,8 +12,8 @@ const createBroadcastSchema = z.object({
   endTime: z.string().datetime().optional(),
   status: z.enum(["SCHEDULED", "LIVE", "ENDED"]).default("SCHEDULED"),
   streamUrl: z.string().url().optional(),
-  bannerId: z.string().optional(),
-  programId: z.string().optional(),
+  bannerId: z.string().nullable().optional(),
+  programId: z.string().nullable().optional(),
   staff: z.array(z.object({
     userId: z.string(),
     role: z.enum(["HOST", "CO_HOST", "PRODUCER", "SOUND_ENGINEER", "MODERATOR"])
@@ -164,8 +164,8 @@ export const POST = adminOnly(async (req: Request) => {
         endTime: data.endTime ? new Date(data.endTime) : undefined,
         status: data.status,
         streamUrl: data.streamUrl,
-        bannerId: data.bannerId,
-        programId: data.programId,
+        bannerId: data.bannerId || null,
+        programId: data.programId || null,
       },
       include: {
         hostUser: {
@@ -193,7 +193,7 @@ export const POST = adminOnly(async (req: Request) => {
     // Create staff assignments if provided
     if (data.staff && data.staff.length > 0) {
       await prisma.broadcastStaff.createMany({
-        data: data.staff.map(staffMember => ({
+        data: data.staff.map((staffMember: any) => ({
           broadcastId: broadcast.id,
           userId: staffMember.userId,
           role: staffMember.role,
@@ -205,7 +205,7 @@ export const POST = adminOnly(async (req: Request) => {
     // Create guest assignments if provided
     if (data.guests && data.guests.length > 0) {
       await prisma.broadcastGuest.createMany({
-        data: data.guests.map(guest => ({
+        data: data.guests.map((guest: any) => ({
           broadcastId: broadcast.id,
           name: guest.name,
           title: guest.title || null,

@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
       prisma.event.count({ where })
     ])
 
-    const transformedEvents = events.map(event => ({
+    const transformedEvents = events.map((event: any) => ({
       id: event.id,
       title: event.schedule.title,
       description: event.schedule.description,
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
 
 
     // Create schedule first, then event
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Create the schedule
       const schedule = await tx.schedule.create({
         data: {
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Create event error:", error);
     if (error instanceof z.ZodError) {
-      const errorMessage = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      const errorMessage = error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
       return NextResponse.json({ error: `Validation failed: ${errorMessage}` }, { status: 400 })
     }
     return NextResponse.json(

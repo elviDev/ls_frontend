@@ -39,7 +39,7 @@ export const GET = adminOnly(async (req: Request) => {
     
     if (role && role !== "all") {
       // Handle comma-separated roles
-      const roles = role.split(',').map(r => r.trim());
+      const roles = role.split(',').map((r: any) => r.trim());
       where.role = roles.length === 1 ? roles[0] : { in: roles };
     }
     
@@ -116,7 +116,7 @@ export const GET = adminOnly(async (req: Request) => {
       },
     });
 
-    const transformedStaff = staff.map(member => ({
+    const transformedStaff = staff.map((member: any) => ({
       id: member.id,
       name: `${member.firstName} ${member.lastName}`,
       firstName: member.firstName,
@@ -144,11 +144,11 @@ export const GET = adminOnly(async (req: Request) => {
       active: activeStaff,
       inactive: total - activeStaff,
       recentHires,
-      byRole: roleStats.reduce((acc, item) => {
+      byRole: roleStats.reduce((acc: any, item: any) => {
         acc[item.role] = item._count.role;
         return acc;
       }, {} as Record<string, number>),
-      byDepartment: departmentStats.reduce((acc, item) => {
+      byDepartment: departmentStats.reduce((acc: any, item: any) => {
         if (item.department) {
           acc[item.department] = item._count.department;
         }

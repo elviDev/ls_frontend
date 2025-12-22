@@ -32,6 +32,10 @@ async function ArchiveContent({ id }: { id: string }) {
 
     const archive = result.data;
 
+    if (!archive) {
+      notFound();
+    }
+
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -40,8 +44,8 @@ async function ArchiveContent({ id }: { id: string }) {
             <div className="md:col-span-1">
               <div className="relative aspect-square rounded-lg overflow-hidden">
                 <img
-                  src={archive.image}
-                  alt={archive.title}
+                  src={archive.image || '/placeholder-image.jpg'}
+                  alt={archive.title || 'Archive'}
                   className="w-full h-full object-cover"
                 />
               </div>

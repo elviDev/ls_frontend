@@ -52,7 +52,7 @@ interface EventDetail {
   isRegistered?: boolean
 }
 
-export default function PublicEventDetailPage({ params }: { params: { id: string } }) {
+export default function PublicEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
   const [event, setEvent] = useState<EventDetail | null>(null)

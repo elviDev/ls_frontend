@@ -36,7 +36,7 @@ async function ArchivesContent() {
         isFeatured: archive.isFeatured
       }));
       
-      categories = [...new Set(dbArchives.map(a => a.category).filter(Boolean))];
+      categories = [...new Set(dbArchives.map((a: any) => a.category).filter(Boolean))] as string[];
     } catch (dbError) {
       console.log("No archives found or database not accessible");
     }
@@ -69,12 +69,12 @@ async function ArchivesContent() {
     }
 
     // Filter archives by type
-    const podcastArchives = archives.filter((item) => item.type === "podcast");
+    const podcastArchives = archives.filter((item: any) => item.type === "podcast");
     const broadcastArchives = archives.filter(
-      (item) => item.type === "broadcast"
+      (item: any) => item.type === "broadcast"
     );
     const audiobookArchives = archives.filter(
-      (item) => item.type === "audiobook"
+      (item: any) => item.type === "audiobook"
     );
 
     return (

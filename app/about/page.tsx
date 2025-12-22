@@ -95,18 +95,18 @@ const stats = [
 
 export default function AboutPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">About WaveStream</h1>
-        <p className="text-xl text-muted-foreground">
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="max-w-4xl mx-auto text-center mb-8 md:mb-12">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">About WaveStream</h1>
+        <p className="text-lg md:text-xl text-muted-foreground">
           Connecting the world through the power of audio since 2018.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12 md:mb-16 items-center">
         <div>
-          <h2 className="text-3xl font-bold mb-6">Our Story</h2>
-          <div className="space-y-4 text-lg">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Our Story</h2>
+          <div className="space-y-4 text-base md:text-lg">
             <p>
               WaveStream began with a simple idea: to create a platform where
               audio content could thrive in the digital age. Founded in 2018 by
@@ -133,7 +133,7 @@ export default function AboutPage() {
             </Button>
           </div>
         </div>
-        <div className="relative h-[400px] rounded-xl overflow-hidden">
+        <div className="relative h-[250px] md:h-[400px] rounded-xl overflow-hidden">
           <Image
             src="/placeholder.svg?height=800&width=1200&text=WaveStream+Studio"
             alt="WaveStream Studio"
@@ -143,25 +143,25 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 mb-16">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-12 md:mb-16">
         {stats.map((stat, index) => (
           <Card key={index} className="text-center">
-            <CardContent className="p-6">
-              <div className="mx-auto rounded-full bg-brand-100 dark:bg-brand-900 p-3 w-14 h-14 flex items-center justify-center mb-4">
-                <stat.icon className="h-6 w-6 text-brand-600 dark:text-brand-300" />
+            <CardContent className="p-4 md:p-6">
+              <div className="mx-auto rounded-full bg-primary/10 p-2 md:p-3 w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mb-2 md:mb-4">
+                <stat.icon className="h-4 w-4 md:h-6 md:w-6 text-primary" />
               </div>
-              <div className="text-3xl font-bold mb-1">{stat.value}</div>
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
+              <div className="text-xl md:text-3xl font-bold mb-1">{stat.value}</div>
+              <p className="text-xs md:text-sm text-muted-foreground">{stat.label}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12">
+      <div className="mb-12 md:mb-16">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">
           Our Mission & Values
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <Card>
             <CardContent className="p-6 text-center">
               <div className="mx-auto rounded-full bg-brand-100 dark:bg-brand-900 p-3 w-14 h-14 flex items-center justify-center mb-4">
@@ -243,29 +243,29 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Our Journey</h2>
+      <div className="mb-12 md:mb-16">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Our Journey</h2>
         <div className="relative">
-          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-muted"></div>
-          <div className="space-y-12">
+          <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-muted"></div>
+          <div className="space-y-8 md:space-y-12">
             {milestones.map((milestone, index) => (
               <div
                 key={index}
-                className={`relative flex items-center ${
-                  index % 2 === 0 ? "flex-row" : "flex-row-reverse"
-                } gap-8`}
+                className={`relative flex flex-col md:flex-row items-center ${
+                  index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                } gap-4 md:gap-8`}
               >
-                <div className="w-1/2 flex justify-center">
-                  <div className="bg-brand-600 text-white text-xl font-bold rounded-full h-16 w-16 flex items-center justify-center z-10">
+                <div className="w-full md:w-1/2 flex justify-center">
+                  <div className="bg-primary text-primary-foreground text-lg md:text-xl font-bold rounded-full h-12 w-12 md:h-16 md:w-16 flex items-center justify-center z-10">
                     {milestone.year}
                   </div>
                 </div>
-                <Card className="w-1/2">
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-2">
+                <Card className="w-full md:w-1/2">
+                  <CardContent className="p-4 md:p-6">
+                    <h3 className="text-lg md:text-xl font-semibold mb-2">
                       {milestone.title}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-sm md:text-base text-muted-foreground">
                       {milestone.description}
                     </p>
                   </CardContent>
@@ -276,18 +276,18 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
+      <div className="mb-12 md:mb-16">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Meet Our Team</h2>
         <Tabs defaultValue="leadership">
-          <div className="flex justify-center mb-8">
-            <TabsList>
-              <TabsTrigger value="leadership">Leadership</TabsTrigger>
-              <TabsTrigger value="hosts">Hosts & Producers</TabsTrigger>
-              <TabsTrigger value="tech">Tech Team</TabsTrigger>
+          <div className="flex justify-center mb-6 md:mb-8">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="leadership" className="text-xs md:text-sm">Leadership</TabsTrigger>
+              <TabsTrigger value="hosts" className="text-xs md:text-sm">Hosts</TabsTrigger>
+              <TabsTrigger value="tech" className="text-xs md:text-sm">Tech</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="leadership" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {team.map((member, index) => (
                 <Card key={index} className="overflow-hidden">
                   <div className="aspect-square relative">
@@ -298,14 +298,14 @@ export default function AboutPage() {
                       className="object-cover"
                     />
                   </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-1">
+                  <CardContent className="p-4 md:p-6">
+                    <h3 className="text-lg md:text-xl font-semibold mb-1">
                       {member.name}
                     </h3>
-                    <p className="text-brand-600 dark:text-brand-400 mb-4">
+                    <p className="text-primary mb-3 md:mb-4">
                       {member.role}
                     </p>
-                    <p className="text-muted-foreground">{member.bio}</p>
+                    <p className="text-sm md:text-base text-muted-foreground">{member.bio}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -440,15 +440,15 @@ export default function AboutPage() {
         </Tabs>
       </div>
 
-      <div className="bg-muted rounded-xl p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Join the WaveStream Family</h2>
-        <p className="text-lg mb-6 max-w-2xl mx-auto">
+      <div className="bg-muted rounded-xl p-6 md:p-8 text-center">
+        <h2 className="text-xl md:text-2xl font-bold mb-4">Join the WaveStream Family</h2>
+        <p className="text-base md:text-lg mb-6 max-w-2xl mx-auto">
           We're always looking for passionate individuals to join our team.
           Whether you're a content creator, developer, or audio enthusiast, we'd
           love to hear from you.
         </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Button className="bg-brand-600 hover:bg-brand-700">
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Button className="bg-primary hover:bg-primary/90">
             View Open Positions
           </Button>
           <Button variant="outline">Contact Us</Button>

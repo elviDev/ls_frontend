@@ -33,7 +33,7 @@ export const GET = adminOnly(async (req: Request) => {
     ])
 
     // Get genre names for the stats
-    const genreIds = genreStats.map(stat => stat.genreId)
+    const genreIds = genreStats.map((stat: any) => stat.genreId)
     const genres = await prisma.genre.findMany({
       where: {
         id: {
@@ -46,7 +46,7 @@ export const GET = adminOnly(async (req: Request) => {
       }
     })
 
-    const genreMap = genres.reduce((acc, genre) => {
+    const genreMap = genres.reduce((acc: any, genre: any) => {
       acc[genre.id] = genre.name
       return acc
     }, {} as Record<string, string>)

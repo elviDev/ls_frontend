@@ -22,11 +22,12 @@ import { generateSampleChapters, getSampleAudioUrl } from "@/lib/audiobook-api";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Calendar, User, BookOpen } from "lucide-react";
 
-export default function AudiobookDetailPage({
+export default async function AudiobookDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const [audiobookData, setAudiobookData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +47,7 @@ export default function AudiobookDetailPage({
 
         // Fetch audiobook details from our API
         const response = await fetch(
-          `/api/audiobooks/${params.id}?withChapters=true`
+          `/api/audiobooks/${id}?withChapters=true`
         );
 
         if (response.ok) {
@@ -102,13 +103,13 @@ export default function AudiobookDetailPage({
         }
 
         // Check if this audiobook is in favorites
-        const favoriteResult = await checkIsFavorite(params.id);
-        if (favoriteResult.success) {
+        const favoriteResult = await checkIsFavorite(id);
+        if (favoriteResult.success && favoriteResult.isFavorite !== undefined) {
           setIsFavorite(favoriteResult.isFavorite);
         }
 
         // Get saved progress
-        const progressResult = await getAudiobookProgress(params.id);
+        const progressResult = await getAudiobookProgress(id);
         if (progressResult.success) {
           setProgress(progressResult.data);
           setCurrentChapter(progressResult.data.chapter);
@@ -122,7 +123,7 @@ export default function AudiobookDetailPage({
     };
 
     fetchData();
-  }, [params.id]);
+  }, [id]);
 
   const handlePlayChapter = (chapter: any) => {
     setCurrentChapter(chapters.findIndex((c) => c.id === chapter.id));
@@ -133,7 +134,7 @@ export default function AudiobookDetailPage({
     // Force re-render with new audio URL
     const newAudioUrl =
       chapters[chapterIndex]?.audioFile ||
-      getSampleAudioUrl(params.id, chapterIndex + 1);
+      getSampleAudioUrl(id, chapterIndex + 1);
     // The AudiobookPlayer will handle the audio source change via useEffect
   };
 
@@ -142,7 +143,7 @@ export default function AudiobookDetailPage({
 
     try {
       const result = await toggleFavoriteAudiobook({
-        id: params.id,
+        id: id,
         title: audiobookData.volumeInfo.title,
         image:
           audiobookData.volumeInfo.imageLinks?.thumbnail ||
@@ -267,7 +268,7 @@ export default function AudiobookDetailPage({
   // Use actual chapter audio file if available, otherwise fallback to sample
   const audioUrl =
     chapters[currentChapter]?.audioFile ||
-    getSampleAudioUrl(params.id, currentChapter + 1);
+    getSampleAudioUrl(id, currentChapter + 1);
 
   // Get related audiobooks (in a real app, this would come from an API)
   const relatedAudiobooks = [
@@ -407,7 +408,7 @@ export default function AudiobookDetailPage({
               chapters={chapters}
               currentChapter={currentChapter}
               onChapterChange={handleChapterChange}
-              audiobookId={params.id}
+              audiobookId={id}
               initialPosition={progress.position}
             />
           </div>
@@ -514,11 +515,11 @@ export default function AudiobookDetailPage({
               </TabsContent>
 
               <TabsContent value="reviews">
-                <ReviewSection audiobookId={params.id} />
+                <ReviewSection audiobookId={id} />
               </TabsContent>
 
               <TabsContent value="comments">
-                <CommentSection audiobookId={params.id} />
+                <CommentSection audiobookId={id} />
               </TabsContent>
             </Tabs>
           </div>

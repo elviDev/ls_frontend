@@ -9,14 +9,15 @@ const createGuestSchema = z.object({
   role: z.string().min(1, "Guest role is required"),
 });
 
-export const POST = adminOnly(async (req: Request, { params }: { params: { slug: string } }) => {
+export const POST = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   try {
+    const { slug } = await params;
     const body = await req.json();
     const data = createGuestSchema.parse(body);
 
     // Check if broadcast exists
     const broadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: { id: true, allowGuests: true },
     });
 
@@ -51,11 +52,12 @@ export const POST = adminOnly(async (req: Request, { params }: { params: { slug:
   }
 });
 
-export const GET = adminOnly(async (req: Request, { params }: { params: { slug: string } }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   try {
+    const { slug } = await params;
     // Get broadcast and its guests
     const broadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         guests: {
           orderBy: { createdAt: 'desc' },

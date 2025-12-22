@@ -21,8 +21,8 @@ export async function GET() {
     return NextResponse.json({
       total: allBroadcasts.length,
       broadcasts: allBroadcasts,
-      liveCount: allBroadcasts.filter(b => b.status === 'LIVE').length,
-      readyCount: allBroadcasts.filter(b => b.status === 'READY').length,
+      liveCount: allBroadcasts.filter((b: any) => b.status === 'LIVE').length,
+      readyCount: allBroadcasts.filter((b: any) => b.status === 'READY').length,
     })
   } catch (error) {
     console.error("Error fetching debug broadcasts:", error)

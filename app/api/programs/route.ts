@@ -44,7 +44,7 @@ export async function GET(req: Request) {
     })
 
     // Transform the data for the frontend
-    const transformedPrograms = programs.map(program => ({
+    const transformedPrograms = programs.map((program: any) => ({
       id: program.id,
       title: program.title,
       slug: program.slug,

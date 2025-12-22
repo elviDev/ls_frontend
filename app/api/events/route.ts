@@ -48,8 +48,8 @@ export async function GET(req: Request) {
 
     // Transform the data for the frontend
     const transformedEvents = schedules
-      .filter(schedule => schedule.event) // Only include schedules that have event data
-      .map(schedule => ({
+      .filter((schedule: any) => schedule.event) // Only include schedules that have event data
+      .map((schedule: any) => ({
         id: schedule.event!.id,
         scheduleId: schedule.id,
         title: schedule.title,

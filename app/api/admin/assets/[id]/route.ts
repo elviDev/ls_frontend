@@ -9,10 +9,11 @@ const updateAssetSchema = z.object({
   tags: z.string().optional(),
 });
 
-export const GET = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const asset = await prisma.asset.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         uploadedBy: {
           select: { id: true, firstName: true, lastName: true, email: true },
@@ -43,13 +44,14 @@ export const GET = adminOnly(async (req: Request, { params }: { params: { id: st
   }
 });
 
-export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const PATCH = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const body = await req.json();
     const data = updateAssetSchema.parse(body);
 
     const asset = await prisma.asset.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(data.description !== undefined && { description: data.description }),
         ...(data.tags !== undefined && { tags: data.tags }),
@@ -77,11 +79,12 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
   }
 });
 
-export const DELETE = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const DELETE = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     // Check if asset is being used by any broadcasts
     const asset = await prisma.asset.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: { broadcasts: true }
@@ -101,7 +104,7 @@ export const DELETE = adminOnly(async (req: Request, { params }: { params: { id:
     }
 
     await prisma.asset.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Asset deleted successfully" });

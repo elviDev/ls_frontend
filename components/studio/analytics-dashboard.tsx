@@ -388,20 +388,20 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
                 <div className="space-y-4">
-                  <h4 className="font-medium">Device Types</h4>
+                  <h4 className="font-medium text-sm sm:text-base">Device Types</h4>
                   {Object.entries(analytics.devices).map(([device, count]) => {
                     const DeviceIcon = getDeviceIcon(device)
                     return (
                       <div key={device} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <DeviceIcon className="h-4 w-4 text-gray-500" />
-                            <span className="font-medium capitalize">{device}</span>
+                            <DeviceIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                            <span className="font-medium capitalize text-sm">{device}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">{count}</span>
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <span className="text-xs sm:text-sm text-gray-600">{count}</span>
                             <span className="text-xs text-gray-500">
                               ({((count / analytics.currentListeners) * 100).toFixed(1)}%)
                             </span>
@@ -409,7 +409,7 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
                         </div>
                         <Progress 
                           value={(count / analytics.currentListeners) * 100} 
-                          className="h-2"
+                          className="h-1.5 sm:h-2"
                         />
                       </div>
                     )
@@ -417,14 +417,14 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium">Top Browsers</h4>
+                  <h4 className="font-medium text-sm sm:text-base">Top Browsers</h4>
                   {['Chrome', 'Safari', 'Firefox', 'Edge'].map((browser, index) => {
                     const count = Math.floor(analytics.currentListeners * [0.45, 0.25, 0.15, 0.15][index])
                     return (
                       <div key={browser} className="flex items-center justify-between">
-                        <span className="font-medium">{browser}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">{count}</span>
+                        <span className="font-medium text-sm">{browser}</span>
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <span className="text-xs sm:text-sm text-gray-600">{count}</span>
                           <span className="text-xs text-gray-500">
                             ({((count / analytics.currentListeners) * 100).toFixed(1)}%)
                           </span>
@@ -447,44 +447,44 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Stream Stability</span>
-                      <span className="text-sm font-mono">{analytics.streamQuality.toFixed(1)}%</span>
+                      <span className="font-medium text-sm">Stream Stability</span>
+                      <span className="text-xs sm:text-sm font-mono">{analytics.streamQuality.toFixed(1)}%</span>
                     </div>
-                    <Progress value={analytics.streamQuality} className="h-2" />
+                    <Progress value={analytics.streamQuality} className="h-1.5 sm:h-2" />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Bandwidth Usage</span>
-                      <span className="text-sm font-mono">{Math.round(analytics.bandwidth)} kbps</span>
+                      <span className="font-medium text-sm">Bandwidth Usage</span>
+                      <span className="text-xs sm:text-sm font-mono">{Math.round(analytics.bandwidth)} kbps</span>
                     </div>
-                    <Progress value={(analytics.bandwidth / 320) * 100} className="h-2" />
+                    <Progress value={(analytics.bandwidth / 320) * 100} className="h-1.5 sm:h-2" />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Buffer Health</span>
-                      <span className="text-sm font-mono">98.2%</span>
+                      <span className="font-medium text-sm">Buffer Health</span>
+                      <span className="text-xs sm:text-sm font-mono">98.2%</span>
                     </div>
-                    <Progress value={98.2} className="h-2" />
+                    <Progress value={98.2} className="h-1.5 sm:h-2" />
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium">Quality Distribution</h4>
+                  <h4 className="font-medium text-sm sm:text-base">Quality Distribution</h4>
                   {Object.entries(analytics.qualityDistribution).map(([quality, count]) => (
                     <div key={quality} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Volume2 className={`h-4 w-4 ${getQualityColor(quality)}`} />
-                          <span className="font-medium capitalize">{quality} Quality</span>
+                          <Volume2 className={`h-3 w-3 sm:h-4 sm:w-4 ${getQualityColor(quality)}`} />
+                          <span className="font-medium capitalize text-sm">{quality} Quality</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">{count}</span>
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <span className="text-xs sm:text-sm text-gray-600">{count}</span>
                           <span className="text-xs text-gray-500">
                             ({((count / analytics.currentListeners) * 100).toFixed(1)}%)
                           </span>
@@ -492,7 +492,7 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
                       </div>
                       <Progress 
                         value={(count / analytics.currentListeners) * 100} 
-                        className="h-2"
+                        className="h-1.5 sm:h-2"
                       />
                     </div>
                   ))}

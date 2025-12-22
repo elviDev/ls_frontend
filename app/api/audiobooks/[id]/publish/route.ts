@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getCurrentUser();
 
@@ -12,7 +12,7 @@ export async function PATCH(
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const audiobookId = params.id;
+  const { id: audiobookId } = await params;
 
   const audiobook = await prisma.audiobook.findUnique({
     where: { id: audiobookId },
@@ -33,7 +33,7 @@ export async function PATCH(
 
   // Calculate total duration from chapters
   const totalDuration = audiobook.chapters.reduce(
-    (sum, chapter) => sum + (chapter.duration || 0),
+    (sum: any, chapter: any) => sum + (chapter.duration || 0),
     0
   );
 

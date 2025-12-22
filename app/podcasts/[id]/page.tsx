@@ -26,7 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function PodcastDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [podcastData, setPodcastData] = useState<any>(null);
   const [loading, setLoading] = useState(true);

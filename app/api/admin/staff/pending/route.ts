@@ -27,7 +27,7 @@ export const GET = adminOnly(async (req: Request) => {
     });
 
     return NextResponse.json({
-      pendingStaff: pendingStaff.map(staff => ({
+      pendingStaff: pendingStaff.map((staff: any) => ({
         ...staff,
         createdAt: staff.createdAt.toISOString(),
       })),

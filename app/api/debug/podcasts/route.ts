@@ -22,7 +22,7 @@ export async function GET() {
     return NextResponse.json({
       totalPodcasts: podcasts.length,
       totalGenres: genres.length,
-      podcasts: podcasts.map(p => ({
+      podcasts: podcasts.map((p: any) => ({
         id: p.id,
         title: p.title,
         status: p.status,
@@ -32,7 +32,7 @@ export async function GET() {
         favoriteCount: p._count.favorites,
         episodes: p.episodes
       })),
-      genres: genres.map(g => ({
+      genres: genres.map((g: any) => ({
         id: g.id,
         name: g.name,
         slug: g.slug
@@ -40,6 +40,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Debug API error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }

@@ -19,10 +19,11 @@ const suspendUserSchema = z.object({
 });
 
 // GET /api/admin/users/[id] - Get single user details
-export const GET = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -120,8 +121,9 @@ export const GET = adminOnly(async (req: Request, { params }: { params: { id: st
 });
 
 // PATCH /api/admin/users/[id] - Update user details or suspend/unsuspend
-export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const PATCH = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const body = await req.json();
     
     // Check if this is a suspension action
@@ -141,7 +143,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
       }
       
       const updatedUser = await prisma.user.update({
-        where: { id: params.id },
+        where: { id },
         data: updateData,
         select: {
           id: true,
@@ -170,7 +172,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
       const existingUser = await prisma.user.findFirst({
         where: {
           AND: [
-            { id: { not: params.id } },
+            { id: { not: id } },
             {
               OR: [
                 data.username ? { username: data.username } : {},
@@ -190,7 +192,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...data,
       },
@@ -228,11 +230,12 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
 });
 
 // DELETE /api/admin/users/[id] - Delete user account
-export const DELETE = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const DELETE = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, name: true, email: true }
     });
 
@@ -242,7 +245,7 @@ export const DELETE = adminOnly(async (req: Request, { params }: { params: { id:
 
     // Hard delete (you can change this to soft delete by setting isActive: false)
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

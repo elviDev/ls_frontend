@@ -125,7 +125,7 @@ const statusOptions = [
   { value: "CANCELLED", label: "Cancelled" }
 ]
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
+export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
   const [event, setEvent] = useState<EventDetail | null>(null)

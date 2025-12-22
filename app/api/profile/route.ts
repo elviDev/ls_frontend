@@ -109,8 +109,8 @@ export async function GET() {
         profile: user,
         favorites,
         inProgress,
-        completed: completed.filter(item => {
-          const progress = inProgress.find(p => 
+        completed: completed.filter((item: any) => {
+          const progress = inProgress.find((p: any) => 
             (p.audiobookId && p.audiobookId === item.audiobookId) ||
             (p.podcastId && p.podcastId === item.podcastId)
           );

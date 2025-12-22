@@ -45,7 +45,7 @@ export async function GET(req: Request) {
 
     // Get latest episode for each podcast
     const podcastsWithLatestEpisode = await Promise.all(
-      podcasts.map(async (podcast) => {
+      podcasts.map(async (podcast: any) => {
         const latestEpisode = await prisma.podcastEpisode.findFirst({
           where: {
             podcastId: podcast.id,

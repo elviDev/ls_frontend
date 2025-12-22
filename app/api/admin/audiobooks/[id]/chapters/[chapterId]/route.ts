@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { adminOnly } from '@/lib/auth/adminOnly'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 
-export const GET = adminOnly(async (req: NextRequest, { params }: { params: Promise<{ id: string; chapterId: string }> }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string; chapterId: string }> }) => {
   try {
     const { id, chapterId } = await params
     
@@ -38,9 +39,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
-    const user = await adminOnly()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const staffRoles = ["ADMIN", "HOST", "CO_HOST", "PRODUCER", "SOUND_ENGINEER", "CONTENT_MANAGER", "TECHNICAL_SUPPORT"]
+    if (!staffRoles.includes(user.role) || !user.isApproved) {
+      return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
     }
 
     const { id, chapterId } = await params
@@ -86,9 +92,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
-    const user = await adminOnly()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const staffRoles = ["ADMIN", "HOST", "CO_HOST", "PRODUCER", "SOUND_ENGINEER", "CONTENT_MANAGER", "TECHNICAL_SUPPORT"]
+    if (!staffRoles.includes(user.role) || !user.isApproved) {
+      return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
     }
 
     const { id, chapterId } = await params

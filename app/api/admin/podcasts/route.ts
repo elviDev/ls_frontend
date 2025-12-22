@@ -143,7 +143,7 @@ export const GET = adminOnly(async (req: Request) => {
     ])
 
     // Add calculated fields
-    const transformedPodcasts = podcasts.map(podcast => ({
+    const transformedPodcasts = podcasts.map((podcast: any) => ({
       ...podcast,
       status: "published", // Default status since it's not in schema yet
       totalPlays: Math.floor(Math.random() * 10000), // Mock data
@@ -261,7 +261,7 @@ export const POST = adminOnly(async (req: Request) => {
       try {
         const guestsData = JSON.parse(guests)
         if (Array.isArray(guestsData) && guestsData.length > 0) {
-          guestsString = guestsData.map(guest => guest.name).join(', ')
+          guestsString = guestsData.map((guest: any) => guest.name).join(', ')
         }
       } catch (error) {
         console.error('Error parsing guests data:', error)

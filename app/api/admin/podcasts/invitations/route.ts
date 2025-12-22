@@ -126,8 +126,7 @@ async function sendGuestInvitationEmail({
       </div>
     `
 
-    await sendEmail({
-      to: guestEmail,
+    await sendEmail(guestEmail, {
       subject: `🎙️ You're invited to join "${podcastTitle}" podcast`,
       html: emailContent
     })

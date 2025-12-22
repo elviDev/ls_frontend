@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { adminOnly } from '@/lib/auth/adminOnly'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await adminOnly()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const staffRoles = ["ADMIN", "HOST", "CO_HOST", "PRODUCER", "SOUND_ENGINEER", "CONTENT_MANAGER", "TECHNICAL_SUPPORT"]
+    if (!staffRoles.includes(user.role) || !user.isApproved) {
+      return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
+    }
+
+    const { id } = await params
     const transcription = await prisma.transcription.findUnique({
-      where: { audiobookId: params.id }
+      where: { audiobookId: id }
     })
 
     return NextResponse.json(transcription)
@@ -25,19 +31,25 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await adminOnly()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const staffRoles = ["ADMIN", "HOST", "CO_HOST", "PRODUCER", "SOUND_ENGINEER", "CONTENT_MANAGER", "TECHNICAL_SUPPORT"]
+    if (!staffRoles.includes(user.role) || !user.isApproved) {
+      return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
+    }
+
+    const { id } = await params
     const body = await request.json()
     const { content, language = 'en', format = 'plain_text' } = body
 
     const transcription = await prisma.transcription.upsert({
-      where: { audiobookId: params.id },
+      where: { audiobookId: id },
       update: {
         content,
         language,
@@ -49,7 +61,7 @@ export async function POST(
         content,
         language,
         format,
-        audiobookId: params.id,
+        audiobookId: id,
         lastEditedBy: user.id,
         lastEditedAt: new Date()
       }
@@ -64,14 +76,20 @@ export async function POST(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await adminOnly()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const staffRoles = ["ADMIN", "HOST", "CO_HOST", "PRODUCER", "SOUND_ENGINEER", "CONTENT_MANAGER", "TECHNICAL_SUPPORT"]
+    if (!staffRoles.includes(user.role) || !user.isApproved) {
+      return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
+    }
+
+    const { id } = await params
     const body = await request.json()
     const { content, language, format, isEditable } = body
 
@@ -86,7 +104,7 @@ export async function PATCH(
     if (isEditable !== undefined) updateData.isEditable = isEditable
 
     const transcription = await prisma.transcription.update({
-      where: { audiobookId: params.id },
+      where: { audiobookId: id },
       data: updateData
     })
 

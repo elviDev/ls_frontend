@@ -7,7 +7,7 @@ import { getAudioDuration } from "@/lib/audio/getAudioDuration";
 
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) => {
   try {
     const user = await getCurrentUser();
@@ -15,7 +15,7 @@ export const PATCH = async (
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: audiobookId, chapterId } = params;
+    const { id: audiobookId, chapterId } = await params;
 
     const formData = await req.formData();
     const title = formData.get("title") as string | null;
@@ -82,7 +82,7 @@ export const PATCH = async (
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getCurrentUser();
 
@@ -90,7 +90,7 @@ export async function DELETE(
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const chapterId = params.id;
+  const { id: chapterId } = await params;
 
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },

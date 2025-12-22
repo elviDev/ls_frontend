@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { adminOnly } from "@/lib/auth/adminOnly"
 
 // POST /api/admin/podcasts/[id]/transcription - Create or update transcription
-export const POST = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const POST = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const { content, language = "en", format = "plain_text" } = await req.json()
 
     if (!content) {
@@ -16,7 +17,7 @@ export const POST = adminOnly(async (req: Request, { params }: { params: { id: s
 
     // Check if podcast exists
     const podcast = await prisma.podcast.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!podcast) {
@@ -28,7 +29,7 @@ export const POST = adminOnly(async (req: Request, { params }: { params: { id: s
 
     // Create or update transcription
     const transcription = await prisma.transcription.upsert({
-      where: { podcastId: params.id },
+      where: { podcastId: id },
       update: {
         content,
         language,
@@ -38,7 +39,7 @@ export const POST = adminOnly(async (req: Request, { params }: { params: { id: s
         content,
         language,
         format,
-        podcastId: params.id
+        podcastId: id
       }
     })
 
@@ -53,10 +54,11 @@ export const POST = adminOnly(async (req: Request, { params }: { params: { id: s
 })
 
 // GET /api/admin/podcasts/[id]/transcription - Get transcription
-export const GET = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const transcription = await prisma.transcription.findUnique({
-      where: { podcastId: params.id }
+      where: { podcastId: id }
     })
 
     if (!transcription) {
@@ -77,10 +79,11 @@ export const GET = adminOnly(async (req: Request, { params }: { params: { id: st
 })
 
 // DELETE /api/admin/podcasts/[id]/transcription - Delete transcription
-export const DELETE = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const DELETE = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     await prisma.transcription.delete({
-      where: { podcastId: params.id }
+      where: { podcastId: id }
     })
 
     return NextResponse.json({ success: true })

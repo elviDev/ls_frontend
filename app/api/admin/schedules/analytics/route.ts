@@ -153,13 +153,13 @@ export async function GET(request: Request) {
         failureRate: Math.round(failureRate * 100) / 100
       },
       
-      schedulesByType: schedulsByType.map(item => ({
+      schedulesByType: schedulsByType.map((item: any) => ({
         type: item.type,
         count: item._count,
         percentage: Math.round((item._count / totalSchedules) * 100 * 100) / 100
       })),
       
-      recentActivity: recentSchedules.map(schedule => ({
+      recentActivity: recentSchedules.map((schedule: any) => ({
         id: schedule.id,
         title: schedule.title,
         type: schedule.type,
@@ -168,7 +168,7 @@ export async function GET(request: Request) {
         creator: `${schedule.creator.firstName} ${schedule.creator.lastName}`
       })),
       
-      upcomingSchedules: upcomingSchedules.map(schedule => ({
+      upcomingSchedules: upcomingSchedules.map((schedule: any) => ({
         id: schedule.id,
         title: schedule.title,
         type: schedule.type,

@@ -8,11 +8,12 @@ const createCommentSchema = z.object({
   content: z.string().min(1, "Content is required"),
 });
 
-export const GET = adminOnly(async (req: Request, { params }: { params: { slug: string } }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   try {
+    const { slug } = await params;
     // First find the broadcast by slug to get its ID
     const broadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: { id: true },
     });
 
@@ -40,8 +41,9 @@ export const GET = adminOnly(async (req: Request, { params }: { params: { slug: 
   }
 });
 
-export const POST = adminOnly(async (req: Request, { params }: { params: { slug: string } }) => {
+export const POST = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   try {
+    const { slug } = await params;
     const body = await req.json();
     const data = createCommentSchema.parse(body);
 
@@ -53,7 +55,7 @@ export const POST = adminOnly(async (req: Request, { params }: { params: { slug:
 
     // Verify broadcast exists and get its ID
     const broadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: { id: true },
     });
 

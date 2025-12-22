@@ -2,11 +2,12 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 // GET /api/guest/invitations/[token] - Get invitation details
-export async function GET(req: Request, { params }: { params: { token: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
+    const { token } = await params;
     const invitation = await prisma.guestInvitation.findUnique({
       where: { 
-        invitationToken: params.token,
+        invitationToken: token,
         status: 'PENDING'
       },
       include: {

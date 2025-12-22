@@ -518,49 +518,51 @@ export default function BroadcastDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
         {/* Navigation Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Button 
               variant="ghost" 
               size="icon"
               onClick={() => router.push('/dashboard/broadcasts')}
-              className="hover:bg-white/80 transition-colors"
+              className="hover:bg-white/80 transition-colors h-9 w-9 sm:h-10 sm:w-10"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                 Broadcast Details
               </h1>
-              <p className="text-slate-500 mt-1">Manage and monitor your broadcast</p>
+              <p className="text-slate-500 mt-1 text-sm sm:text-base">Manage and monitor your broadcast</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {broadcast.status === "LIVE" && (
               <Button 
                 onClick={() => router.push(`/dashboard/broadcasts/${broadcast.slug}/studio`)}
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg flex-1 sm:flex-none h-9 sm:h-10 text-sm"
               >
-                <Radio className="h-4 w-4 mr-2" />
-                Enter Studio
+                <Radio className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                <span className="hidden sm:inline">Enter Studio</span>
+                <span className="sm:hidden">Studio</span>
               </Button>
             )}
             {broadcast.status === "SCHEDULED" && (
               <Button 
                 onClick={() => router.push(`/dashboard/broadcasts/${broadcast.slug}/studio`)}
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg flex-1 sm:flex-none h-9 sm:h-10 text-sm"
               >
-                <Play className="h-4 w-4 mr-2" />
-                Go Live
+                <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                <span className="hidden sm:inline">Go Live</span>
+                <span className="sm:hidden">Live</span>
               </Button>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="hover:bg-white/80">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button variant="outline" size="icon" className="hover:bg-white/80 h-9 w-9 sm:h-10 sm:w-10">
+                  <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -586,30 +588,30 @@ export default function BroadcastDetailPage() {
         </div>
 
         {/* Hero Section */}
-        <Card className="mb-8 overflow-hidden border-0 shadow-xl bg-gradient-to-r from-white via-slate-50 to-white">
+        <Card className="mb-6 sm:mb-8 overflow-hidden border-0 shadow-xl bg-gradient-to-r from-white via-slate-50 to-white">
           {broadcast.banner && (
             <div 
-              className="h-64 bg-cover bg-center relative"
+              className="h-40 sm:h-48 md:h-64 bg-cover bg-center relative"
               style={{ backgroundImage: `url(${broadcast.banner.url})` }}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6">
+              <div className="absolute bottom-3 sm:bottom-4 lg:bottom-6 left-3 sm:left-4 lg:left-6 right-3 sm:right-4 lg:right-6">
                 <div className="flex items-center justify-between">
                   {getStatusBadge(broadcast.status)}
                   <div className="flex items-center gap-2 text-white">
-                    <Eye className="h-4 w-4" />
-                    <span className="text-sm font-medium">1.2K views</span>
+                    <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span className="text-xs sm:text-sm font-medium">1.2K views</span>
                   </div>
                 </div>
               </div>
             </div>
           )}
           
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-6 lg:p-8">
             {!broadcast.banner && (
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 {getStatusBadge(broadcast.status)}
-                <div className="flex items-center gap-4 text-slate-600">
+                <div className="flex items-center gap-3 sm:gap-4 text-slate-600">
                   <div className="flex items-center gap-2">
                     <Eye className="h-4 w-4" />
                     <span className="text-sm font-medium">1.2K views</span>
@@ -622,72 +624,72 @@ export default function BroadcastDetailPage() {
               </div>
             )}
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               <div className="lg:col-span-2">
-                <h1 className="text-4xl font-bold text-slate-900 mb-4 leading-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-3 sm:mb-4 leading-tight">
                   {broadcast.title}
                 </h1>
-                <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+                <p className="text-base sm:text-lg text-slate-600 mb-4 sm:mb-6 leading-relaxed">
                   {broadcast.description}
                 </p>
                 
                 {/* Host Info */}
-                <div className="flex items-center gap-4 mb-6">
-                  <Avatar className="h-12 w-12 ring-2 ring-purple-100">
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-purple-600 text-white font-semibold">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 bg-slate-50/80 rounded-lg">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-purple-100">
+                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-purple-600 text-white font-semibold text-sm sm:text-base">
                       {`${broadcast.hostUser.firstName} ${broadcast.hostUser.lastName}`.substring(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <span className="font-semibold text-slate-900 text-sm sm:text-base truncate">
                         {`${broadcast.hostUser.firstName} ${broadcast.hostUser.lastName}`}
                       </span>
-                      <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
+                      <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 w-fit">
                         <Crown className="h-3 w-3 mr-1" />
                         HOST
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-500">{broadcast.hostUser.email}</p>
+                    <p className="text-xs sm:text-sm text-slate-500 truncate">{broadcast.hostUser.email}</p>
                   </div>
                 </div>
               </div>
               
               {/* Schedule Card */}
               <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2 text-blue-900">
-                    <Calendar className="h-5 w-5" />
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center gap-2 text-blue-900 text-base sm:text-lg">
+                    <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                     Schedule
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
                   <div>
-                    <div className="flex items-center gap-2 text-sm text-blue-700 mb-1">
-                      <MapPin className="h-4 w-4" />
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-700 mb-1">
+                      <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Start Time
                     </div>
-                    <p className="font-semibold text-blue-900">{startDateTime.date}</p>
-                    <p className="text-blue-700">{startDateTime.time}</p>
+                    <p className="font-semibold text-blue-900 text-sm sm:text-base">{startDateTime.date}</p>
+                    <p className="text-blue-700 text-sm">{startDateTime.time}</p>
                   </div>
                   
                   {endDateTime && (
                     <div>
-                      <div className="flex items-center gap-2 text-sm text-blue-700 mb-1">
-                        <Clock className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-700 mb-1">
+                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         End Time
                       </div>
-                      <p className="font-semibold text-blue-900">{endDateTime.date}</p>
-                      <p className="text-blue-700">{endDateTime.time}</p>
+                      <p className="font-semibold text-blue-900 text-sm sm:text-base">{endDateTime.date}</p>
+                      <p className="text-blue-700 text-sm">{endDateTime.time}</p>
                     </div>
                   )}
                   
                   <div className="pt-2 border-t border-blue-200">
-                    <div className="flex items-center gap-2 text-sm text-blue-700 mb-1">
-                      <TrendingUp className="h-4 w-4" />
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-700 mb-1">
+                      <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Duration
                     </div>
-                    <p className="font-semibold text-blue-900">
+                    <p className="font-semibold text-blue-900 text-sm sm:text-base">
                       {calculateDuration(broadcast.startTime, broadcast.endTime)}
                     </p>
                   </div>
@@ -698,18 +700,20 @@ export default function BroadcastDetailPage() {
         </Card>
 
         {/* Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4 bg-white shadow-sm border">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white">
-              Overview
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-auto lg:grid-cols-4 bg-white shadow-sm border h-auto p-1">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white text-xs sm:text-sm py-2 sm:py-2.5">
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Info</span>
             </TabsTrigger>
-            <TabsTrigger value="team" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white">
-              Team & Guests
+            <TabsTrigger value="team" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white text-xs sm:text-sm py-2 sm:py-2.5">
+              <span className="hidden sm:inline">Team & Guests</span>
+              <span className="sm:hidden">Team</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white text-xs sm:text-sm py-2 sm:py-2.5">
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white">
+            <TabsTrigger value="settings" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white text-xs sm:text-sm py-2 sm:py-2.5">
               Settings
             </TabsTrigger>
           </TabsList>

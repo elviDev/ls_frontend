@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await adminOnly()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     ])
 
     const audiobooksWithStats = await Promise.all(
-      audiobooks.map(async (audiobook) => {
+      audiobooks.map(async (audiobook: any) => {
         const avgRating = await prisma.review.aggregate({
           where: { audiobookId: audiobook.id },
           _avg: { rating: true }

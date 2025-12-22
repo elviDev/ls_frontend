@@ -91,21 +91,21 @@ export default function AdminDashboardPage() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col gap-4 mb-6 md:mb-8">
             <div>
-              <p className="text-muted-foreground">Welcome back to your admin dashboard!</p>
+              <p className="text-sm md:text-base text-muted-foreground">Welcome back to your admin dashboard!</p>
             </div>
-            <div className="flex gap-2">
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
                 <Mic className="h-4 w-4 mr-2" /> Start Broadcast
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Upload className="h-4 w-4 mr-2" /> Upload Content
               </Button>
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6 md:mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -164,12 +164,12 @@ export default function AdminDashboardPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 mb-8">
+          <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-7 mb-6 md:mb-8">
             <Card className="lg:col-span-4">
               <CardHeader>
                 <CardTitle>Listener Analytics</CardTitle>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center bg-muted/50 rounded-md">
+              <CardContent className="h-[200px] md:h-[300px] flex items-center justify-center bg-muted/50 rounded-md">
                 <p className="text-muted-foreground">
                   Analytics chart will be displayed here
                 </p>
@@ -234,7 +234,7 @@ export default function AdminDashboardPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activities</CardTitle>
@@ -334,31 +334,31 @@ export default function AdminDashboardPage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button className="h-24 flex flex-col items-center justify-center gap-2">
-                    <Mic className="h-6 w-6" />
-                    <span>New Podcast</span>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <Button className="h-20 md:h-24 flex flex-col items-center justify-center gap-1 md:gap-2">
+                    <Mic className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm">New Podcast</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2"
+                    className="h-20 md:h-24 flex flex-col items-center justify-center gap-1 md:gap-2"
                   >
-                    <Radio className="h-6 w-6" />
-                    <span>Schedule Broadcast</span>
+                    <Radio className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm">Schedule Broadcast</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2"
+                    className="h-20 md:h-24 flex flex-col items-center justify-center gap-1 md:gap-2"
                   >
-                    <CalendarIcon className="h-6 w-6" />
-                    <span>Create Event</span>
+                    <CalendarIcon className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm">Create Event</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2"
+                    className="h-20 md:h-24 flex flex-col items-center justify-center gap-1 md:gap-2"
                   >
-                    <Users className="h-6 w-6" />
-                    <span>Manage Users</span>
+                    <Users className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm">Manage Users</span>
                   </Button>
                 </div>
               </CardContent>

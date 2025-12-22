@@ -527,57 +527,32 @@ export class UnifiedAudioSystem {
         console.error("🎵 MediaRecorder error:", error);
       };
 
-      // Use stop/start approach to force complete MP4 files with initialization
-      let isFirstChunk = true;
-
-      const createCompleteFile = () => {
-        if (mediaRecorder.state === "inactive") {
-          if (isFirstChunk) {
-            console.log(
-              "🎬 Creating first complete MP4 file with initialization"
-            );
-            mediaRecorder.start(); // Start recording
-            setTimeout(() => {
-              if (mediaRecorder.state === "recording") {
-                mediaRecorder.stop(); // Stop to create complete file
-                isFirstChunk = false;
-              }
-            }, 2000); // 2 seconds for first complete file
-          } else {
-            console.log("🎵 Creating short complete file for low latency");
-            mediaRecorder.start(); // Start recording
-            setTimeout(() => {
-              if (mediaRecorder.state === "recording") {
-                mediaRecorder.stop(); // Stop to create complete file
-                setTimeout(createCompleteFile, 50); // Queue next file
-              }
-            }, 500); // 500ms for subsequent files
-          }
+      // Use continuous recording instead of stop/start to prevent infinite loops
+      let recordingActive = true;
+      
+      // Stop recording when broadcast stops
+      const stopRecording = () => {
+        recordingActive = false;
+        if (mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
         }
       };
-
-      // Override ondataavailable to trigger next file creation
-      const originalHandler = mediaRecorder.ondataavailable;
-      mediaRecorder.ondataavailable = (event) => {
-        originalHandler?.call(mediaRecorder, event);
-
-        // After file is created, start next one
-        if (event.data.size > 0 && !isFirstChunk) {
-          setTimeout(createCompleteFile, 50);
-        }
-      };
-
-      // Start the process
-      createCompleteFile();
+      
+      // Store cleanup function for later use
+      (this as any).stopAudioStreaming = stopRecording;
+      
+      // Start continuous recording with regular data events
+      mediaRecorder.start(1000); // Request data every 1 second
       console.log("🎵 WebRTC streaming started with complete file generation");
 
       // Add recording state monitoring
       mediaRecorder.onstart = () => {
-        console.log("🎙️ MediaRecorder started recording");
+        console.log("🎙️ MediaRecorder started continuous recording");
       };
 
       mediaRecorder.onstop = () => {
         console.log("🔴 MediaRecorder stopped recording");
+        recordingActive = false;
       };
     } catch (error) {
       console.error("Failed to start WebRTC audio streaming:", error);
@@ -588,6 +563,12 @@ export class UnifiedAudioSystem {
   // Stop broadcasting
   stopBroadcast(): void {
     this.isActive = false;
+
+    // Stop audio streaming if active
+    if ((this as any).stopAudioStreaming) {
+      (this as any).stopAudioStreaming();
+      (this as any).stopAudioStreaming = null;
+    }
 
     if (this.socket) {
       this.socket.emit("leave-as-broadcaster", this.config.broadcastId);

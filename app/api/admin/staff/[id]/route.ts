@@ -22,10 +22,11 @@ const updateStaffSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export const GET = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const staff = await prisma.staff.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         firstName: true,
@@ -127,8 +128,9 @@ export const GET = adminOnly(async (req: Request, { params }: { params: { id: st
   }
 });
 
-export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const PATCH = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     const body = await req.json();
     const data = updateStaffSchema.parse(body);
     
@@ -136,7 +138,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
     const currentUser = await getCurrentUser();
     
     // Staff can only edit their own details, unless they are ADMIN
-    if (currentUser && currentUser.role !== 'ADMIN' && currentUser.id !== params.id) {
+    if (currentUser && currentUser.role !== 'ADMIN' && currentUser.id !== id) {
       return NextResponse.json(
         { error: "You can only edit your own profile" },
         { status: 403 }
@@ -148,7 +150,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
       const existingUser = await prisma.staff.findFirst({
         where: {
           AND: [
-            { id: { not: params.id } },
+            { id: { not: id } },
             {
               OR: [
                 data.username ? { username: data.username } : {},
@@ -178,7 +180,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
     }
 
     const staff = await prisma.staff.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       select: {
         id: true,
@@ -220,13 +222,14 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { id: 
   }
 });
 
-export const DELETE = adminOnly(async (req: Request, { params }: { params: { id: string } }) => {
+export const DELETE = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const { id } = await params;
     // Get the current user to check permissions
     const currentUser = await getCurrentUser();
     
     // Staff can only delete their own account, unless they are ADMIN
-    if (currentUser && currentUser.role !== 'ADMIN' && currentUser.id !== params.id) {
+    if (currentUser && currentUser.role !== 'ADMIN' && currentUser.id !== id) {
       return NextResponse.json(
         { error: "You can only delete your own account" },
         { status: 403 }
@@ -235,7 +238,7 @@ export const DELETE = adminOnly(async (req: Request, { params }: { params: { id:
     
     // Check if staff member exists
     const staff = await prisma.staff.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, firstName: true, lastName: true }
     });
 
@@ -246,7 +249,7 @@ export const DELETE = adminOnly(async (req: Request, { params }: { params: { id:
     // Check if staff member has active broadcasts
     const activeParticipation = await prisma.broadcastStaff.count({
       where: {
-        userId: params.id,
+        userId: id,
         isActive: true,
         broadcast: {
           status: "LIVE"
@@ -263,7 +266,7 @@ export const DELETE = adminOnly(async (req: Request, { params }: { params: { id:
 
     // Hard delete (you can change this to soft delete by setting isActive: false)
     await prisma.staff.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

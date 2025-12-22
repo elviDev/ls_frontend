@@ -36,7 +36,7 @@ async function uploadAudioFile(file: File, uploadedById: string) {
   return `/uploads/chapters/${filename}`;
 }
 
-export const GET = adminOnly(async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params
     
@@ -52,7 +52,7 @@ export const GET = adminOnly(async (req: NextRequest, { params }: { params: Prom
   }
 })
 
-export const POST = adminOnly(async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+export const POST = adminOnly(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params
     const user = await getCurrentUser()

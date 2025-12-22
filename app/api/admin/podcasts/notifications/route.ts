@@ -32,7 +32,7 @@ export const POST = adminOnly(async (req: Request) => {
 
     // Also create podcast guest records for tracking
     const guestRecords = await Promise.all(
-      userIds.map(userId => 
+      userIds.map((userId: any) => 
         prisma.podcastGuest.create({
           data: {
             podcastId,

@@ -3,17 +3,15 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Play, Calendar, Headphones, BookOpen, Radio } from "lucide-react";
 import FeaturedPodcasts from "@/components/featured-podcasts";
-import LivePlayer from "@/components/live-player";
 import UpcomingEvents from "@/components/upcoming-events";
 import FeaturedPrograms from "@/components/featured-programs";
 import HeroAnimation from "@/components/hero-animation";
-
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative w-full h-[80vh] bg-brand-700 overflow-hidden">
+      <section className="relative w-full h-[80vh] bg-primary overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="/pexels-chuck-3587478.jpg"
@@ -22,15 +20,15 @@ export default function Home() {
             className="object-cover object-center opacity-40"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-700/60 to-brand-600/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/60 to-primary/40"></div>
         </div>
         <div className="absolute inset-0 z-0">
           <HeroAnimation />
         </div>
-        <div className="container relative z-10 flex flex-col items-center justify-center h-full px-4 mx-auto text-center text-white">
+        <div className="container relative z-10 flex flex-col items-center justify-center h-full px-4 mx-auto text-center text-primary-foreground">
           <h1 className="font-serif text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl mb-6 animate-fade-in">
             <span className="block">Audiobook Creators</span>
-            <span className="block text-2xl sm:text-3xl md:text-4xl mt-2 text-brand-200">
+            <span className="block text-2xl sm:text-3xl md:text-4xl mt-2 text-primary-foreground/80">
               Your Sound Universe
             </span>
           </h1>
@@ -46,7 +44,7 @@ export default function Home() {
             <Link href="/podcasts">
               <Button
                 size="lg"
-                className="bg-white hover:bg-brand-100 text-brand-700"
+                className="bg-background hover:bg-muted text-foreground"
               >
                 <Play className="mr-2 h-5 w-5" /> Listen Now
               </Button>
@@ -55,7 +53,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="text-primary bg-transparent border-white hover:bg-white/10"
+                className="text-primary-foreground bg-transparent border-primary-foreground hover:bg-primary-foreground/10"
               >
                 Start Project
               </Button>
@@ -64,29 +62,28 @@ export default function Home() {
         </div>
       </section>
 
-
-
       {/* Featured Content Section */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-background">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             <div className="group cursor-pointer">
-              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-to-br from-warmgray-50 to-warmgray-100 shadow-sm hover:shadow-md transition-all group-hover:scale-105">
-                <div className="p-3 rounded-full bg-brand-100 mb-4 group-hover:bg-brand-200 transition-colors">
-                  <Radio className="w-8 h-8 text-brand-600" />
+              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card shadow-sm hover:shadow-md transition-all group-hover:scale-105">
+                <div className="p-3 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Radio className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2">
                   Live Broadcasts
                 </h3>
                 <p className="text-muted-foreground">
-                  Tune in to our live shows using the player below and join the chat
+                  Tune in to our live shows using the player below and join the
+                  chat
                 </p>
               </div>
             </div>
             <Link href="/podcasts" className="group">
-              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-to-br from-warmgray-50 to-warmgray-100 shadow-sm hover:shadow-md transition-all group-hover:scale-105">
-                <div className="p-3 rounded-full bg-brand-100 mb-4 group-hover:bg-brand-200 transition-colors">
-                  <Headphones className="w-8 h-8 text-brand-600" />
+              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card shadow-sm hover:shadow-md transition-all group-hover:scale-105">
+                <div className="p-3 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Headphones className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2">
                   Podcasts
@@ -98,9 +95,9 @@ export default function Home() {
               </div>
             </Link>
             <Link href="/audiobooks" className="group">
-              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-to-br from-warmgray-50 to-warmgray-100 shadow-sm hover:shadow-md transition-all group-hover:scale-105">
-                <div className="p-3 rounded-full bg-brand-100 mb-4 group-hover:bg-brand-200 transition-colors">
-                  <BookOpen className="w-8 h-8 text-brand-600" />
+              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card shadow-sm hover:shadow-md transition-all group-hover:scale-105">
+                <div className="p-3 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                  <BookOpen className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2">
                   Audiobooks
@@ -112,11 +109,13 @@ export default function Home() {
               </div>
             </Link>
             <Link href="/events" className="group">
-              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-to-br from-warmgray-50 to-warmgray-100 shadow-sm hover:shadow-md transition-all group-hover:scale-105">
-                <div className="p-3 rounded-full bg-brand-100 mb-4 group-hover:bg-brand-200 transition-colors">
-                  <Calendar className="w-8 h-8 text-brand-600" />
+              <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card shadow-sm hover:shadow-md transition-all group-hover:scale-105">
+                <div className="p-3 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Calendar className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-serif font-semibold mb-2">Events</h3>
+                <h3 className="text-xl font-serif font-semibold mb-2">
+                  Events
+                </h3>
                 <p className="text-muted-foreground">
                   Join our upcoming events and be part of our growing community
                 </p>
@@ -131,7 +130,7 @@ export default function Home() {
               </h2>
               <Link
                 href="/podcasts"
-                className="text-brand-600 hover:text-brand-800 font-medium"
+                className="text-primary hover:text-primary/80 font-medium"
               >
                 View All Podcasts →
               </Link>
@@ -144,7 +143,7 @@ export default function Home() {
               <h2 className="text-3xl font-serif font-bold">Upcoming Events</h2>
               <Link
                 href="/events"
-                className="text-brand-600 hover:text-brand-800 font-medium"
+                className="text-primary hover:text-primary/80 font-medium"
               >
                 View All Events →
               </Link>
@@ -159,7 +158,7 @@ export default function Home() {
               </h2>
               <Link
                 href="/programs"
-                className="text-brand-600 hover:text-brand-800 font-medium"
+                className="text-primary hover:text-primary/80 font-medium"
               >
                 View All Programs →
               </Link>
@@ -170,7 +169,7 @@ export default function Home() {
       </section>
 
       {/* Professional Team Section */}
-      <section className="section-padding bg-warmgray-100">
+      <section className="section-padding bg-muted/30">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -198,15 +197,15 @@ export default function Home() {
               </p>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="text-brand-600 mr-2">•</div>
+                  <div className="text-primary mr-2">•</div>
                   <p>The Raven (A Poem by Edgar Allan Poe)</p>
                 </div>
                 <div className="flex items-start">
-                  <div className="text-brand-600 mr-2">•</div>
+                  <div className="text-primary mr-2">•</div>
                   <p>A Fragment of the Hanging Gardens of Babylon in Spanish</p>
                 </div>
                 <div className="flex items-start">
-                  <div className="text-brand-600 mr-2">•</div>
+                  <div className="text-primary mr-2">•</div>
                   <p>Auld Lang Syne (by Robert Burns)</p>
                 </div>
               </div>
@@ -216,17 +215,17 @@ export default function Home() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="section-padding bg-brand-700 text-white">
+      <section className="section-padding bg-primary text-primary-foreground">
         <div className="container px-4 mx-auto text-center">
           <h2 className="text-3xl font-serif font-bold mb-4">
             Let us make your project real!
           </h2>
-          <p className="max-w-[600px] mx-auto mb-8 text-brand-100">
+          <p className="max-w-[600px] mx-auto mb-8 text-primary-foreground/80">
             Subscribe to our newsletter and never miss updates on new podcasts,
             events, and special broadcasts.
           </p>
           <Link href="/contact">
-            <Button className="bg-white hover:bg-brand-100 text-brand-700 px-8 py-6 text-lg">
+            <Button className="bg-background hover:bg-muted text-foreground px-8 py-6 text-lg">
               Contact
             </Button>
           </Link>

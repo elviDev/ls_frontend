@@ -9,17 +9,18 @@ const updateGuestSchema = z.object({
   role: z.string().min(1, "Guest role is required").optional(),
 });
 
-export const PATCH = adminOnly(async (req: Request, { params }: { params: { slug: string; guestId: string } }) => {
+export const PATCH = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string; guestId: string }> }) => {
   try {
+    const { slug, guestId } = await params;
     const body = await req.json();
     const data = updateGuestSchema.parse(body);
 
     // Check if broadcast and guest exist
     const broadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         guests: {
-          where: { id: params.guestId },
+          where: { id: guestId },
         },
       },
     });
@@ -34,7 +35,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { slug
 
     // Update guest
     const guest = await prisma.broadcastGuest.update({
-      where: { id: params.guestId },
+      where: { id: guestId },
       data: {
         ...(data.name && { name: data.name }),
         ...(data.title !== undefined && { title: data.title }),
@@ -55,14 +56,15 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { slug
   }
 });
 
-export const DELETE = adminOnly(async (req: Request, { params }: { params: { slug: string; guestId: string } }) => {
+export const DELETE = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string; guestId: string }> }) => {
   try {
+    const { slug, guestId } = await params;
     // Check if broadcast and guest exist
     const broadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         guests: {
-          where: { id: params.guestId },
+          where: { id: guestId },
         },
       },
     });
@@ -77,7 +79,7 @@ export const DELETE = adminOnly(async (req: Request, { params }: { params: { slu
 
     // Delete guest
     await prisma.broadcastGuest.delete({
-      where: { id: params.guestId },
+      where: { id: guestId },
     });
 
     return NextResponse.json({ message: "Guest removed successfully" });

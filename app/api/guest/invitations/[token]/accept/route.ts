@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth/getCurrentUser"
 
 // POST /api/guest/invitations/[token]/accept - Accept guest invitation
-export async function POST(req: Request, { params }: { params: { token: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
     const user = await getCurrentUser()
     
@@ -15,9 +15,10 @@ export async function POST(req: Request, { params }: { params: { token: string }
     }
 
     // Find the invitation
+    const { token } = await params;
     const invitation = await prisma.guestInvitation.findUnique({
       where: { 
-        invitationToken: params.token,
+        invitationToken: token,
         status: 'PENDING'
       }
     })

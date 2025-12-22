@@ -141,7 +141,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: Promis
           try {
             const guestsData = JSON.parse(guests)
             if (Array.isArray(guestsData) && guestsData.length > 0) {
-              updateData.guests = guestsData.map(guest => guest.name).join(', ')
+              updateData.guests = guestsData.map((guest: any) => guest.name).join(', ')
             } else {
               updateData.guests = null
             }

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { adminOnly } from '@/lib/auth/adminOnly'
-
+import { getCurrentUser } from "@/lib/auth/getCurrentUser"
 export async function GET() {
   try {
-    const user = await adminOnly()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -58,7 +58,7 @@ export async function GET() {
       totalDuration: totalDuration._sum.duration || 0,
       totalPlays: totalPlays._sum.playCount || 0,
       averageRating: avgRating._avg.rating || 0,
-      topGenres: topGenres.map(genre => ({
+      topGenres: topGenres.map((genre: any) => ({
         name: genre.name,
         count: genre._count.audiobooks
       }))

@@ -1,15 +1,26 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useState, useRef, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Play,
   Pause,
@@ -17,75 +28,73 @@ import {
   Plus,
   Trash2,
   Edit,
-  Clock,
   Volume2,
   Layers,
-  SkipForward,
-  SkipBack,
   RotateCcw,
   Save,
   Upload,
-  Download
-} from "lucide-react"
+} from "lucide-react";
 
 interface SoundEffect {
-  id: string
-  name: string
-  category: 'jingle' | 'transition' | 'effect' | 'voice' | 'music'
-  duration: number
-  volume: number
-  file: string
-  color?: string
+  id: string;
+  name: string;
+  category: "jingle" | "transition" | "effect" | "voice" | "music";
+  duration: number;
+  volume: number;
+  file: string;
+  color?: string;
 }
 
 interface SequenceItem {
-  id: string
-  soundId: string
-  startTime: number // seconds from sequence start
-  volume: number
-  fadeIn: number
-  fadeOut: number
-  crossfade: number
-  layer: number // 0 = main, 1+ = overlay layers
-  sound?: SoundEffect
+  id: string;
+  soundId: string;
+  startTime: number;
+  volume: number;
+  fadeIn: number;
+  fadeOut: number;
+  crossfade: number;
+  layer: number;
+  sound?: SoundEffect;
 }
 
 interface AudioSequencerProps {
-  sounds: SoundEffect[]
-  onSequencePlay: (sequence: SequenceItem[]) => void
-  onSequenceStop: () => void
+  sounds: SoundEffect[];
+  onSequencePlay: (sequence: SequenceItem[]) => void;
+  onSequenceStop: () => void;
 }
 
-export function AudioSequencer({ sounds, onSequencePlay, onSequenceStop }: AudioSequencerProps) {
-  const [sequence, setSequence] = useState<SequenceItem[]>([])
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [totalDuration, setTotalDuration] = useState(0)
-  const [selectedItem, setSelectedItem] = useState<string | null>(null)
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [zoom, setZoom] = useState(10) // pixels per second
-  const [previewingSound, setPreviewingSound] = useState<string | null>(null)
-  const [isLoadingSequence, setIsLoadingSequence] = useState(false)
-  
-  const timelineRef = useRef<HTMLDivElement>(null)
-  const playbackRef = useRef<NodeJS.Timeout>()
-  const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({})
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null)
-  const currentSequenceIndex = useRef<number>(0)
+export function AudioSequencer({
+  sounds,
+  onSequencePlay,
+  onSequenceStop,
+}: AudioSequencerProps) {
+  const [sequence, setSequence] = useState<SequenceItem[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [totalDuration, setTotalDuration] = useState(0);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [zoom, setZoom] = useState(10);
+  const [previewingSound, setPreviewingSound] = useState<string | null>(null);
+  const [isLoadingSequence, setIsLoadingSequence] = useState(false);
 
-  // Calculate total sequence duration
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const playbackRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
   useEffect(() => {
     const maxEndTime = sequence.reduce((max, item) => {
-      const sound = sounds.find(s => s.id === item.soundId)
-      const endTime = item.startTime + (sound?.duration || 0)
-      return Math.max(max, endTime)
-    }, 0)
-    setTotalDuration(maxEndTime)
-  }, [sequence, sounds])
+      const sound = sounds.find((s) => s.id === item.soundId);
+      const endTime = item.startTime + (sound?.duration || 0);
+      return Math.max(max, endTime);
+    }, 0);
+    setTotalDuration(maxEndTime);
+  }, [sequence, sounds]);
 
   const addToSequence = (soundId: string, startTime: number = currentTime) => {
-    const sound = sounds.find(s => s.id === soundId)
-    if (!sound) return
+    const sound = sounds.find((s) => s.id === soundId);
+    if (!sound) return;
 
     const newItem: SequenceItem = {
       id: Date.now().toString(),
@@ -96,167 +105,167 @@ export function AudioSequencer({ sounds, onSequencePlay, onSequenceStop }: Audio
       fadeOut: 0,
       crossfade: 0,
       layer: 0,
-      sound
-    }
+      sound,
+    };
 
-    setSequence(prev => [...prev, newItem].sort((a, b) => a.startTime - b.startTime))
-    setShowAddDialog(false)
-  }
+    setSequence((prev) =>
+      [...prev, newItem].sort((a, b) => a.startTime - b.startTime)
+    );
+    setShowAddDialog(false);
+  };
 
-  const updateSequenceItem = (itemId: string, updates: Partial<SequenceItem>) => {
-    setSequence(prev => prev.map(item => 
-      item.id === itemId ? { ...item, ...updates } : item
-    ))
-  }
+  const updateSequenceItem = (
+    itemId: string,
+    updates: Partial<SequenceItem>
+  ) => {
+    setSequence((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, ...updates } : item))
+    );
+  };
 
   const removeFromSequence = (itemId: string) => {
-    setSequence(prev => prev.filter(item => item.id !== itemId))
+    setSequence((prev) => prev.filter((item) => item.id !== itemId));
     if (selectedItem === itemId) {
-      setSelectedItem(null)
+      setSelectedItem(null);
     }
-  }
+  };
 
   const playSequence = async () => {
-    if (sequence.length === 0) return
+    if (sequence.length === 0) return;
 
-    setIsPlaying(true)
-    setCurrentTime(0)
-    
-    // Schedule all audio items
-    const scheduledItems = sequence.map(item => {
-      const sound = sounds.find(s => s.id === item.soundId)
-      if (!sound) return null
+    setIsPlaying(true);
+    setCurrentTime(0);
 
-      return {
-        ...item,
-        sound,
-        scheduledTime: item.startTime * 1000 // convert to milliseconds
-      }
-    }).filter(Boolean)
+    const scheduledItems = sequence
+      .map((item) => {
+        const sound = sounds.find((s) => s.id === item.soundId);
+        if (!sound) return null;
 
-    // Start playback timer
-    const startTime = Date.now()
-    playbackRef.current = setInterval(() => {
-      const elapsed = (Date.now() - startTime) / 1000
-      setCurrentTime(elapsed)
-
-      // Check for items to play
-      scheduledItems.forEach(item => {
-        if (!item) return
-        
-        const shouldPlay = elapsed >= item.startTime && elapsed < item.startTime + 0.1
-        if (shouldPlay) {
-          playScheduledItem(item)
-        }
+        return {
+          ...item,
+          sound,
+          scheduledTime: item.startTime * 1000,
+        };
       })
+      .filter(Boolean);
 
-      // Stop when sequence ends
+    const startTime = Date.now();
+    playbackRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      setCurrentTime(elapsed);
+
+      scheduledItems.forEach((item) => {
+        if (!item) return;
+
+        const shouldPlay =
+          elapsed >= item.startTime && elapsed < item.startTime + 0.1;
+        if (shouldPlay) {
+          playScheduledItem(item);
+        }
+      });
+
       if (elapsed >= totalDuration) {
-        stopSequence()
+        stopSequence();
       }
-    }, 100)
+    }, 100);
 
-    onSequencePlay(sequence)
-  }
+    onSequencePlay(sequence);
+  };
 
   const playScheduledItem = async (item: any) => {
     try {
       if (!audioRefs.current[item.id]) {
-        const audio = new Audio(item.sound.file)
-        audio.volume = (item.volume / 100) * (item.sound.volume / 100)
-        audioRefs.current[item.id] = audio
+        const audio = new Audio(item.sound.file);
+        audio.volume = (item.volume / 100) * (item.sound.volume / 100);
+        audioRefs.current[item.id] = audio;
       }
 
-      const audio = audioRefs.current[item.id]
-      
-      // Apply crossfade if specified
+      const audio = audioRefs.current[item.id];
+
       if (item.crossfade > 0) {
-        audio.volume = 0
-        audio.play()
-        
-        // Fade in
-        const fadeSteps = item.crossfade * 10
-        let step = 0
+        audio.volume = 0;
+        audio.play();
+
+        const fadeSteps = item.crossfade * 10;
+        let step = 0;
         const fadeInterval = setInterval(() => {
-          step++
-          const progress = step / fadeSteps
-          audio.volume = ((item.volume / 100) * (item.sound.volume / 100)) * progress
-          
+          step++;
+          const progress = step / fadeSteps;
+          audio.volume =
+            (item.volume / 100) * (item.sound.volume / 100) * progress;
+
           if (step >= fadeSteps) {
-            clearInterval(fadeInterval)
+            clearInterval(fadeInterval);
           }
-        }, 100)
+        }, 100);
       } else {
-        await audio.play()
+        await audio.play();
       }
     } catch (error) {
-      console.error('Error playing scheduled item:', error)
+      console.error("Error playing scheduled item:", error);
     }
-  }
+  };
 
   const stopSequence = () => {
-    setIsPlaying(false)
-    setCurrentTime(0)
-    
+    setIsPlaying(false);
+    setCurrentTime(0);
+
     if (playbackRef.current) {
-      clearInterval(playbackRef.current)
+      clearInterval(playbackRef.current);
     }
 
-    // Stop all audio
-    Object.values(audioRefs.current).forEach(audio => {
-      audio.pause()
-      audio.currentTime = 0
-    })
+    Object.values(audioRefs.current).forEach((audio) => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
 
-    onSequenceStop()
-  }
+    onSequenceStop();
+  };
 
   const previewSound = async (sound: SoundEffect) => {
-    // Stop any currently playing preview
     if (previewAudioRef.current) {
-      previewAudioRef.current.pause()
-      previewAudioRef.current = null
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
     }
 
     if (previewingSound === sound.id) {
-      setPreviewingSound(null)
-      return
+      setPreviewingSound(null);
+      return;
     }
 
     try {
-      const audio = new Audio(sound.file)
-      audio.volume = sound.volume / 100
-      previewAudioRef.current = audio
-      
-      setPreviewingSound(sound.id)
-      
-      audio.addEventListener('ended', () => {
-        setPreviewingSound(null)
-        previewAudioRef.current = null
-      })
-      
-      await audio.play()
+      const audio = new Audio(sound.file);
+      audio.volume = sound.volume / 100;
+      previewAudioRef.current = audio;
+
+      setPreviewingSound(sound.id);
+
+      audio.addEventListener("ended", () => {
+        setPreviewingSound(null);
+        previewAudioRef.current = null;
+      });
+
+      await audio.play();
     } catch (error) {
-      console.error('Error previewing sound:', error)
-      setPreviewingSound(null)
+      console.error("Error previewing sound:", error);
+      setPreviewingSound(null);
     }
-  }
+  };
 
   const stopPreview = () => {
     if (previewAudioRef.current) {
-      previewAudioRef.current.pause()
-      previewAudioRef.current = null
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
     }
-    setPreviewingSound(null)
-  }
+    setPreviewingSound(null);
+  };
 
   const loadSequentialSequence = () => {
-    if (sounds.length === 0) return
-    
-    setIsLoadingSequence(true)
-    
-    // Create a sequential sequence with all sounds
-    let currentTime = 0
+    if (sounds.length === 0) return;
+
+    setIsLoadingSequence(true);
+
+    let currentTime = 0;
     const sequentialItems: SequenceItem[] = sounds.map((sound, index) => {
       const item: SequenceItem = {
         id: `seq-${Date.now()}-${index}`,
@@ -267,456 +276,408 @@ export function AudioSequencer({ sounds, onSequencePlay, onSequenceStop }: Audio
         fadeOut: 0.5,
         crossfade: index > 0 ? 0.5 : 0,
         layer: 0,
-        sound
-      }
-      
-      currentTime += sound.duration
-      return item
-    })
-    
-    setSequence(sequentialItems)
-    setIsLoadingSequence(false)
-  }
+        sound,
+      };
 
-  const playSequentialMode = async () => {
-    if (sequence.length === 0) return
-    
-    setIsPlaying(true)
-    currentSequenceIndex.current = 0
-    setCurrentTime(0)
-    
-    const startTime = Date.now()
-    
-    // Start smooth playhead movement
-    playbackRef.current = setInterval(() => {
-      const elapsed = (Date.now() - startTime) / 1000
-      setCurrentTime(elapsed)
-      
-      if (elapsed >= totalDuration) {
-        stopSequence()
-      }
-    }, 50) // Update every 50ms for smooth movement
-    
-    const playNextInSequence = async () => {
-      if (currentSequenceIndex.current >= sequence.length) {
-        return
-      }
-      
-      const item = sequence[currentSequenceIndex.current]
-      const sound = sounds.find(s => s.id === item.soundId)
-      
-      if (!sound) {
-        currentSequenceIndex.current++
-        playNextInSequence()
-        return
-      }
-      
+      currentTime += sound.duration;
+      return item;
+    });
+
+    setSequence(sequentialItems);
+    setIsLoadingSequence(false);
+  };
+
+  const saveSequence = () => {
+    const sequenceData = {
+      sequence,
+      totalDuration,
+      created: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(sequenceData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sequence-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const loadSequence = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
       try {
-        const audio = new Audio(sound.file || sound.asset?.url)
-        audio.volume = (item.volume / 100)
-        audioRefs.current[item.id] = audio
-        
-        audio.onended = () => {
-          currentSequenceIndex.current++
-          playNextInSequence()
+        const data = JSON.parse(e.target?.result as string);
+        if (data.sequence) {
+          setSequence(data.sequence);
         }
-        
-        await audio.play()
       } catch (error) {
-        console.error('Error playing sequential sound:', error)
-        currentSequenceIndex.current++
-        playNextInSequence()
+        console.error("Error loading sequence:", error);
       }
-    }
-    
-    playNextInSequence()
-    onSequencePlay(sequence)
-  }
+    };
+    reader.readAsText(file);
+  };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const getItemPosition = (item: SequenceItem) => ({
-    left: item.startTime * zoom,
-    width: (item.sound?.duration || 0) * zoom,
-    top: item.layer * 40
-  })
-
-  const handleTimelineClick = (e: React.MouseEvent) => {
-    if (!timelineRef.current) return
-    
-    const rect = timelineRef.current.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const clickTime = clickX / zoom
-    setCurrentTime(clickTime)
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5" />
-            Audio Sequencer
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5" />
+              Audio Sequencer
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {formatTime(currentTime)} / {formatTime(totalDuration)}
+              </Badge>
+              <div className="flex items-center gap-1">
+                <Label htmlFor="zoom" className="text-sm">
+                  Zoom:
+                </Label>
+                <Slider
+                  id="zoom"
+                  min={5}
+                  max={50}
+                  step={5}
+                  value={[zoom]}
+                  onValueChange={(value) => setZoom(value[0])}
+                  className="w-20"
+                />
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">
-              {sequence.length} items • {formatTime(totalDuration)}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAddDialog(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Sound
-            </Button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Playback Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 mb-4">
             <Button
               onClick={isPlaying ? stopSequence : playSequence}
-              disabled={sequence.length === 0}
-              className="h-10 w-10 rounded-full"
+              variant={isPlaying ? "destructive" : "default"}
+              size="sm"
             >
               {isPlaying ? (
                 <Square className="h-4 w-4" />
               ) : (
-                <Play className="h-4 w-4 ml-0.5" />
+                <Play className="h-4 w-4" />
               )}
+              {isPlaying ? "Stop" : "Play"}
             </Button>
-            
             <Button
-              variant="outline"
-              size="icon"
               onClick={() => setCurrentTime(0)}
-              disabled={isPlaying}
+              variant="outline"
+              size="sm"
             >
               <RotateCcw className="h-4 w-4" />
             </Button>
-
-            <div className="text-sm font-mono">
-              {formatTime(currentTime)} / {formatTime(totalDuration)}
-            </div>
+            <div className="flex-1" />
+            <Button
+              onClick={loadSequentialSequence}
+              variant="outline"
+              size="sm"
+              disabled={isLoadingSequence}
+            >
+              <Plus className="h-4 w-4" />
+              Auto Sequence
+            </Button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Label className="text-sm">Zoom:</Label>
-            <Slider
-              value={[zoom]}
-              onValueChange={(value) => setZoom(value[0])}
-              min={5}
-              max={50}
-              step={5}
-              className="w-24"
-            />
-            <span className="text-xs text-gray-500">{zoom}px/s</span>
-          </div>
-        </div>
-
-        {/* Timeline */}
-        <div className="border rounded-lg bg-gray-50 overflow-hidden">
-          {/* Time ruler */}
-          <div className="h-8 bg-gray-100 border-b relative">
-            {Array.from({ length: Math.ceil(totalDuration) + 1 }, (_, i) => (
-              <div
-                key={i}
-                className="absolute top-0 h-full border-l border-gray-300 text-xs text-gray-600 pl-1"
-                style={{ left: i * zoom }}
-              >
-                {formatTime(i)}
-              </div>
-            ))}
-          </div>
-
-          {/* Timeline tracks */}
-          <div
-            ref={timelineRef}
-            className="relative h-64 overflow-auto cursor-crosshair"
-            onClick={handleTimelineClick}
-            style={{ minWidth: Math.max(800, totalDuration * zoom) }}
-          >
-            {/* Playhead */}
+          <div className="relative border rounded-lg bg-gray-50 dark:bg-gray-900 overflow-hidden">
             <div
-              className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none"
-              style={{ left: currentTime * zoom }}
-            />
-
-            {/* Layer guides */}
-            {Array.from({ length: 6 }, (_, i) => (
-              <div
-                key={i}
-                className="absolute w-full h-10 border-b border-gray-200"
-                style={{ top: i * 40 }}
-              >
-                <div className="text-xs text-gray-400 p-1">
-                  {i === 0 ? 'Main' : `Layer ${i}`}
-                </div>
-              </div>
-            ))}
-
-            {/* Sequence items */}
-            {sequence.map((item) => {
-              const position = getItemPosition(item)
-              const isSelected = selectedItem === item.id
-              
-              return (
-                <div
-                  key={item.id}
-                  className={`absolute h-8 rounded border-2 cursor-pointer transition-all ${
-                    isSelected 
-                      ? 'border-blue-500 bg-blue-100 shadow-lg' 
-                      : 'border-gray-300 bg-white hover:border-gray-400'
-                  }`}
-                  style={{
-                    left: position.left,
-                    width: Math.max(position.width, 60),
-                    top: position.top + 20
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setSelectedItem(item.id)
-                  }}
-                >
-                  <div className="p-1 text-xs truncate">
-                    <div className="font-medium">{item.sound?.name}</div>
-                    <div className="text-gray-500">
-                      {formatTime(item.startTime)} • {item.volume}%
-                    </div>
-                  </div>
-                  
-                  {/* Crossfade indicator */}
-                  {item.crossfade > 0 && (
+              ref={timelineRef}
+              className="relative h-32 overflow-x-auto"
+              style={{ width: Math.max(300, totalDuration * zoom) }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-6 border-b bg-white dark:bg-gray-800">
+                {Array.from(
+                  { length: Math.ceil(totalDuration) + 1 },
+                  (_, i) => (
                     <div
-                      className="absolute top-0 bottom-0 bg-yellow-200 opacity-50"
-                      style={{ width: item.crossfade * zoom }}
-                    />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Item Properties Panel */}
-        {selectedItem && (
-          <Card className="bg-blue-50 border-blue-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center justify-between">
-                <span>Edit Audio Item</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeFromSequence(selectedItem)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {(() => {
-                const item = sequence.find(i => i.id === selectedItem)
-                if (!item) return null
-
-                return (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <Label className="text-xs">Start Time (s)</Label>
-                      <Input
-                        type="number"
-                        value={item.startTime}
-                        onChange={(e) => updateSequenceItem(item.id, { 
-                          startTime: parseFloat(e.target.value) || 0 
-                        })}
-                        step="0.1"
-                        className="h-8"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label className="text-xs">Volume (%)</Label>
-                      <Input
-                        type="number"
-                        value={item.volume}
-                        onChange={(e) => updateSequenceItem(item.id, { 
-                          volume: parseInt(e.target.value) || 0 
-                        })}
-                        min="0"
-                        max="100"
-                        className="h-8"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label className="text-xs">Crossfade (s)</Label>
-                      <Input
-                        type="number"
-                        value={item.crossfade}
-                        onChange={(e) => updateSequenceItem(item.id, { 
-                          crossfade: parseFloat(e.target.value) || 0 
-                        })}
-                        step="0.1"
-                        min="0"
-                        className="h-8"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label className="text-xs">Layer</Label>
-                      <Select
-                        value={item.layer.toString()}
-                        onValueChange={(value) => updateSequenceItem(item.id, { 
-                          layer: parseInt(value) 
-                        })}
-                      >
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0">Main</SelectItem>
-                          <SelectItem value="1">Layer 1</SelectItem>
-                          <SelectItem value="2">Layer 2</SelectItem>
-                          <SelectItem value="3">Layer 3</SelectItem>
-                          <SelectItem value="4">Layer 4</SelectItem>
-                          <SelectItem value="5">Layer 5</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )
-              })()}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Add Sound Dialog */}
-        <Dialog open={showAddDialog} onOpenChange={(open) => {
-          setShowAddDialog(open)
-          if (!open) {
-            stopPreview()
-          }
-        }}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Sound to Sequence</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Start Time</Label>
-                <Input
-                  type="number"
-                  value={currentTime}
-                  onChange={(e) => setCurrentTime(parseFloat(e.target.value) || 0)}
-                  step="0.1"
-                  min="0"
-                />
-              </div>
-              
-              <ScrollArea className="h-64">
-                <div className="space-y-2">
-                  {sounds.map((sound) => (
-                    <div
-                      key={sound.id}
-                      className={`p-3 border rounded transition-colors ${
-                        previewingSound === sound.id 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:bg-gray-50'
-                      }`}
+                      key={i}
+                      className="absolute text-xs text-gray-500 flex items-center"
+                      style={{ left: i * zoom, top: 2 }}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium">{sound.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {sound.category} • {formatTime(sound.duration)}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{sound.volume}%</Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              previewSound(sound)
-                            }}
-                            className="h-8 w-8 p-0"
-                          >
-                            {previewingSound === sound.id ? (
-                              <Square className="h-3 w-3" />
-                            ) : (
-                              <Play className="h-3 w-3" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => addToSequence(sound.id, currentTime)}
-                          >
-                            Add
-                          </Button>
+                      {formatTime(i)}
+                    </div>
+                  )
+                )}
+              </div>
+
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10"
+                style={{ left: currentTime * zoom }}
+              />
+
+              <div className="absolute top-6 left-0 right-0 bottom-0">
+                {sequence.map((item, i) => {
+                  const sound = sounds.find((s) => s.id === item.soundId);
+                  if (!sound) return null;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`absolute h-8 rounded border-2 cursor-pointer transition-colors ${
+                        selectedItem === item.id
+                          ? "border-blue-500 bg-blue-100 dark:bg-blue-900"
+                          : "border-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      }`}
+                      style={{
+                        left: item.startTime * zoom,
+                        width: sound.duration * zoom,
+                        top: i * 32,
+                      }}
+                      onClick={() => setSelectedItem(item.id)}
+                    >
+                      <div className="px-2 py-1 text-xs truncate">
+                        <div className="font-medium">{sound.name}</div>
+                        <div className="text-gray-500">
+                          {formatTime(sound.duration)}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                  );
+                })}
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Sequence Actions */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              stopSequence()
-              setSequence([])
-            }}
-            disabled={sequence.length === 0}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Clear All
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={sequence.length === 0}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save Sequence
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadSequentialSequence}
-            disabled={sounds.length === 0 || isLoadingSequence}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {isLoadingSequence ? 'Loading...' : 'Load Sequential'}
-          </Button>
-          
-          <Button
-            variant="default"
-            size="sm"
-            onClick={playSequentialMode}
-            disabled={sequence.length === 0 || isPlaying}
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Play Sequential
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  )
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Volume2 className="h-5 w-5" />
+              Sound Library
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-64">
+              <div className="space-y-2">
+                {sounds.map((sound) => (
+                  <div
+                    key={sound.id}
+                    className="flex items-center justify-between p-2 border rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{sound.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {sound.category} • {formatTime(sound.duration)}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => previewSound(sound)}
+                      >
+                        {previewingSound === sound.id ? (
+                          <Pause className="h-3 w-3" />
+                        ) : (
+                          <Play className="h-3 w-3" />
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => addToSequence(sound.id, currentTime)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        {selectedItem &&
+          (() => {
+            const item = sequence.find((s) => s.id === selectedItem);
+            if (!item) return null;
+
+            const sound = sounds.find((s) => s.id === item.soundId);
+            if (!sound) return null;
+
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Edit className="h-5 w-5" />
+                      Item Properties
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeFromSequence(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="startTime">Start Time (seconds)</Label>
+                    <Input
+                      id="startTime"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={item.startTime}
+                      onChange={(e) =>
+                        updateSequenceItem(item.id, {
+                          startTime: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="volume">Volume (%)</Label>
+                    <Slider
+                      id="volume"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={[item.volume]}
+                      onValueChange={(value) =>
+                        updateSequenceItem(item.id, { volume: value[0] })
+                      }
+                    />
+                    <div className="text-sm text-gray-500 mt-1">
+                      {item.volume}%
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="fadeIn">Fade In (seconds)</Label>
+                    <Input
+                      id="fadeIn"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={item.fadeIn}
+                      onChange={(e) =>
+                        updateSequenceItem(item.id, {
+                          fadeIn: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="fadeOut">Fade Out (seconds)</Label>
+                    <Input
+                      id="fadeOut"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={item.fadeOut}
+                      onChange={(e) =>
+                        updateSequenceItem(item.id, {
+                          fadeOut: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
+      </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={saveSequence} variant="outline" className="flex-1">
+              <Save className="h-4 w-4 mr-2" />
+              Save Sequence
+            </Button>
+            <Button variant="outline" className="flex-1" asChild>
+              <label>
+                <Upload className="h-4 w-4 mr-2" />
+                Load Sequence
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={loadSequence}
+                  className="hidden"
+                />
+              </label>
+            </Button>
+            <Button
+              onClick={() => setSequence([])}
+              variant="outline"
+              className="flex-1"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear All
+            </Button>
+            <Button
+              onClick={stopPreview}
+              variant="outline"
+              className="flex-1"
+              disabled={!previewingSound}
+            >
+              <Square className="h-4 w-4 mr-2" />
+              Stop Preview
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Sound to Sequence</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Start Time (seconds)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.1"
+                value={currentTime}
+                onChange={(e) =>
+                  setCurrentTime(parseFloat(e.target.value) || 0)
+                }
+              />
+            </div>
+            <ScrollArea className="h-64">
+              <div className="space-y-2">
+                {sounds.map((sound) => (
+                  <div
+                    key={sound.id}
+                    className="flex items-center justify-between p-2 border rounded hover:bg-gray-50"
+                  >
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{sound.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {sound.category} • {formatTime(sound.duration)}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => addToSequence(sound.id, currentTime)}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

@@ -52,12 +52,12 @@ export const GET = adminOnly(async (req: Request, { params }: { params: Promise<
 
     // Calculate analytics
     const totalPlays = playbackData.length
-    const uniqueListeners = new Set(playbackData.map(p => p.userId)).size
+    const uniqueListeners = new Set(playbackData.map((p: any) => p.userId)).size
     const averageListenTime = playbackData.length > 0 
-      ? playbackData.reduce((sum, p) => sum + p.position, 0) / playbackData.length 
+      ? playbackData.reduce((sum: any, p: any) => sum + p.position, 0) / playbackData.length 
       : 0
     const completionRate = playbackData.length > 0
-      ? (playbackData.filter(p => p.position >= podcast.duration * 0.9).length / playbackData.length) * 100
+      ? (playbackData.filter((p: any) => p.position >= podcast.duration * 0.9).length / playbackData.length) * 100
       : 0
 
     // Generate mock daily plays data

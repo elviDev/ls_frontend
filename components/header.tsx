@@ -16,7 +16,12 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { Menu, X, Search, Radio } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 import { useMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthNav } from "@/components/auth/auth-nav";
@@ -48,7 +53,7 @@ export default function Header() {
           {/* <div className="h-10 w-10 rounded-full bg-brand-500 flex items-center justify-center">
             <span className="font-serif text-white text-lg font-bold">CB</span>
           </div> */}
-          <Radio className="h-8 w-8 text-brand-500" />
+          <Radio className="h-8 w-8 text-primary" />
           <span
             className={cn(
               "font-serif font-bold text-lg",
@@ -79,13 +84,13 @@ export default function Header() {
                       <li className="row-span-3">
                         <NavigationMenuLink asChild>
                           <a
-                            className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-brand-500 to-brand-700 p-6 no-underline outline-none focus:shadow-md"
+                            className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-primary to-primary/80 p-6 no-underline outline-none focus:shadow-md"
                             href="/live"
                           >
-                            <div className="mt-4 mb-2 text-lg font-medium text-white">
+                            <div className="mt-4 mb-2 text-lg font-medium text-primary-foreground">
                               Live Now
                             </div>
-                            <p className="text-sm leading-tight text-white/90">
+                            <p className="text-sm leading-tight text-primary-foreground/90">
                               Tune in to our live broadcast and join the
                               conversation
                             </p>
@@ -158,6 +163,7 @@ export default function Header() {
           </>
         ) : (
           <div className="flex items-center gap-2">
+            <AuthNav />
             <ThemeToggle />
             <Sheet>
               <SheetTrigger asChild>
@@ -165,9 +171,8 @@ export default function Header() {
                   <Menu
                     className={cn(
                       "h-5 w-5",
-                      isScrolled
-                        ? "text-foreground"
-                        : "text-white dark:text-white"
+
+                      "text-primary dark:text-white"
                     )}
                   />
                   <span className="sr-only">Toggle menu</span>
@@ -175,68 +180,85 @@ export default function Header() {
               </SheetTrigger>
               <SheetContent side="right">
                 <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between pb-4 border-b">
-                    <Link href="/" className="flex items-center space-x-2">
-                      <div className="h-8 w-8 rounded-full bg-brand-500 flex items-center justify-center">
-                        <span className="font-serif text-white text-sm font-bold">
-                          CB
+                  <div className="flex items-center justify-between pb-4 border-b border-border">
+                    <SheetClose asChild>
+                      <Link href="/" className="flex items-center space-x-2">
+                        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+                          <span className="font-serif text-primary-foreground text-sm font-bold">
+                            CB
+                          </span>
+                        </div>
+                        <span className="font-serif font-bold text-foreground">
+                          Cinema Book
                         </span>
-                      </div>
-                      <span className="font-serif font-bold">WaveStream</span>
-                    </Link>
-                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <X className="h-5 w-5" />
-                        <span className="sr-only">Close menu</span>
-                      </Button>
-                    </SheetTrigger>
+                      </Link>
+                    </SheetClose>
                   </div>
                   <nav className="flex flex-col gap-4 py-4">
-                    <Link href="/" className="px-2 py-1 text-lg font-medium">
-                      Home
-                    </Link>
-                    <Link
-                      href="/podcasts"
-                      className="px-2 py-1 text-lg font-medium"
-                    >
-                      Podcasts
-                    </Link>
-                    <Link
-                      href="/audiobooks"
-                      className="px-2 py-1 text-lg font-medium"
-                    >
-                      Audiobooks
-                    </Link>
-                    <Link
-                      href="/archives"
-                      className="px-2 py-1 text-lg font-medium"
-                    >
-                      Archives
-                    </Link>
-                    <Link
-                      href="/programs"
-                      className="px-2 py-1 text-lg font-medium"
-                    >
-                      Programs
-                    </Link>
-                    <Link
-                      href="/events"
-                      className="px-2 py-1 text-lg font-medium"
-                    >
-                      Events
-                    </Link>
-                    <Link
-                      href="/about"
-                      className="px-2 py-1 text-lg font-medium"
-                    >
-                      About
-                    </Link>
-                    <Link
-                      href="/contact"
-                      className="px-2 py-1 text-lg font-medium"
-                    >
-                      Contact
-                    </Link>
+                    <SheetClose asChild>
+                      <Link
+                        href="/"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        Home
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/podcasts"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        Podcasts
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/audiobooks"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        Audiobooks
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/archives"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        Archives
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/programs"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        Programs
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/events"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        Events
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/about"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        About
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="/contact"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        Contact
+                      </Link>
+                    </SheetClose>
                   </nav>
                   <div className="mt-auto">
                     <AuthNav />

@@ -123,7 +123,7 @@ export async function GET() {
       staff: liveBroadcast.staff,
       guests: liveBroadcast.guests,
       banner: liveBroadcast.banner,
-      streamUrl: `${process.env.NEXT_PUBLIC_REALTIME_SERVER_URL || WS_URL} /stream/broadcast/${liveBroadcast.id}/stream.mp3`,
+      streamUrl: `${process.env.NEXT_PUBLIC_SRS_URL || 'http://localhost:1985'}/live/${liveBroadcast.id}.m3u8`,
     };
 
     return NextResponse.json(programInfo);

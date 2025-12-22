@@ -38,10 +38,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Fetch current user on mount
+  // Fetch current user on mount with caching
   useEffect(() => {
     async function loadUserFromSession() {
       console.log("[AuthContext] Loading user session...")
+      
+      // Try to load from localStorage first
+      const cachedUser = localStorage.getItem('user_session')
+      const cacheTimestamp = localStorage.getItem('user_session_timestamp')
+      const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+      
+      if (cachedUser && cacheTimestamp) {
+        const isExpired = Date.now() - parseInt(cacheTimestamp) > CACHE_DURATION
+        
+        if (!isExpired) {
+          try {
+            const userData = JSON.parse(cachedUser)
+            setUser(userData)
+            setIsAuthenticated(true)
+            setLoading(false)
+            console.log("[AuthContext] Loaded user from cache:", userData.email)
+            return
+          } catch (error) {
+            console.error("[AuthContext] Failed to parse cached user data")
+            localStorage.removeItem('user_session')
+            localStorage.removeItem('user_session_timestamp')
+          }
+        }
+      }
+      
       setLoading(true)
       try {     
         const res = await fetch("/api/auth/session", {
@@ -52,23 +77,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         })
         
-        
         if (res.ok) {
           const data = await res.json()
           console.log("[AuthContext] Session response:", data)
           if (data.user) {
             setUser(data.user)
             setIsAuthenticated(true)
+            localStorage.setItem('user_session', JSON.stringify(data.user))
+            localStorage.setItem('user_session_timestamp', Date.now().toString())
             console.log("[AuthContext] User authenticated:", data.user.email)
           } else {
             setUser(null)
             setIsAuthenticated(false)
+            localStorage.removeItem('user_session')
+            localStorage.removeItem('user_session_timestamp')
             console.log("[AuthContext] No user found in session")
           }
         } else {
           console.log("[AuthContext] Session check failed with status:", res.status)
           setUser(null)
           setIsAuthenticated(false)
+          localStorage.removeItem('user_session')
+          localStorage.removeItem('user_session_timestamp')
         }
       } catch (error: any) {
         console.error("[AuthContext] Failed to load user session:", error.message)
@@ -77,6 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setUser(null)
         setIsAuthenticated(false)
+        localStorage.removeItem('user_session')
+        localStorage.removeItem('user_session_timestamp')
       } finally {
         setLoading(false)
       }
@@ -102,9 +134,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: data.error || "Login failed" }
       }
 
-      // Update state immediately
+      // Update state and cache
       setUser(data.user)
       setIsAuthenticated(true)
+      localStorage.setItem('user_session', JSON.stringify(data.user))
+      localStorage.setItem('user_session_timestamp', Date.now().toString())
       
       toast({
         title: "Welcome back!",
@@ -170,6 +204,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       setUser(null)
       setIsAuthenticated(false)
+      localStorage.removeItem('user_session')
+      localStorage.removeItem('user_session_timestamp')
       router.refresh()
       router.push("/signin")
       toast({
@@ -181,6 +217,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Still clear local state even if API call fails
       setUser(null)
       setIsAuthenticated(false)
+      localStorage.removeItem('user_session')
+      localStorage.removeItem('user_session_timestamp')
       router.push("/signin")
       toast({
         title: "Logout Error",

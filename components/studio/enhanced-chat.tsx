@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useChat } from "@/contexts/chat-context"
+import { useChat } from "@/contexts/chat"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,13 +45,15 @@ import {
 
 interface EnhancedChatProps {
   isLive: boolean
+  isBroadcastLive?: boolean
   hostId: string
   broadcastId: string
+  broadcastTitle?: string
   onMessageSend: (message: string, type?: string) => void
   onUserAction: (userId: string, action: string) => void
 }
 
-export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUserAction }: EnhancedChatProps) {
+export function EnhancedChat({ isLive, isBroadcastLive, hostId, broadcastId, broadcastTitle, onMessageSend, onUserAction }: EnhancedChatProps) {
   const {
     state,
     sendMessage,
@@ -162,12 +164,13 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
     }
   }
 
-  const handleMessageAction = (messageId: string, action: 'like' | 'dislike' | 'pin' | 'delete' | 'highlight') => {
+  const handleMessageAction = (messageId: string, action: 'like' | 'dislike' | 'pin' | 'unpin' | 'delete' | 'highlight') => {
     switch (action) {
       case 'like':
         likeMessage(messageId)
         break
       case 'pin':
+      case 'unpin':
       case 'delete':
       case 'highlight':
         moderateMessage(messageId, action)
@@ -252,29 +255,29 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
   const typingUsers = state.typingUsers.filter(typing => typing.broadcastId === broadcastId)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Pinned Message */}
       {pinnedMessage && (
         <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <Pin className="h-4 w-4 text-yellow-600 mt-1" />
-                <div>
+              <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                <Pin className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 mt-1 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-sm">{pinnedMessage.username}</span>
-                    <Badge variant="outline" className="text-xs">Pinned</Badge>
+                    <span className="font-medium text-xs sm:text-sm truncate">{pinnedMessage.username}</span>
+                    <Badge variant="outline" className="text-xs flex-shrink-0">Pinned</Badge>
                   </div>
-                  <p className="text-sm text-gray-700">{pinnedMessage.content}</p>
+                  <p className="text-xs sm:text-sm text-gray-700 break-words">{pinnedMessage.content}</p>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleMessageAction(pinnedMessage.id, 'pin')}
-                className="h-6 w-6 p-0"
+                onClick={() => handleMessageAction(pinnedMessage.id, 'unpin')}
+                className="h-5 w-5 sm:h-6 sm:w-6 p-0 flex-shrink-0"
               >
-                <Pin className="h-3 w-3" />
+                <Pin className="h-3 w-3 text-yellow-600" />
               </Button>
             </div>
           </CardContent>
@@ -283,65 +286,67 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
 
       {/* Main Chat */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Live Chat
-              <Badge variant="outline">{filteredMessages.length} messages</Badge>
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+              <span className="text-sm sm:text-base">Live Chat</span>
+              <Badge variant="outline" className="text-xs hidden sm:inline-flex">{filteredMessages.length} messages</Badge>
               {state.isConnected ? (
-                <Badge variant="default" className="bg-green-500">
-                  🟢 Connected
+                <Badge variant="default" className="bg-green-500 text-xs">
+                  🟢 <span className="hidden sm:inline">Connected</span>
                 </Badge>
               ) : (
-                <Badge variant="destructive">
-                  🔴 Disconnected
+                <Badge variant="destructive" className="text-xs">
+                  🔴 <span className="hidden sm:inline">Disconnected</span>
                 </Badge>
               )}
               {state.isBroadcastLive ? (
-                <Badge variant="default" className="bg-red-500 animate-pulse">
+                <Badge variant="default" className="bg-red-500 animate-pulse text-xs">
                   🎤 LIVE
                 </Badge>
               ) : (
-                <Badge variant="outline">
-                  📻 Offline
+                <Badge variant="outline" className="text-xs">
+                  📻 <span className="hidden sm:inline">Offline</span>
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowModerationPanel(!showModerationPanel)}
+                className="h-7 sm:h-8 px-2 sm:px-3"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline ml-1">Settings</span>
               </Button>
               {state.chatSettings.autoModeration && (
-                <Badge variant="secondary">Auto-Mod</Badge>
+                <Badge variant="secondary" className="text-xs hidden sm:inline-flex">Auto-Mod</Badge>
               )}
               {state.chatSettings.slowMode > 0 && (
-                <Badge variant="outline">
+                <Badge variant="outline" className="text-xs">
                   <Clock className="h-3 w-3 mr-1" />
                   {state.chatSettings.slowMode}s
                 </Badge>
               )}
               {typingUsers.length > 0 && (
-                <Badge variant="outline" className="animate-pulse">
+                <Badge variant="outline" className="animate-pulse text-xs">
                   {typingUsers.length} typing...
                 </Badge>
               )}
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6">
           {/* Moderation Panel */}
           {showModerationPanel && (
-            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-medium">Slow Mode</label>
                   <Select value={state.chatSettings.slowMode.toString()} onValueChange={(value) => updateSettings({ ...state.chatSettings, slowMode: parseInt(value) })}>
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="h-7 sm:h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -359,12 +364,12 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
                     variant={state.chatSettings.autoModeration ? "default" : "outline"}
                     size="sm"
                     onClick={() => updateSettings({ ...state.chatSettings, autoModeration: !state.chatSettings.autoModeration })}
-                    className="w-full h-8 text-xs"
+                    className="w-full h-7 sm:h-8 text-xs"
                   >
                     {state.chatSettings.autoModeration ? 'On' : 'Off'}
                   </Button>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 sm:col-span-2 lg:col-span-1">
                   <label className="text-xs font-medium">Search</label>
                   <div className="relative">
                     <Search className="absolute left-2 top-1.5 h-3 w-3 text-gray-400" />
@@ -372,7 +377,7 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
                       placeholder="Search messages..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="h-8 pl-7 text-xs"
+                      className="h-7 sm:h-8 pl-7 text-xs"
                     />
                   </div>
                 </div>
@@ -381,10 +386,10 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full h-8 text-xs"
+                    className="w-full h-7 sm:h-8 text-xs"
                   >
                     <Filter className="h-3 w-3 mr-1" />
-                    Configure
+                    <span className="hidden sm:inline">Configure</span>
                   </Button>
                 </div>
               </div>
@@ -392,38 +397,38 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
           )}
 
           {/* Chat Messages */}
-          <ScrollArea className="h-96 pr-4">
-            <div className="space-y-3">
+          <ScrollArea className="h-64 sm:h-96 pr-2 sm:pr-4">
+            <div className="space-y-2 sm:space-y-3">
               {filteredMessages.map((message) => {
                 const RoleIcon = getRoleIcon(message.messageType)
                 return (
                   <div
                     key={message.id}
-                    className={`p-3 rounded-lg transition-colors ${getMessageTypeColor(message.messageType)} ${
+                    className={`p-2 sm:p-3 rounded-lg transition-colors ${getMessageTypeColor(message.messageType)} ${
                       message.isHighlighted ? 'ring-2 ring-blue-200' : ''
                     } ${message.isModerated ? 'opacity-50' : ''}`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <Avatar className="h-8 w-8">
+                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                        <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
                           <AvatarFallback className="text-xs">
                             {message.username.substring(0, 2)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-medium text-sm ${getRoleColor(message.messageType)}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 sm:gap-2 mb-1 flex-wrap">
+                            <span className={`font-medium text-xs sm:text-sm ${getRoleColor(message.messageType)} truncate`}>
                               {message.username}
                             </span>
-                            {RoleIcon && <RoleIcon className={`h-3 w-3 ${getRoleColor(message.messageType)}`} />}
-                            <span className="text-xs text-gray-500">
+                            {RoleIcon && <RoleIcon className={`h-3 w-3 ${getRoleColor(message.messageType)} flex-shrink-0`} />}
+                            <span className="text-xs text-gray-500 flex-shrink-0">
                               {message.timestamp.toLocaleTimeString()}
                             </span>
                             {message.isPinned && (
-                              <Pin className="h-3 w-3 text-yellow-600" />
+                              <Pin className="h-3 w-3 text-yellow-600 flex-shrink-0" />
                             )}
                           </div>
-                          <p className="text-sm text-gray-700 mb-2">{message.content}</p>
+                          <p className="text-xs sm:text-sm text-gray-700 mb-2 break-words">{message.content}</p>
                           
                           {/* Emoji Reactions */}
                           {Object.keys(message.emojis).length > 0 && (
@@ -437,15 +442,15 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
                           )}
 
                           {/* Message Actions */}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 sm:gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleMessageAction(message.id, 'like')}
-                              className="h-6 px-2 text-xs"
+                              className="h-5 sm:h-6 px-1 sm:px-2 text-xs"
                             >
-                              <Heart className={`h-3 w-3 mr-1 ${message.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                              {message.likes > 0 && message.likes}
+                              <Heart className={`h-3 w-3 ${message.isLiked ? 'fill-red-500 text-red-500' : ''} ${message.likes > 0 ? 'mr-1' : ''}`} />
+                              {message.likes > 0 && <span className="hidden sm:inline">{message.likes}</span>}
                             </Button>
                             
                             {message.messageType === 'user' && (
@@ -453,16 +458,16 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleMessageAction(message.id, 'pin')}
-                                  className="h-6 px-2 text-xs"
+                                  onClick={() => handleMessageAction(message.id, message.isPinned ? 'unpin' : 'pin')}
+                                  className="h-5 sm:h-6 px-1 sm:px-2 text-xs"
                                 >
-                                  <Pin className="h-3 w-3" />
+                                  <Pin className={`h-3 w-3 ${message.isPinned ? 'text-yellow-600' : ''}`} />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => moderateMessage(message.id, 'delete')}
-                                  className="h-6 px-2 text-xs text-red-600"
+                                  className="h-5 sm:h-6 px-1 sm:px-2 text-xs text-red-600"
                                 >
                                   <Flag className="h-3 w-3" />
                                 </Button>
@@ -481,9 +486,9 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
 
           {/* Message Input */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Select value={selectedMessageType} onValueChange={setSelectedMessageType}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full sm:w-32 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -503,16 +508,16 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
                   ref={chatInputRef}
                   placeholder={
                     !state.isConnected 
-                      ? "Connecting to chat..." 
+                      ? "Connecting..." 
                       : !state.isBroadcastLive 
-                        ? "Broadcast is offline. Messages available when live..." 
-                        : "Send a message to listeners..."
+                        ? "Offline - Messages when live" 
+                        : "Send message to listeners..."
                   }
                   value={newMessage}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   disabled={!state.isConnected}
-                  className={selectedMessageType === 'announcement' ? 'border-red-300' : ''}
+                  className={`h-9 text-sm ${selectedMessageType === 'announcement' ? 'border-red-300' : ''}`}
                 />
                 {selectedMessageType === 'announcement' && (
                   <Megaphone className="absolute right-3 top-2.5 h-4 w-4 text-red-500" />
@@ -522,9 +527,9 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
               <Button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || !state.isConnected}
-                className={selectedMessageType === 'announcement' ? 'bg-red-600 hover:bg-red-700' : ''}
+                className={`h-9 px-3 ${selectedMessageType === 'announcement' ? 'bg-red-600 hover:bg-red-700' : ''}`}
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
             
@@ -547,35 +552,35 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
 
       {/* Active Users */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center justify-between text-sm sm:text-base">
             <span>Active Users ({state.users.length})</span>
-            <Badge variant="outline">{state.users.filter(u => u.isOnline).length} active</Badge>
+            <Badge variant="outline" className="text-xs">{state.users.filter(u => u.isOnline).length} active</Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-32">
-            <div className="space-y-2">
+        <CardContent className="p-3 sm:p-6">
+          <ScrollArea className="h-24 sm:h-32">
+            <div className="space-y-1 sm:space-y-2">
               {state.users.slice(0, 10).map((user) => {
                 const RoleIcon = getRoleIcon(user.role)
                 return (
                   <div key={user.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Avatar className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0">
                         <AvatarFallback className="text-xs">{user.username.substring(0, 2)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">{user.username}</span>
-                      {RoleIcon && <RoleIcon className={`h-3 w-3 ${getRoleColor(user.role)}`} />}
-                      {!user.isOnline && <VolumeX className="h-3 w-3 text-gray-400" />}
+                      <span className="text-xs sm:text-sm font-medium truncate">{user.username}</span>
+                      {RoleIcon && <RoleIcon className={`h-3 w-3 ${getRoleColor(user.role)} flex-shrink-0`} />}
+                      {!user.isOnline && <VolumeX className="h-3 w-3 text-gray-400 flex-shrink-0" />}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       {user.role === 'listener' && (
                         <>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleUserAction(user.id, 'mute')}
-                            className="h-6 w-6 p-0"
+                            className="h-5 w-5 sm:h-6 sm:w-6 p-0"
                           >
                             <VolumeX className="h-3 w-3" />
                           </Button>
@@ -583,7 +588,7 @@ export function EnhancedChat({ isLive, hostId, broadcastId, onMessageSend, onUse
                             variant="ghost"
                             size="sm"
                             onClick={() => handleUserAction(user.id, 'ban')}
-                            className="h-6 w-6 p-0 text-red-600"
+                            className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-red-600"
                           >
                             <Ban className="h-3 w-3" />
                           </Button>

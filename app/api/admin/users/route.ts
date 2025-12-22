@@ -130,7 +130,7 @@ export async function GET(req: Request) {
     };
 
     // Transform users data
-    const transformedUsers = users.map(user => ({
+    const transformedUsers = users.map((user: any) => ({
       ...user,
       activityCount: user._count.comments + user._count.reviews + user._count.playlists,
       joinedAt: user.createdAt.toISOString(),

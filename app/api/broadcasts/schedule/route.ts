@@ -40,7 +40,7 @@ export async function GET() {
     })
 
     // Transform the data to match the current schedule format
-    const schedule = scheduledBroadcasts.map(broadcast => {
+    const schedule = scheduledBroadcasts.map((broadcast: any) => {
       const startTime = new Date(broadcast.startTime)
       const endTime = broadcast.endTime ? new Date(broadcast.endTime) : null
       

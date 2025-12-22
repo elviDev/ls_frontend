@@ -13,9 +13,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User, Settings, LayoutDashboard } from "lucide-react";
+import { useState } from "react";
 
 export function AuthNav() {
   const { user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  const handleLinkClick = () => {
+    setOpen(false);
+  };
 
   if (!user) {
     return (
@@ -31,7 +37,7 @@ export function AuthNav() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <Avatar className="h-8 w-8">
@@ -48,7 +54,7 @@ export function AuthNav() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56" align="end" side="bottom" forceMount>
         <DropdownMenuLabel>
           {user.name}
           <br />
@@ -56,27 +62,27 @@ export function AuthNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {user.role && user.role !== 'USER' && (
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLinkClick}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <Link href="/dashboard" className="w-full">
               Dashboard
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLinkClick}>
           <User className="mr-2 h-4 w-4" />
           <Link href="/profile" className="w-full">
             Profile
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLinkClick}>
           <Settings className="mr-2 h-4 w-4" />
           <Link href="/settings" className="w-full">
             Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout}>
+        <DropdownMenuItem onClick={() => { handleLinkClick(); logout(); }}>
           <LogOut className="mr-2 h-4 w-4" />
           Log out
         </DropdownMenuItem>

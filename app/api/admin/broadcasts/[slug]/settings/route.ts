@@ -18,10 +18,11 @@ const updateSettingsSchema = z.object({
   streamDelay: z.number().min(0).max(60).optional(),
 });
 
-export const GET = adminOnly(async (req: Request, { params }: { params: { slug: string } }) => {
+export const GET = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   try {
+    const { slug } = await params;
     const broadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: {
         id: true,
         autoRecord: true,
@@ -53,14 +54,15 @@ export const GET = adminOnly(async (req: Request, { params }: { params: { slug: 
   }
 });
 
-export const PATCH = adminOnly(async (req: Request, { params }: { params: { slug: string } }) => {
+export const PATCH = adminOnly(async (req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   try {
+    const { slug } = await params;
     const body = await req.json();
     const data = updateSettingsSchema.parse(body);
 
     // Check if broadcast exists
     const existingBroadcast = await prisma.liveBroadcast.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!existingBroadcast) {
@@ -69,7 +71,7 @@ export const PATCH = adminOnly(async (req: Request, { params }: { params: { slug
 
     // Update broadcast settings
     const broadcast = await prisma.liveBroadcast.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: {
         ...(data.autoRecord !== undefined && { autoRecord: data.autoRecord }),
         ...(data.chatEnabled !== undefined && { chatEnabled: data.chatEnabled }),

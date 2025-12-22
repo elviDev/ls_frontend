@@ -1,20 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
-import { Role } from "@prisma/client";
 import { uploadToS3 } from "@/lib/storage/uploadToS3";
 import { deleteFromS3 } from "@/lib/storage/deleteFromS3";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getCurrentUser();
-  if (!user || user.role !== Role.ADMIN) {
+  if (!user || user.role !== 'ADMIN') {
     return new NextResponse("Unauthorized", { status: 403 });
   }
 
-  const genre = await prisma.genre.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const genre = await prisma.genre.findUnique({ where: { id } });
   if (!genre) return new NextResponse("Genre not found", { status: 404 });
 
   const formData = await req.formData();
@@ -46,7 +46,7 @@ export async function PATCH(
   }
 
   const updated = await prisma.genre.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       name: name || undefined,
       slug: slug || undefined,
@@ -60,9 +60,9 @@ export async function PATCH(
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get("slug") || undefined;
   const genre = await prisma.genre.findFirst({

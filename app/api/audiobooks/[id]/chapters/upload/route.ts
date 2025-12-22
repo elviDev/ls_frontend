@@ -7,7 +7,7 @@ import { getAudioDuration } from "@/lib/audio/getAudioDuration";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getCurrentUser();
   if (!user) {
@@ -33,8 +33,9 @@ export async function POST(
     );
   }
 
+  const { id } = await params;
   const audiobook = await prisma.audiobook.findUnique({
-    where: { id: params.id },
+    where: { id },
     select: {
       id: true,
       status: true,

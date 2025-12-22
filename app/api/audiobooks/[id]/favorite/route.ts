@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getCurrentUser();
   if (!user) {
@@ -12,7 +12,7 @@ export async function POST(
   }
 
   const userId = user.id;
-  const audiobookId = params.id;
+  const { id: audiobookId } = await params;
 
   try {
     const existing = await prisma.favorite.findUnique({
