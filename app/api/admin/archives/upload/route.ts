@@ -12,7 +12,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await staffOnly(user);
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 });
+    }
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -138,7 +142,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await staffOnly(user);
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 });
+    }
 
     const formData = await request.formData();
     const files = formData.getAll("files") as File[];

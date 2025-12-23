@@ -1,73 +1,68 @@
-// Studio Controller - Main interface for radio broadcasting
-// Handles multiple hosts, guests, callers, and audio mixing
+// Studio Controller - Main interface for radio broadcasting using SRS
+// Handles multiple hosts, guests, and audio mixing with HLS streaming
 
-import { UnifiedAudioSystem, AudioSource, AudioMetrics } from './unified-audio-system'
+import { SRSStudio } from '@/contexts/broadcast/studio/srs-studio'
+import { SRSBroadcaster } from '@/contexts/broadcast/streaming/srs-broadcaster'
 
 export interface StudioConfig {
   broadcastId: string
   stationName: string
   maxHosts: number
   maxGuests: number
-  maxCallers: number
 }
 
 export interface HostConfig {
   id: string
   name: string
   role: 'main' | 'co-host'
-  microphoneId?: string
   volume: number
 }
 
 export interface GuestConfig {
   id: string
   name: string
-  type: 'guest' | 'caller'
   volume: number
 }
 
 export class StudioController {
-  private audioSystem: UnifiedAudioSystem
+  private srsStudio: SRSStudio
   private config: StudioConfig
   private hosts = new Map<string, HostConfig>()
   private guests = new Map<string, GuestConfig>()
   private isLive = false
-  private mainMicVolume = 1.0
-  private guestMicVolume = 0.8
 
   constructor(config: StudioConfig) {
     this.config = config
-    this.audioSystem = new UnifiedAudioSystem({
-      broadcastId: config.broadcastId,
-      sampleRate: 48000,
-      channels: 2,
-      bitrate: 128000,
-      maxSources: config.maxHosts + config.maxGuests + config.maxCallers + 2 // +2 for music/effects
-    })
+    this.srsStudio = new SRSStudio(
+      process.env.NEXT_PUBLIC_SRS_URL || 'http://localhost:1985',
+      config.broadcastId,
+      {
+        onStateChange: (state) => {
+          this.isLive = state === 'streaming'
+          this.onBroadcastStateChange?.(state === 'streaming' ? 'live' : 'stopped')
+        },
+        onError: (error) => {
+          console.error('Studio error:', error)
+        }
+      }
+    )
 
     this.setupEventHandlers()
   }
 
   private setupEventHandlers(): void {
-    this.audioSystem.onMetricsUpdate = (metrics: AudioMetrics) => {
-      this.onAudioMetrics?.(metrics)
-    }
-
-    this.audioSystem.onSourceRequest = (data: any) => {
-      this.handleSourceRequest(data)
-    }
+    // Event handlers are now set up in the constructor
   }
 
   // Initialize the studio
   async initialize(): Promise<void> {
     try {
       console.log('🎙️ Initializing studio controller...')
-      await this.audioSystem.initialize()
+      await this.srsStudio.initialize()
       console.log('🎙️ Studio controller initialized successfully')
     } catch (error) {
       console.error('Failed to initialize studio:', error)
-      // Don't throw error - allow studio to work without full audio system
-      console.warn('🎙️ Studio will continue with limited functionality')
+      throw error
     }
   }
 
@@ -80,17 +75,29 @@ export class StudioController {
     try {
       console.log(`🎤 Adding host: ${hostConfig.name} (${hostConfig.role})`)
       
-      // Add as audio source (microphone access handled inside)
-      await this.audioSystem.addAudioSource({
-        id: `host_${hostConfig.id}`,
-        type: 'host',
-        name: hostConfig.name,
-        volume: hostConfig.volume,
-        isMuted: false,
-        isActive: true,
-        priority: hostConfig.role === 'main' ? 10 : 8
+      // SRSStudio uses addUser method
+      await this.srsStudio.addUser({
+        id: hostConfig.id,
+        username: hostConfig.name,
+        role: 'host',
+        permissions: {
+          canControlMixer: true,
+          canManageGuests: true,
+          canPlayMedia: true,
+          canModerateChat: false
+        },
+        audioChannel: {
+          id: hostConfig.id,
+          name: hostConfig.name,
+          type: 'master',
+          volume: hostConfig.volume,
+          isMuted: false,
+          isActive: true,
+          eq: { high: 0, mid: 0, low: 0 },
+          effects: { compressor: false, reverb: 0, gate: false }
+        },
+        isConnected: true
       })
-
       this.hosts.set(hostConfig.id, hostConfig)
       console.log(`🎤 Successfully added host: ${hostConfig.name} (${hostConfig.role})`)
     } catch (error) {
@@ -106,19 +113,31 @@ export class StudioController {
     }
 
     try {
-      // Add as audio source (microphone access handled inside for guests)
-      await this.audioSystem.addAudioSource({
-        id: `guest_${guestConfig.id}`,
-        type: 'guest',
-        name: guestConfig.name,
-        volume: guestConfig.volume,
-        isMuted: false,
-        isActive: true,
-        priority: 5
+      // SRSStudio uses addUser method
+      await this.srsStudio.addUser({
+        id: guestConfig.id,
+        username: guestConfig.name,
+        role: 'guest',
+        permissions: {
+          canControlMixer: false,
+          canManageGuests: false,
+          canPlayMedia: false,
+          canModerateChat: false
+        },
+        audioChannel: {
+          id: guestConfig.id,
+          name: guestConfig.name,
+          type: 'guest',
+          volume: guestConfig.volume,
+          isMuted: false,
+          isActive: true,
+          eq: { high: 0, mid: 0, low: 0 },
+          effects: { compressor: false, reverb: 0, gate: false }
+        },
+        isConnected: true
       })
-
       this.guests.set(guestConfig.id, guestConfig)
-      console.log(`👥 Added guest: ${guestConfig.name} (${guestConfig.type})`)
+      console.log(`👥 Added guest: ${guestConfig.name}`)
     } catch (error) {
       console.error(`Failed to add guest ${guestConfig.name}:`, error)
       throw error
@@ -129,7 +148,7 @@ export class StudioController {
   removeHost(hostId: string): void {
     const host = this.hosts.get(hostId)
     if (host) {
-      this.audioSystem.removeAudioSource(`host_${hostId}`)
+      this.srsStudio.removeUser(hostId)
       this.hosts.delete(hostId)
       console.log(`🔇 Removed host: ${host.name}`)
     }
@@ -139,71 +158,42 @@ export class StudioController {
   removeGuest(guestId: string): void {
     const guest = this.guests.get(guestId)
     if (guest) {
-      this.audioSystem.removeAudioSource(`guest_${guestId}`)
+      this.srsStudio.removeUser(guestId)
       this.guests.delete(guestId)
       console.log(`🔇 Removed guest: ${guest.name}`)
     }
   }
 
-  // Control main microphone volume (affects all hosts)
-  setMainMicVolume(volume: number): void {
-    this.mainMicVolume = Math.max(0, Math.min(1, volume))
-    
-    // Update all host volumes
-    for (const [hostId, host] of this.hosts) {
-      const effectiveVolume = host.volume * this.mainMicVolume
-      this.audioSystem.updateAudioSource(`host_${hostId}`, { volume: effectiveVolume })
-    }
-
-    console.log(`🎚️ Main mic volume set to ${Math.round(this.mainMicVolume * 100)}%`)
-  }
-
-  // Control guest microphone volume (affects all guests)
-  setGuestMicVolume(volume: number): void {
-    this.guestMicVolume = Math.max(0, Math.min(1, volume))
-    
-    // Update all guest volumes
-    for (const [guestId, guest] of this.guests) {
-      const effectiveVolume = guest.volume * this.guestMicVolume
-      this.audioSystem.updateAudioSource(`guest_${guestId}`, { volume: effectiveVolume })
-    }
-
-    console.log(`🎚️ Guest mic volume set to ${Math.round(this.guestMicVolume * 100)}%`)
-  }
-
-  // Mute/unmute a specific source
-  muteSource(sourceId: string, muted: boolean): void {
-    // Determine the full source ID
-    let fullSourceId = sourceId
-    if (this.hosts.has(sourceId)) {
-      fullSourceId = `host_${sourceId}`
-    } else if (this.guests.has(sourceId)) {
-      fullSourceId = `guest_${sourceId}`
-    }
-
-    this.audioSystem.updateAudioSource(fullSourceId, { isMuted: muted })
-    console.log(`${muted ? '🔇' : '🔊'} ${muted ? 'Muted' : 'Unmuted'} source: ${sourceId}`)
-  }
-
-  // Set individual source volume
-  setSourceVolume(sourceId: string, volume: number): void {
-    let fullSourceId = sourceId
-    if (this.hosts.has(sourceId)) {
-      fullSourceId = `host_${sourceId}`
-      const host = this.hosts.get(sourceId)!
+  // Set host volume
+  setHostVolume(hostId: string, volume: number): void {
+    const host = this.hosts.get(hostId)
+    if (host) {
       host.volume = volume
-      // Apply main mic volume multiplier
-      volume *= this.mainMicVolume
-    } else if (this.guests.has(sourceId)) {
-      fullSourceId = `guest_${sourceId}`
-      const guest = this.guests.get(sourceId)!
-      guest.volume = volume
-      // Apply guest mic volume multiplier
-      volume *= this.guestMicVolume
+      this.srsStudio.updateChannelSettings(hostId, { volume })
+      console.log(`🎚️ Set volume for ${host.name}: ${Math.round(volume * 100)}%`)
     }
+  }
 
-    this.audioSystem.updateAudioSource(fullSourceId, { volume })
-    console.log(`🎚️ Set volume for ${sourceId}: ${Math.round(volume * 100)}%`)
+  // Set guest volume
+  setGuestVolume(guestId: string, volume: number): void {
+    const guest = this.guests.get(guestId)
+    if (guest) {
+      guest.volume = volume
+      this.srsStudio.updateChannelSettings(guestId, { volume })
+      console.log(`🎚️ Set volume for ${guest.name}: ${Math.round(volume * 100)}%`)
+    }
+  }
+
+  // Mute/unmute a host
+  muteHost(hostId: string, muted: boolean): void {
+    this.srsStudio.updateChannelSettings(hostId, { isMuted: muted })
+    console.log(`${muted ? '🔇' : '🔊'} ${muted ? 'Muted' : 'Unmuted'} host: ${hostId}`)
+  }
+
+  // Mute/unmute a guest
+  muteGuest(guestId: string, muted: boolean): void {
+    this.srsStudio.updateChannelSettings(guestId, { isMuted: muted })
+    console.log(`${muted ? '🔇' : '🔊'} ${muted ? 'Muted' : 'Unmuted'} guest: ${guestId}`)
   }
 
   // Start the live broadcast
@@ -218,10 +208,9 @@ export class StudioController {
 
     try {
       console.log('📻 Starting live broadcast...')
-      await this.audioSystem.startBroadcast()
+      await this.srsStudio.startStreaming()
       this.isLive = true
       console.log('📻 Live broadcast started successfully')
-      this.onBroadcastStateChange?.('live')
     } catch (error) {
       console.error('Failed to start broadcast:', error)
       throw error
@@ -232,45 +221,9 @@ export class StudioController {
   stopBroadcast(): void {
     if (!this.isLive) return
 
-    this.audioSystem.stopBroadcast()
+    this.srsStudio.stopStreaming()
     this.isLive = false
     console.log('🛑 Live broadcast stopped')
-    this.onBroadcastStateChange?.('stopped')
-  }
-
-  // Handle incoming call requests
-  private handleSourceRequest(data: any): void {
-    if (data.type === 'call-request') {
-      this.onCallRequest?.(data)
-    }
-  }
-
-  // Accept an incoming call
-  async acceptCall(callData: any): Promise<void> {
-    if (this.guests.size >= this.config.maxGuests) {
-      throw new Error('Maximum number of guests/callers reached')
-    }
-
-    try {
-      // Add caller as guest
-      await this.addGuest({
-        id: callData.callerId,
-        name: callData.callerName || 'Caller',
-        type: 'caller',
-        volume: 0.8
-      })
-
-      console.log(`📞 Accepted call from ${callData.callerName}`)
-    } catch (error) {
-      console.error('Failed to accept call:', error)
-      throw error
-    }
-  }
-
-  // End a call
-  endCall(callerId: string): void {
-    this.removeGuest(callerId)
-    console.log(`📞 Ended call with ${callerId}`)
   }
 
   // Get current studio status
@@ -279,10 +232,7 @@ export class StudioController {
       isLive: this.isLive,
       hosts: Array.from(this.hosts.values()),
       guests: Array.from(this.guests.values()),
-      audioSources: this.audioSystem.getAudioSources(),
-      metrics: this.audioSystem.getMetrics(),
-      mainMicVolume: this.mainMicVolume,
-      guestMicVolume: this.guestMicVolume
+      streamUrl: `${process.env.NEXT_PUBLIC_SRS_URL || 'http://localhost:1985'}/live/${this.config.broadcastId}.m3u8`
     }
   }
 
@@ -300,7 +250,7 @@ export class StudioController {
   // Cleanup
   cleanup(): void {
     this.stopBroadcast()
-    this.audioSystem.cleanup()
+    this.srsStudio.cleanup()
     this.hosts.clear()
     this.guests.clear()
     console.log('🧹 Studio controller cleaned up')
@@ -308,8 +258,6 @@ export class StudioController {
 
   // Event callbacks
   public onBroadcastStateChange?: (state: 'live' | 'stopped') => void
-  public onAudioMetrics?: (metrics: AudioMetrics) => void
-  public onCallRequest?: (callData: any) => void
 }
 
 // Helper function to create a studio controller

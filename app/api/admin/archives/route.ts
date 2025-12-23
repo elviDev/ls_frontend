@@ -10,7 +10,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await staffOnly(user);
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 });
+    }
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -191,7 +195,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await staffOnly(user);
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 });
+    }
 
     const data = await request.json();
 

@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { hashPassword } from "./auth/authUtils";
+import bcrypt from "bcryptjs";
 
 export async function initializeDatabase() {
   try {
@@ -12,21 +12,13 @@ export async function initializeDatabase() {
       console.log("No users found. Creating sample user...");
 
       // Create a sample admin user
-      const hashedPassword = await hashPassword("password123");
+      const hashedPassword = await bcrypt.hash("password123", 10);
 
       const admin = await prisma.user.create({
         data: {
           name: "Admin User",
           email: "admin@example.com",
           password: hashedPassword,
-          role: "admin",
-        },
-      });
-
-      // Create user data for admin
-      await prisma.userData.create({
-        data: {
-          userId: admin.id,
         },
       });
 

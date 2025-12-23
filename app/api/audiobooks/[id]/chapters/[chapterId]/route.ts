@@ -26,11 +26,11 @@ export const PATCH = async (
     const chapter = await prisma.chapter.findUnique({
       where: { id: chapterId },
       include: {
-        audiobook: { select: { authorId: true } },
+        audiobook: { select: { createdById: true } },
       },
     });
 
-    if (!chapter || chapter.audiobook.authorId !== user.id) {
+    if (!chapter || chapter.audiobook.createdById !== user.id) {
       return NextResponse.json(
         { error: "Chapter not found or unauthorized" },
         { status: 404 }
@@ -104,7 +104,7 @@ export async function DELETE(
   }
 
   // Authorization check: only author or admin
-  if (chapter.audiobook.authorId !== user.id && user.role !== "ADMIN") {
+  if (chapter.audiobook.createdById !== user.id && user.role !== "ADMIN") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 

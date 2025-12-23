@@ -14,14 +14,14 @@ export async function GET(
         id: true,
         name: true,
         profileImage: true,
-        role: true,
         createdAt: true,
         bio: true,
         username: true,
         _count: {
           select: {
-            audiobooks: true,
-            podcasts: true,
+            comments: true,
+            favorites: true,
+            playlists: true,
           },
         },
       },
@@ -37,12 +37,11 @@ export async function GET(
       username: user.username,
       profileImage: user.profileImage,
       bio: user.bio,
-      role:
-        user.role === "ADMIN" || user.role === "USER" ? undefined : user.role,
       joinedAt: user.createdAt,
       stats: {
-        audiobooks: user._count.audiobooks,
-        podcasts: user._count.podcasts,
+        comments: user._count.comments,
+        favorites: user._count.favorites,
+        playlists: user._count.playlists,
       },
     };
 

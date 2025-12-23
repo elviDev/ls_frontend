@@ -134,6 +134,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [eventId, setEventId] = useState<string | null>(null)
   const [formData, setFormData] = useState<EventFormData>({
     title: "",
     description: "",
@@ -168,13 +169,24 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   })
 
   useEffect(() => {
-    fetchEventDetail()
-  }, [params.id])
+    const getParams = async () => {
+      const resolvedParams = await params
+      setEventId(resolvedParams.id)
+    }
+    getParams()
+  }, [])
+
+  useEffect(() => {
+    if (eventId) {
+      fetchEventDetail()
+    }
+  }, [eventId])
 
   const fetchEventDetail = async () => {
+    if (!eventId) return
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/events/${params.id}`)
+      const response = await fetch(`/api/admin/events/${eventId}`)
       if (response.ok) {
         const data = await response.json()
         setEvent(data)
@@ -347,7 +359,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : undefined
       }
 
-      const response = await fetch(`/api/admin/events/${event.id}`, {
+      const response = await fetch(`/api/admin/events/${eventId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

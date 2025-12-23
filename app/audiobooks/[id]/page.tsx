@@ -110,9 +110,13 @@ export default async function AudiobookDetailPage({
 
         // Get saved progress
         const progressResult = await getAudiobookProgress(id);
-        if (progressResult.success) {
-          setProgress(progressResult.data);
-          setCurrentChapter(progressResult.data.chapter);
+        if (progressResult.success && progressResult.data) {
+          const data = progressResult.data as any;
+          setProgress({
+            position: data.position || 0,
+            chapter: data.chapter || data.chapterId || 0
+          });
+          setCurrentChapter(data.chapter || data.chapterId || 0);
         }
       } catch (err) {
         setError("An unexpected error occurred");
@@ -151,7 +155,7 @@ export default async function AudiobookDetailPage({
         author: audiobookData.volumeInfo.authors?.[0] || "Unknown Author",
       });
 
-      if (result.success) {
+      if (result.success && result.isFavorite !== undefined) {
         setIsFavorite(result.isFavorite);
         toast({
           title: result.isFavorite

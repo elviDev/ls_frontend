@@ -203,7 +203,7 @@ export default function ProgramsPage() {
                         </h3>
                         <div className="flex items-center mb-3 text-sm text-muted-foreground">
                           <User className="h-3 w-3 mr-1" />
-                          <span>{program.host?.name || 'No host assigned'}</span>
+                          <span>{program.host || 'No host assigned'}</span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                           {program.description}

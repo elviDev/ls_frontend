@@ -42,7 +42,7 @@ export const GET = adminOnly(async (req: Request) => {
     const single = searchParams.get("single");
     
     if (broadcastId && single === "true") {
-      const broadcast = await prisma.broadcast.findUnique({
+      const broadcast = await prisma.liveBroadcast.findUnique({
         where: { id: broadcastId },
         include: {
           hostUser: {

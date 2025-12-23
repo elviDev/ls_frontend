@@ -126,7 +126,7 @@ export default function ArchiveDetailPage() {
           retries: isRetry ? 0 : 2,
           context: "Loading archive details"
         }
-      );
+      ) as Archive;
       setArchive(data);
       setError(null);
     } catch (error) {

@@ -10,7 +10,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    await staffOnly(user)
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 })
+    }
 
     const { searchParams } = new URL(request.url)
     const period = searchParams.get("period") || "30" // days
@@ -192,7 +196,7 @@ export async function GET(request: Request) {
           totalPlays: performanceMetrics[2]._sum.playCount || 0,
           totalClicks: performanceMetrics[2]._sum.clickCount || 0,
           totalRevenue: performanceMetrics[2]._sum.totalCost || 0,
-          clickThroughRate: performanceMetrics[2]._sum.playCount > 0 
+          clickThroughRate: (performanceMetrics[2]._sum.playCount && performanceMetrics[2]._sum.clickCount) 
             ? (performanceMetrics[2]._sum.clickCount / performanceMetrics[2]._sum.playCount) * 100 
             : 0
         }

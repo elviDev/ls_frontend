@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UnifiedAudioSystem } from "@/lib/unified-audio-system";
 import { io } from "socket.io-client";
 
 export function ConnectionTest() {
@@ -12,9 +11,6 @@ export function ConnectionTest() {
   const [wsStatus, setWsStatus] = useState<
     "disconnected" | "connecting" | "connected" | "error"
   >("disconnected");
-  const [audioStatus, setAudioStatus] = useState<
-    "none" | "initializing" | "ready" | "error"
-  >("none");
 
   const log = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -76,53 +72,24 @@ export function ConnectionTest() {
     }
   };
 
-  const testAudioSystem = async () => {
-    log("🎚️ Testing Unified Audio System...");
-    setAudioStatus("initializing");
+  const testHLSStream = async () => {
+    log("🎵 Testing HLS stream...");
 
     try {
-      const audioSystem = new UnifiedAudioSystem({
-        broadcastId: "test-broadcast-123",
-        sampleRate: 48000,
-        channels: 2,
-        bitrate: 128000,
-        maxSources: 8,
-      });
-
-      // Initialize
-      await audioSystem.initialize();
-      log("✅ Audio system initialized");
-
-      // Test adding a host
-      await audioSystem.addAudioSource({
-        id: "test-host",
-        type: "host",
-        name: "Test Host",
-        volume: 1.0,
-        isMuted: false,
-        isActive: true,
-        priority: 10,
-      });
-      log("✅ Host audio source added");
-
-      // Test starting broadcast
-      await audioSystem.startBroadcast();
-      log("✅ Broadcast started");
-      setAudioStatus("ready");
-
-      // Stop after 5 seconds
-      setTimeout(() => {
-        audioSystem.stopBroadcast();
-        audioSystem.cleanup();
-        log("🛑 Audio system test completed");
-        setAudioStatus("none");
-      }, 5000);
+      const streamUrl = `${process.env.NEXT_PUBLIC_SRS_URL || 'http://localhost:1985'}/live/test-broadcast-123.m3u8`;
+      
+      // Test if stream URL is accessible
+      const response = await fetch(streamUrl, { method: 'HEAD' });
+      if (response.ok) {
+        log("✅ HLS stream URL is accessible");
+      } else {
+        log(`⚠️ HLS stream URL returned status: ${response.status}`);
+      }
     } catch (error) {
       log(
-        "❌ Audio system test failed: " +
+        "❌ HLS stream test failed: " +
           (error instanceof Error ? error.message : "Unknown error")
       );
-      setAudioStatus("error");
     }
   };
 
@@ -210,9 +177,6 @@ export function ConnectionTest() {
               <Badge className={getStatusColor(wsStatus)}>
                 WebSocket: {wsStatus}
               </Badge>
-              <Badge className={getStatusColor(audioStatus)}>
-                Audio: {audioStatus}
-              </Badge>
             </div>
 
             <div className="flex space-x-2">
@@ -223,11 +187,8 @@ export function ConnectionTest() {
                 Test WebSocket
               </Button>
               <Button onClick={testMicrophone}>Test Microphone</Button>
-              <Button
-                onClick={testAudioSystem}
-                disabled={audioStatus === "initializing"}
-              >
-                Test Audio System
+              <Button onClick={testHLSStream}>
+                Test HLS Stream
               </Button>
               <Button onClick={clearLogs} variant="outline">
                 Clear Logs

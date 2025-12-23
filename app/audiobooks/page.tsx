@@ -52,7 +52,8 @@ async function AudiobooksContent() {
       ),
       favoriteCount: audiobook._count.favorites,
       releaseDate: audiobook.releaseDate,
-      isExplicit: audiobook.isExplicit,
+      isExplicit: audiobook.isExclusive,
+      createdAt: audiobook.createdAt,
     }));
 
     // If no audiobooks found, show a helpful message
@@ -148,7 +149,7 @@ async function AudiobooksContent() {
         </Tabs>
 
         <div className="space-y-12">
-          {genres.slice(0, 3).map((genre) => {
+          {genres.slice(0, 3).map((genre: any) => {
             const genreAudiobooks = formattedAudiobooks
               .filter((audiobook: any) => audiobook.genre === genre.name)
               .slice(0, 4);
@@ -184,7 +185,7 @@ async function AudiobooksContent() {
           <details className="mt-2">
             <summary>Error details (for debugging)</summary>
             <pre className="text-xs mt-2 bg-gray-100 dark:bg-gray-800 p-2 rounded">
-              {error.message}
+              {error instanceof Error ? error.message : String(error)}
             </pre>
           </details>
         </div>

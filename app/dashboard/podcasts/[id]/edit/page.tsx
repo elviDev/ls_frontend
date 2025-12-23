@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,6 +29,9 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { DatePicker } from "@/components/ui/date-picker"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 
 const podcastSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -198,13 +198,13 @@ export default function EditPodcastPage() {
   }
 
   const uploadCoverImage = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('description', `Cover image for podcast: ${form.getValues('title')}`)
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', file)
+    uploadFormData.append('description', `Cover image for podcast: ${form.getValues('title')}`)
 
     const response = await fetch('/api/admin/assets/upload', {
       method: 'POST',
-      body: formData,
+      body: uploadFormData,
     })
 
     if (!response.ok) {
@@ -305,29 +305,29 @@ export default function EditPodcastPage() {
       
       setUploadProgress(80)
 
-      const formData = new FormData()
+      const formDataToSend = new FormData()
       
       // Add form data
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          formData.append(key, value.toString())
+          formDataToSend.append(key, value.toString())
         }
       })
       
       // Add new files if uploaded
       if (newAudioFile) {
-        formData.append('audioFile', newAudioFile)
-        formData.append('duration', audioDuration.toString())
+        formDataToSend.append('audioFile', newAudioFile)
+        formDataToSend.append('duration', audioDuration.toString())
       }
       
       // Add cover image ID if selected/uploaded
       if (coverImageId) {
-        formData.append('coverImageId', coverImageId)
+        formDataToSend.append('coverImageId', coverImageId)
       }
 
       const response = await fetch(`/api/admin/podcasts/${params.id}`, {
         method: 'PATCH',
-        body: formData
+        body: formDataToSend
       })
 
       if (!response.ok) {

@@ -5,7 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { prisma } from "@/lib/prisma";
 import { getFavoritePodcasts } from "@/app/podcasts/actions";
 
-
 // This is a server component that fetches the initial data
 async function PodcastsContent() {
   try {
@@ -46,7 +45,7 @@ async function PodcastsContent() {
     ]);
 
     // Create a set of favorite podcast IDs for quick lookup
-    const favoritePodcastIds = new Set(userFavorites.map((f) => f.podcastId));
+    const favoritePodcastIds = new Set(userFavorites.map((f: any) => f.postId));
 
     // Transform the data to match component's expected format
     const formattedPodcasts = publishedPodcasts.map((podcast: any) => ({
@@ -95,7 +94,7 @@ async function PodcastsContent() {
                   </summary>
                   <pre className="text-xs mt-2 bg-gray-100 dark:bg-gray-800 p-2 rounded">
                     {JSON.stringify(
-                      allPodcasts.map((p) => ({
+                      allPodcasts.map((p: any) => ({
                         title: p.title,
                         status: p.status,
                       })),
@@ -175,26 +174,30 @@ async function PodcastsContent() {
         </Tabs>
 
         <div className="space-y-12">
-          {genres.slice(0, 3).map((genre) => {
-            const genrePodcasts = formattedPodcasts
-              .filter((podcast: any) => podcast.primaryGenreName === genre.name)
-              .slice(0, 4);
+          {genres
+            .slice(0, 3)
+            .map((genre: { id: string; name: string; slug: string }) => {
+              const genrePodcasts = formattedPodcasts
+                .filter(
+                  (podcast: any) => podcast.primaryGenreName === genre.name
+                )
+                .slice(0, 4);
 
-            if (genrePodcasts.length === 0) return null;
+              if (genrePodcasts.length === 0) return null;
 
-            return (
-              <section key={genre.id} className="space-y-6">
-                <h2 className="text-2xl font-bold">{genre.name} Podcasts</h2>
-                <PodcastList
-                  initialPodcasts={genrePodcasts}
-                  showSearch={false}
-                  showFilters={false}
-                  title=""
-                  availableGenres={genres}
-                />
-              </section>
-            );
-          })}
+              return (
+                <section key={genre.id} className="space-y-6">
+                  <h2 className="text-2xl font-bold">{genre.name} Podcasts</h2>
+                  <PodcastList
+                    initialPodcasts={genrePodcasts}
+                    showSearch={false}
+                    showFilters={false}
+                    title=""
+                    availableGenres={genres}
+                  />
+                </section>
+              );
+            })}
         </div>
       </div>
     );

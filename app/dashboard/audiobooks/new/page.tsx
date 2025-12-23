@@ -101,7 +101,7 @@ export default function NewAudiobookPage() {
     }
   }
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | Date) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -116,15 +116,15 @@ export default function NewAudiobookPage() {
 
   const uploadNewAsset = async (file: File): Promise<void> => {
     setUploadingNewAsset(true)
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('description', `Audiobook cover for ${formData.title || 'untitled'}`)
-    formData.append('tags', 'audiobook,cover')
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', file)
+    uploadFormData.append('description', `Audiobook cover for ${formData.title || 'untitled'}`)
+    uploadFormData.append('tags', 'audiobook,cover')
 
     try {
       const response = await fetch('/api/admin/assets/upload', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       })
 
       if (response.ok) {
@@ -169,14 +169,14 @@ export default function NewAudiobookPage() {
   }
 
   const uploadCoverImage = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('description', `Audiobook cover for ${formData.title || 'untitled'}`)
-    formData.append('tags', 'audiobook,cover')
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', file)
+    uploadFormData.append('description', `Audiobook cover for ${formData.title || 'untitled'}`)
+    uploadFormData.append('tags', 'audiobook,cover')
 
     const response = await fetch('/api/admin/assets/upload', {
       method: 'POST',
-      body: formData
+      body: uploadFormData
     })
 
     if (!response.ok) {

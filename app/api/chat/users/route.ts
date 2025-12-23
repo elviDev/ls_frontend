@@ -11,11 +11,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create moderation record
-    const moderation = await prisma.chatModeration.create({
+    const moderation = await prisma.chatModerationAction.create({
       data: {
         broadcastId,
-        userId: targetUserId,
-        action,
+        targetUserId,
+        moderatorId: 'system', // You may want to get this from auth
+        actionType: action,
         duration: duration || null,
         reason: reason || `User ${action}ed`,
         expiresAt: duration ? new Date(Date.now() + duration * 1000) : null,

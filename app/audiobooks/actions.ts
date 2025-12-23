@@ -14,7 +14,7 @@ export async function fetchAudiobookSearch(searchTerm: string) {
               { title: { contains: searchTerm, mode: "insensitive" } },
               { description: { contains: searchTerm, mode: "insensitive" } },
               { narrator: { contains: searchTerm, mode: "insensitive" } },
-              { author: { 
+              { createdBy: { 
                 OR: [
                   { firstName: { contains: searchTerm, mode: "insensitive" } },
                   { lastName: { contains: searchTerm, mode: "insensitive" } }
@@ -26,7 +26,7 @@ export async function fetchAudiobookSearch(searchTerm: string) {
         ]
       },
       include: {
-        author: { select: { firstName: true, lastName: true } },
+        createdBy: { select: { firstName: true, lastName: true } },
         genre: { select: { name: true } },
         chapters: {
           where: { status: "PUBLISHED" },
@@ -40,7 +40,7 @@ export async function fetchAudiobookSearch(searchTerm: string) {
     const formattedResults = results.map((audiobook: any) => ({
       id: audiobook.id,
       title: audiobook.title,
-      author: `${audiobook.author.firstName} ${audiobook.author.lastName}`,
+      author: `${audiobook.createdBy.firstName} ${audiobook.createdBy.lastName}`,
       narrator: audiobook.narrator,
       coverImage: audiobook.coverImage || "/placeholder.svg?height=400&width=300",
       genre: audiobook.genre?.name,
@@ -61,19 +61,11 @@ export async function fetchAudiobookDetails(audiobookId: string) {
     const audiobook = await prisma.audiobook.findUnique({
       where: { id: audiobookId },
       include: {
-        author: { select: { firstName: true, lastName: true } },
+        createdBy: { select: { firstName: true, lastName: true } },
         genre: { select: { name: true } },
         chapters: {
           where: { status: "PUBLISHED" },
-          orderBy: { trackNumber: "asc" },
-          include: {
-            comments: {
-              include: {
-                user: { select: { name: true, profileImage: true } }
-              },
-              orderBy: { createdAt: "desc" }
-            }
-          }
+          orderBy: { trackNumber: "asc" }
         }
       }
     });
@@ -86,29 +78,22 @@ export async function fetchAudiobookDetails(audiobookId: string) {
     const transformedAudiobook = {
       id: audiobook.id,
       title: audiobook.title,
-      author: `${audiobook.author.firstName} ${audiobook.author.lastName}`,
+      author: `${(audiobook as any).createdBy.firstName} ${(audiobook as any).createdBy.lastName}`,
       narrator: audiobook.narrator,
       description: audiobook.description,
       coverImage: audiobook.coverImage || "/placeholder.svg?height=400&width=300",
-      genre: audiobook.genre?.name,
+      genre: (audiobook as any).genre?.name,
       duration: audiobook.duration,
       releaseDate: audiobook.releaseDate,
-      isExplicit: audiobook.isExplicit,
-      chapters: audiobook.chapters.map((chapter: any) => ({
+      isExclusive: audiobook.isExclusive,
+      chapters: (audiobook as any).chapters.map((chapter: any) => ({
         id: chapter.id,
         title: chapter.title,
         description: chapter.description,
         duration: chapter.duration,
         trackNumber: chapter.trackNumber,
         audioFile: chapter.audioFile,
-        transcript: chapter.transcript,
-        comments: chapter.comments.map((comment: any) => ({
-          id: comment.id,
-          author: comment.user.name || "Anonymous",
-          authorImage: comment.user.profileImage,
-          content: comment.content,
-          date: comment.createdAt
-        }))
+        transcript: chapter.transcript
       }))
     };
 
@@ -129,7 +114,7 @@ export async function fetchTopAudiobooks(genreId?: string) {
     const results = await prisma.audiobook.findMany({
       where: whereCondition,
       include: {
-        author: { select: { firstName: true, lastName: true } },
+        createdBy: { select: { firstName: true, lastName: true } },
         genre: { select: { name: true } },
         chapters: {
           where: { status: "PUBLISHED" },
@@ -150,7 +135,7 @@ export async function fetchTopAudiobooks(genreId?: string) {
     const formattedResults = results.map((audiobook: any) => ({
       id: audiobook.id,
       title: audiobook.title,
-      author: `${audiobook.author.firstName} ${audiobook.author.lastName}`,
+      author: `${audiobook.createdBy.firstName} ${audiobook.createdBy.lastName}`,
       narrator: audiobook.narrator,
       coverImage: audiobook.coverImage || "/placeholder.svg?height=400&width=300",
       genre: audiobook.genre?.name,
@@ -277,7 +262,7 @@ export async function getFavoriteAudiobooks() {
       include: {
         audiobook: {
           include: {
-            author: { select: { firstName: true, lastName: true } },
+            createdBy: { select: { firstName: true, lastName: true } },
             genre: { select: { name: true } },
             chapters: {
               where: { status: "PUBLISHED" },
@@ -291,7 +276,7 @@ export async function getFavoriteAudiobooks() {
     const formattedFavorites = favorites.map((favorite: any) => ({
       id: favorite.audiobook.id,
       title: favorite.audiobook.title,
-      author: `${favorite.audiobook.author.firstName} ${favorite.audiobook.author.lastName}`,
+      author: `${favorite.audiobook.createdBy.firstName} ${favorite.audiobook.createdBy.lastName}`,
       narrator: favorite.audiobook.narrator,
       coverImage: favorite.audiobook.coverImage || "/placeholder.svg?height=400&width=300",
       genre: favorite.audiobook.genre?.name,

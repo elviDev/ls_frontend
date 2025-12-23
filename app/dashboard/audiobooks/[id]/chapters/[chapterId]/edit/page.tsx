@@ -41,14 +41,14 @@ export default function EditChapterPage() {
     const fetchChapter = async () => {
       try {
         // This would be implemented in a server action
-        const chapter = await getChapter(chapterId);
+        const chapter = await getChapter(chapterId) as any;
 
-        setTitle(chapter.title);
-        setAudioUrl(chapter.audioFile);
-        setDuration(chapter.duration);
-        setTrackNumber(chapter.trackNumber);
-        setIsDraft(chapter.isDraft);
-        setOriginalFileName(chapter.audioFile.split("/").pop() || "audio-file");
+        setTitle(chapter.title || "");
+        setAudioUrl(chapter.audioFile || null);
+        setDuration(chapter.duration || null);
+        setTrackNumber(chapter.trackNumber || 1);
+        setIsDraft(chapter.isDraft || true);
+        setOriginalFileName(chapter.audioFile ? chapter.audioFile.split("/").pop() || "audio-file" : "audio-file");
       } catch (error) {
         console.error(error);
       } finally {
@@ -90,8 +90,7 @@ export default function EditChapterPage() {
 
     try {
       // This would be implemented in a server action
-      await updateChapter({
-        id: chapterId,
+      await updateChapter(chapterId, {
         title,
         audioFile,
         duration,

@@ -1,18 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useDashboardSettings, type DashboardSettings } from "@/contexts/dashboard-settings-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useDashboardSettings } from "@/contexts/dashboard-settings-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import {
   Settings,
   Save,
@@ -40,83 +52,83 @@ import {
   Loader2,
   Check,
   X,
-  Info
-} from "lucide-react"
+  Info,
+} from "lucide-react";
 
 type DashboardSettings = {
-  id?: string
+  id?: string;
   // General
-  dashboardTitle: string
-  organizationName: string
-  logoUrl?: string
-  faviconUrl?: string
-  theme: "light" | "dark" | "auto"
-  primaryColor: string
-  secondaryColor: string
-  
+  dashboardTitle: string;
+  organizationName: string;
+  logoUrl?: string | null;
+  faviconUrl?: string | null;
+  theme: "light" | "dark" | "auto";
+  primaryColor: string;
+  secondaryColor: string;
+
   // Broadcast
-  defaultBroadcastQuality: string
-  defaultStreamDelay: number
-  maxConcurrentListeners: number
-  autoRecordBroadcasts: boolean
-  enableChatModeration: boolean
-  defaultRecordingFormat: string
-  
+  defaultBroadcastQuality: string;
+  defaultStreamDelay: number;
+  maxConcurrentListeners: number;
+  autoRecordBroadcasts: boolean;
+  enableChatModeration: boolean;
+  defaultRecordingFormat: string;
+
   // Content
-  defaultAudioQuality: string
-  allowFileUploads: boolean
-  maxFileUploadSize: number
-  allowedFileTypes: string
-  enableTranscription: boolean
-  autoGenerateTranscripts: boolean
-  
+  defaultAudioQuality: string;
+  allowFileUploads: boolean;
+  maxFileUploadSize: number;
+  allowedFileTypes: string;
+  enableTranscription: boolean;
+  autoGenerateTranscripts: boolean;
+
   // Notifications
-  enableEmailNotifications: boolean
-  enableSMSNotifications: boolean
-  enableSlackNotifications: boolean
-  notificationEmail?: string
-  slackWebhookUrl?: string
-  smsProviderConfig?: string
-  
+  enableEmailNotifications: boolean;
+  enableSMSNotifications: boolean;
+  enableSlackNotifications: boolean;
+  notificationEmail?: string | null;
+  slackWebhookUrl?: string | null;
+  smsProviderConfig?: string | null;
+
   // Security
-  enableTwoFactorAuth: boolean
-  sessionTimeout: number
-  passwordMinLength: number
-  requirePasswordComplexity: boolean
-  maxLoginAttempts: number
-  lockoutDuration: number
-  
+  enableTwoFactorAuth: boolean;
+  sessionTimeout: number;
+  passwordMinLength: number;
+  requirePasswordComplexity: boolean;
+  maxLoginAttempts: number;
+  lockoutDuration: number;
+
   // Analytics
-  enableAnalytics: boolean
-  analyticsProvider: string
-  enableErrorReporting: boolean
-  enablePerformanceMonitoring: boolean
-  dataRetentionDays: number
-  
+  enableAnalytics: boolean;
+  analyticsProvider: string;
+  enableErrorReporting: boolean;
+  enablePerformanceMonitoring: boolean;
+  dataRetentionDays: number;
+
   // API
-  enablePublicAPI: boolean
-  apiRateLimit: number
-  enableWebhooks: boolean
-  webhookSigningSecret?: string
-  
+  enablePublicAPI: boolean;
+  apiRateLimit: number;
+  enableWebhooks: boolean;
+  webhookSigningSecret?: string | null;
+
   // Backup
-  enableAutomaticBackups: boolean
-  backupFrequency: string
-  backupRetentionDays: number
-  maintenanceMode: boolean
-  maintenanceMessage?: string
-  
+  enableAutomaticBackups: boolean;
+  backupFrequency: string;
+  backupRetentionDays: number;
+  maintenanceMode: boolean;
+  maintenanceMessage?: string | null;
+
   // Moderation
-  enableContentModeration: boolean
-  autoFlagInappropriate: boolean
-  requireContentApproval: boolean
-  moderationKeywords?: string
-  
+  enableContentModeration: boolean;
+  autoFlagInappropriate: boolean;
+  requireContentApproval: boolean;
+  moderationKeywords?: string | null;
+
   // Meta
-  lastUpdatedBy?: string
-  createdAt?: string
-  updatedAt?: string
-}
+  lastUpdatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 const defaultSettings: DashboardSettings = {
   dashboardTitle: "Radio Dashboard",
@@ -160,94 +172,62 @@ const defaultSettings: DashboardSettings = {
   enableContentModeration: true,
   autoFlagInappropriate: true,
   requireContentApproval: false,
-}
+};
 
 export default function SettingsPage() {
-  const { settings, updateSettings, refreshSettings, loading, error } = useDashboardSettings()
-  const [localSettings, setLocalSettings] = useState<DashboardSettings>(settings)
-  const [saving, setSaving] = useState(false)
-  const [activeTab, setActiveTab] = useState("general")
-  const [unsavedChanges, setUnsavedChanges] = useState(false)
-
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/admin/settings')
-      if (response.ok) {
-        const data = await response.json()
-        setSettings({ ...defaultSettings, ...data })
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error)
-      toast.error('Failed to load settings')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { settings, updateSettings, refreshSettings, loading, error } =
+    useDashboardSettings();
+  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   const updateSetting = (key: keyof DashboardSettings, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }))
-    setUnsavedChanges(true)
-  }
+    updateSettings({ [key]: value });
+    setUnsavedChanges(true);
+  };
 
   const saveSettings = async () => {
     try {
-      setSaving(true)
-      const response = await fetch('/api/admin/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setSettings(data)
-        setUnsavedChanges(false)
-        toast.success('Settings saved successfully')
-      } else {
-        throw new Error('Failed to save settings')
-      }
+      setSaving(true);
+      await updateSettings(settings);
+      setUnsavedChanges(false);
+      toast.success("Settings saved successfully");
     } catch (error) {
-      console.error('Error saving settings:', error)
-      toast.error('Failed to save settings')
+      console.error("Error saving settings:", error);
+      toast.error("Failed to save settings");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const resetSettings = async () => {
     try {
-      setSaving(true)
-      const response = await fetch('/api/admin/settings/reset', {
-        method: 'POST',
-      })
+      setSaving(true);
+      const response = await fetch("/api/admin/settings/reset", {
+        method: "POST",
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        setSettings({ ...defaultSettings, ...data })
-        setUnsavedChanges(false)
-        toast.success('Settings reset to defaults')
+        await refreshSettings();
+        setUnsavedChanges(false);
+        toast.success("Settings reset to defaults");
       } else {
-        throw new Error('Failed to reset settings')
+        throw new Error("Failed to reset settings");
       }
     } catch (error) {
-      console.error('Error resetting settings:', error)
-      toast.error('Failed to reset settings')
+      console.error("Error resetting settings:", error);
+      toast.error("Failed to reset settings");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    )
+    );
   }
 
   return (
@@ -255,14 +235,19 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Dashboard Settings
+          </h1>
           <p className="text-muted-foreground">
             Configure your radio dashboard preferences and system settings
           </p>
         </div>
         <div className="flex items-center gap-3">
           {unsavedChanges && (
-            <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">
+            <Badge
+              variant="outline"
+              className="text-orange-600 border-orange-200 bg-orange-50"
+            >
               <Info className="h-3 w-3 mr-1" />
               Unsaved Changes
             </Badge>
@@ -278,13 +263,16 @@ export default function SettingsPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Reset Settings</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will reset all settings to their default values. This action cannot be undone.
+                  This will reset all settings to their default values. This
+                  action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={resetSettings} disabled={saving}>
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
                   Reset Settings
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -315,7 +303,10 @@ export default function SettingsPage() {
             <FileText className="h-4 w-4" />
             Content
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
+          <TabsTrigger
+            value="notifications"
+            className="flex items-center gap-2"
+          >
             <Bell className="h-4 w-4" />
             Notifications
           </TabsTrigger>
@@ -357,7 +348,9 @@ export default function SettingsPage() {
                   <Input
                     id="dashboardTitle"
                     value={settings.dashboardTitle}
-                    onChange={(e) => updateSetting('dashboardTitle', e.target.value)}
+                    onChange={(e) =>
+                      updateSetting("dashboardTitle", e.target.value)
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -365,11 +358,13 @@ export default function SettingsPage() {
                   <Input
                     id="organizationName"
                     value={settings.organizationName}
-                    onChange={(e) => updateSetting('organizationName', e.target.value)}
+                    onChange={(e) =>
+                      updateSetting("organizationName", e.target.value)
+                    }
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="logoUrl">Logo URL</Label>
@@ -377,7 +372,9 @@ export default function SettingsPage() {
                     id="logoUrl"
                     type="url"
                     value={settings.logoUrl || ""}
-                    onChange={(e) => updateSetting('logoUrl', e.target.value || null)}
+                    onChange={(e) =>
+                      updateSetting("logoUrl", e.target.value || null)
+                    }
                     placeholder="https://example.com/logo.png"
                   />
                 </div>
@@ -387,7 +384,9 @@ export default function SettingsPage() {
                     id="faviconUrl"
                     type="url"
                     value={settings.faviconUrl || ""}
-                    onChange={(e) => updateSetting('faviconUrl', e.target.value || null)}
+                    onChange={(e) =>
+                      updateSetting("faviconUrl", e.target.value || null)
+                    }
                     placeholder="https://example.com/favicon.ico"
                   />
                 </div>
@@ -396,7 +395,10 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="theme">Theme</Label>
-                  <Select value={settings.theme} onValueChange={(value) => updateSetting('theme', value)}>
+                  <Select
+                    value={settings.theme}
+                    onValueChange={(value) => updateSetting("theme", value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -414,12 +416,16 @@ export default function SettingsPage() {
                       id="primaryColor"
                       type="color"
                       value={settings.primaryColor}
-                      onChange={(e) => updateSetting('primaryColor', e.target.value)}
+                      onChange={(e) =>
+                        updateSetting("primaryColor", e.target.value)
+                      }
                       className="w-16 h-10 p-1"
                     />
                     <Input
                       value={settings.primaryColor}
-                      onChange={(e) => updateSetting('primaryColor', e.target.value)}
+                      onChange={(e) =>
+                        updateSetting("primaryColor", e.target.value)
+                      }
                       className="flex-1"
                     />
                   </div>
@@ -431,12 +437,16 @@ export default function SettingsPage() {
                       id="secondaryColor"
                       type="color"
                       value={settings.secondaryColor}
-                      onChange={(e) => updateSetting('secondaryColor', e.target.value)}
+                      onChange={(e) =>
+                        updateSetting("secondaryColor", e.target.value)
+                      }
                       className="w-16 h-10 p-1"
                     />
                     <Input
                       value={settings.secondaryColor}
-                      onChange={(e) => updateSetting('secondaryColor', e.target.value)}
+                      onChange={(e) =>
+                        updateSetting("secondaryColor", e.target.value)
+                      }
                       className="flex-1"
                     />
                   </div>
@@ -458,40 +468,60 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="defaultBroadcastQuality">Default Quality</Label>
-                  <Select 
-                    value={settings.defaultBroadcastQuality} 
-                    onValueChange={(value) => updateSetting('defaultBroadcastQuality', value)}
+                  <Label htmlFor="defaultBroadcastQuality">
+                    Default Quality
+                  </Label>
+                  <Select
+                    value={settings.defaultBroadcastQuality}
+                    onValueChange={(value) =>
+                      updateSetting("defaultBroadcastQuality", value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="SD">SD (Standard Definition)</SelectItem>
+                      <SelectItem value="SD">
+                        SD (Standard Definition)
+                      </SelectItem>
                       <SelectItem value="HD">HD (High Definition)</SelectItem>
                       <SelectItem value="4K">4K (Ultra HD)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="defaultStreamDelay">Stream Delay (seconds)</Label>
+                  <Label htmlFor="defaultStreamDelay">
+                    Stream Delay (seconds)
+                  </Label>
                   <Input
                     id="defaultStreamDelay"
                     type="number"
                     min="0"
                     max="60"
                     value={settings.defaultStreamDelay}
-                    onChange={(e) => updateSetting('defaultStreamDelay', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting(
+                        "defaultStreamDelay",
+                        parseInt(e.target.value)
+                      )
+                    }
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="maxConcurrentListeners">Max Concurrent Listeners</Label>
+                  <Label htmlFor="maxConcurrentListeners">
+                    Max Concurrent Listeners
+                  </Label>
                   <Input
                     id="maxConcurrentListeners"
                     type="number"
                     min="1"
                     value={settings.maxConcurrentListeners}
-                    onChange={(e) => updateSetting('maxConcurrentListeners', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting(
+                        "maxConcurrentListeners",
+                        parseInt(e.target.value)
+                      )
+                    }
                   />
                 </div>
               </div>
@@ -506,10 +536,12 @@ export default function SettingsPage() {
                   </div>
                   <Switch
                     checked={settings.autoRecordBroadcasts}
-                    onCheckedChange={(checked) => updateSetting('autoRecordBroadcasts', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("autoRecordBroadcasts", checked)
+                    }
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Enable Chat Moderation</Label>
@@ -519,16 +551,22 @@ export default function SettingsPage() {
                   </div>
                   <Switch
                     checked={settings.enableChatModeration}
-                    onCheckedChange={(checked) => updateSetting('enableChatModeration', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("enableChatModeration", checked)
+                    }
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="defaultRecordingFormat">Default Recording Format</Label>
-                <Select 
-                  value={settings.defaultRecordingFormat} 
-                  onValueChange={(value) => updateSetting('defaultRecordingFormat', value)}
+                <Label htmlFor="defaultRecordingFormat">
+                  Default Recording Format
+                </Label>
+                <Select
+                  value={settings.defaultRecordingFormat}
+                  onValueChange={(value) =>
+                    updateSetting("defaultRecordingFormat", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -567,33 +605,48 @@ export default function SettingsPage() {
                   </div>
                   <Switch
                     checked={settings.enableTwoFactorAuth}
-                    onCheckedChange={(checked) => updateSetting('enableTwoFactorAuth', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("enableTwoFactorAuth", checked)
+                    }
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="sessionTimeout">Session Timeout (seconds)</Label>
+                  <Label htmlFor="sessionTimeout">
+                    Session Timeout (seconds)
+                  </Label>
                   <Input
                     id="sessionTimeout"
                     type="number"
                     min="300"
                     max="86400"
                     value={settings.sessionTimeout}
-                    onChange={(e) => updateSetting('sessionTimeout', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting("sessionTimeout", parseInt(e.target.value))
+                    }
                   />
-                  <p className="text-xs text-muted-foreground">5 minutes to 24 hours</p>
+                  <p className="text-xs text-muted-foreground">
+                    5 minutes to 24 hours
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="passwordMinLength">Minimum Password Length</Label>
+                  <Label htmlFor="passwordMinLength">
+                    Minimum Password Length
+                  </Label>
                   <Input
                     id="passwordMinLength"
                     type="number"
                     min="6"
                     max="128"
                     value={settings.passwordMinLength}
-                    onChange={(e) => updateSetting('passwordMinLength', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting(
+                        "passwordMinLength",
+                        parseInt(e.target.value)
+                      )
+                    }
                   />
                 </div>
               </div>
@@ -607,7 +660,9 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={settings.requirePasswordComplexity}
-                  onCheckedChange={(checked) => updateSetting('requirePasswordComplexity', checked)}
+                  onCheckedChange={(checked) =>
+                    updateSetting("requirePasswordComplexity", checked)
+                  }
                 />
               </div>
 
@@ -620,20 +675,31 @@ export default function SettingsPage() {
                     min="1"
                     max="10"
                     value={settings.maxLoginAttempts}
-                    onChange={(e) => updateSetting('maxLoginAttempts', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting(
+                        "maxLoginAttempts",
+                        parseInt(e.target.value)
+                      )
+                    }
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lockoutDuration">Lockout Duration (seconds)</Label>
+                  <Label htmlFor="lockoutDuration">
+                    Lockout Duration (seconds)
+                  </Label>
                   <Input
                     id="lockoutDuration"
                     type="number"
                     min="60"
                     max="3600"
                     value={settings.lockoutDuration}
-                    onChange={(e) => updateSetting('lockoutDuration', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting("lockoutDuration", parseInt(e.target.value))
+                    }
                   />
-                  <p className="text-xs text-muted-foreground">1 minute to 1 hour</p>
+                  <p className="text-xs text-muted-foreground">
+                    1 minute to 1 hour
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -660,10 +726,12 @@ export default function SettingsPage() {
                   </div>
                   <Switch
                     checked={settings.allowFileUploads}
-                    onCheckedChange={(checked) => updateSetting('allowFileUploads', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("allowFileUploads", checked)
+                    }
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Enable Transcription</Label>
@@ -673,7 +741,9 @@ export default function SettingsPage() {
                   </div>
                   <Switch
                     checked={settings.enableTranscription}
-                    onCheckedChange={(checked) => updateSetting('enableTranscription', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("enableTranscription", checked)
+                    }
                   />
                 </div>
 
@@ -686,7 +756,9 @@ export default function SettingsPage() {
                   </div>
                   <Switch
                     checked={settings.autoGenerateTranscripts}
-                    onCheckedChange={(checked) => updateSetting('autoGenerateTranscripts', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("autoGenerateTranscripts", checked)
+                    }
                     disabled={!settings.enableTranscription}
                   />
                 </div>
@@ -694,17 +766,25 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="maxFileUploadSize">Max Upload Size (bytes)</Label>
+                  <Label htmlFor="maxFileUploadSize">
+                    Max Upload Size (bytes)
+                  </Label>
                   <Input
                     id="maxFileUploadSize"
                     type="number"
                     min="1024"
                     max="1073741824"
                     value={settings.maxFileUploadSize}
-                    onChange={(e) => updateSetting('maxFileUploadSize', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting(
+                        "maxFileUploadSize",
+                        parseInt(e.target.value)
+                      )
+                    }
                   />
                   <p className="text-xs text-muted-foreground">
-                    Current: {(settings.maxFileUploadSize / 1024 / 1024).toFixed(0)} MB
+                    Current:{" "}
+                    {(settings.maxFileUploadSize / 1024 / 1024).toFixed(0)} MB
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -712,10 +792,14 @@ export default function SettingsPage() {
                   <Input
                     id="allowedFileTypes"
                     value={settings.allowedFileTypes}
-                    onChange={(e) => updateSetting('allowedFileTypes', e.target.value)}
+                    onChange={(e) =>
+                      updateSetting("allowedFileTypes", e.target.value)
+                    }
                     placeholder="mp3,wav,flac,m4a"
                   />
-                  <p className="text-xs text-muted-foreground">Comma-separated list</p>
+                  <p className="text-xs text-muted-foreground">
+                    Comma-separated list
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -727,10 +811,14 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>Configure notification preferences and integrations</CardDescription>
+              <CardDescription>
+                Configure notification preferences and integrations
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Notification settings coming soon...</p>
+              <p className="text-muted-foreground">
+                Notification settings coming soon...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -739,10 +827,14 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Analytics Settings</CardTitle>
-              <CardDescription>Configure analytics and monitoring options</CardDescription>
+              <CardDescription>
+                Configure analytics and monitoring options
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Analytics settings coming soon...</p>
+              <p className="text-muted-foreground">
+                Analytics settings coming soon...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -751,10 +843,14 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>API Settings</CardTitle>
-              <CardDescription>Configure API access and integration settings</CardDescription>
+              <CardDescription>
+                Configure API access and integration settings
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">API settings coming soon...</p>
+              <p className="text-muted-foreground">
+                API settings coming soon...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -763,10 +859,14 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Backup & Maintenance Settings</CardTitle>
-              <CardDescription>Configure backup schedules and maintenance options</CardDescription>
+              <CardDescription>
+                Configure backup schedules and maintenance options
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Backup settings coming soon...</p>
+              <p className="text-muted-foreground">
+                Backup settings coming soon...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -775,14 +875,18 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Content Moderation Settings</CardTitle>
-              <CardDescription>Configure content moderation and approval workflows</CardDescription>
+              <CardDescription>
+                Configure content moderation and approval workflows
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Moderation settings coming soon...</p>
+              <p className="text-muted-foreground">
+                Moderation settings coming soon...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

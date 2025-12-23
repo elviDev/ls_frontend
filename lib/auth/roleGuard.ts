@@ -1,5 +1,5 @@
 import { getCurrentUser } from "./getCurrentUser";
-import { Role } from "@prisma/client";
+import { StaffRole } from "@prisma/client";
 
 export async function requireUser() {
   const user = await getCurrentUser();
@@ -14,7 +14,7 @@ export async function requireUser() {
 export async function requireAdmin() {
   const user = await getCurrentUser();
 
-  if (!user || user.role !== Role.ADMIN) {
+  if (!user || user.role !== StaffRole.ADMIN) {
     throw new Error("Admin access required");
   }
 

@@ -12,7 +12,7 @@ function parseExpiry(exp: string): string {
   return exp;
 }
 
-export async function signToken(payload: object): Promise<string> {
+export async function signToken(payload: Record<string, any>): Promise<string> {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()

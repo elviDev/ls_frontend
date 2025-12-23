@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Check if Archive table exists and handle gracefully
-    let archives = [];
+    let archives: any[] = [];
     let total = 0;
     
     try {

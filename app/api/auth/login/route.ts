@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const { email, password, rememberMe = false } = loginSchema.parse(body);
 
     // First check if user exists in Staff table
-    let user = await prisma.staff.findUnique({ 
+    let staffUser = await prisma.staff.findUnique({ 
       where: { email },
       select: {
         id: true,
@@ -30,11 +30,11 @@ export async function POST(req: Request) {
         emailVerified: true,
       }
     });
-    let isStaff = true;
 
     // If not found in Staff, check User table
-    if (!user) {
-      user = await prisma.user.findUnique({ 
+    let regularUser = null;
+    if (!staffUser) {
+      regularUser = await prisma.user.findUnique({ 
         where: { email },
         select: {
           id: true,
@@ -44,8 +44,10 @@ export async function POST(req: Request) {
           emailVerified: true,
         }
       });
-      isStaff = false;
     }
+
+    const user = staffUser || regularUser;
+    const isStaff = !!staffUser;
 
     if (!user) {
       return NextResponse.json(
@@ -70,7 +72,7 @@ console.log("User found",user);
     }
 
     // Check if staff member is approved
-    if (isStaff && !user.isApproved) {
+    if (isStaff && staffUser && !staffUser.isApproved) {
       return NextResponse.json(
         { error: "Your account is pending approval" },
         { status: 403 }
@@ -79,7 +81,7 @@ console.log("User found",user);
 
     const token = await signToken({ 
       userId: user.id,
-      role: isStaff ? user.role : 'USER'
+      role: isStaff ? staffUser!.role : 'USER'
     });
 
     // Set cookie expiration based on remember me option
@@ -102,19 +104,19 @@ console.log("User found",user);
 
     // Prepare user data for response
     let userData;
-    if (isStaff) {
+    if (isStaff && staffUser) {
       userData = {
-        id: user.id,
-        email: user.email,
-        name: `${user.firstName} ${user.lastName}`,
-        role: user.role,
-        isApproved: user.isApproved || false,
+        id: staffUser.id,
+        email: staffUser.email,
+        name: `${staffUser.firstName} ${staffUser.lastName}`,
+        role: staffUser.role,
+        isApproved: staffUser.isApproved || false,
       };
-    } else {
+    } else if (regularUser) {
       userData = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        id: regularUser.id,
+        email: regularUser.email,
+        name: regularUser.name,
         role: 'USER',
         isApproved: true,
       };

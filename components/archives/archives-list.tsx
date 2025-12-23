@@ -49,7 +49,7 @@ export function ArchivesList({
     try {
       const result = await searchArchives(searchTerm);
       if (result.success) {
-        setArchives(result.data);
+        setArchives(result.data || []);
       } else {
         toast({
           title: "Search failed",

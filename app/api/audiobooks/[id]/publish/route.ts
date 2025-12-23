@@ -16,7 +16,7 @@ export async function PATCH(
 
   const audiobook = await prisma.audiobook.findUnique({
     where: { id: audiobookId },
-    include: { author: true, chapters: true },
+    include: { createdBy: true, chapters: true },
   });
 
   if (!audiobook) {
@@ -27,7 +27,7 @@ export async function PATCH(
   }
 
   // Only author or admin can publish
-  if (audiobook.authorId !== user.id && user.role !== "ADMIN") {
+  if (audiobook.createdById !== user.id && user.role !== "ADMIN") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
@@ -45,8 +45,8 @@ export async function PATCH(
       duration: totalDuration,
       chapters: {
         updateMany: {
-          where: { isDraft: true },
-          data: { isDraft: false },
+          where: { status: "DRAFT" },
+          data: { status: "PUBLISHED" },
         },
       },
     },

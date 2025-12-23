@@ -71,7 +71,7 @@ export function PodcastList({
     try {
       const result = await getFavoritePodcasts();
       if (result.success) {
-        setPodcasts(result.data);
+        setPodcasts(result.data || []);
       } else {
         if (result.authRequired) {
           toast({
@@ -106,7 +106,7 @@ export function PodcastList({
     try {
       const result = await fetchPodcastSearch(searchTerm);
       if (result.success) {
-        setPodcasts(result.data);
+        setPodcasts(result.data || []);
       } else {
         toast({
           title: "Search failed",

@@ -56,8 +56,8 @@ export const GET = adminOnly(async (req: Request, { params }: { params: Promise<
     const averageListenTime = playbackData.length > 0 
       ? playbackData.reduce((sum: any, p: any) => sum + p.position, 0) / playbackData.length 
       : 0
-    const completionRate = playbackData.length > 0
-      ? (playbackData.filter((p: any) => p.position >= podcast.duration * 0.9).length / playbackData.length) * 100
+    const completionRate = playbackData.length > 0 && podcast.duration
+      ? (playbackData.filter((p: any) => p.position >= podcast.duration! * 0.9).length / playbackData.length) * 100
       : 0
 
     // Generate mock daily plays data

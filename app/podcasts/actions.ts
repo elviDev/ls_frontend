@@ -13,26 +13,32 @@ export async function fetchPodcastSearch(searchTerm: string) {
             OR: [
               { title: { contains: searchTerm, mode: "insensitive" } },
               { description: { contains: searchTerm, mode: "insensitive" } },
-              { author: { 
-                OR: [
-                  { firstName: { contains: searchTerm, mode: "insensitive" } },
-                  { lastName: { contains: searchTerm, mode: "insensitive" } }
-                ]
-              }},
-              { genre: { name: { contains: searchTerm, mode: "insensitive" } } }
-            ]
-          }
-        ]
+              {
+                author: {
+                  OR: [
+                    {
+                      firstName: { contains: searchTerm, mode: "insensitive" },
+                    },
+                    { lastName: { contains: searchTerm, mode: "insensitive" } },
+                  ],
+                },
+              },
+              {
+                genre: { name: { contains: searchTerm, mode: "insensitive" } },
+              },
+            ],
+          },
+        ],
       },
       include: {
         author: { select: { firstName: true, lastName: true } },
         genre: { select: { name: true } },
         episodes: {
           where: { status: "PUBLISHED" },
-          select: { id: true }
-        }
+          select: { id: true },
+        },
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
 
     // Transform to match expected format
@@ -40,9 +46,10 @@ export async function fetchPodcastSearch(searchTerm: string) {
       collectionId: podcast.id,
       collectionName: podcast.title,
       artistName: `${podcast.author.firstName} ${podcast.author.lastName}`,
-      artworkUrl100: podcast.coverImage || "/placeholder.svg?height=400&width=400",
+      artworkUrl100:
+        podcast.coverImage || "/placeholder.svg?height=400&width=400",
       primaryGenreName: podcast.genre?.name,
-      episodeCount: podcast.episodes.length
+      episodeCount: podcast.episodes.length,
     }));
 
     return { success: true, data: formattedResults };
@@ -65,13 +72,13 @@ export async function fetchPodcastEpisodes(podcastId: string) {
           include: {
             comments: {
               include: {
-                user: { select: { name: true, profileImage: true } }
+                user: { select: { name: true, profileImage: true } },
               },
-              orderBy: { createdAt: "desc" }
-            }
-          }
-        }
-      }
+              orderBy: { createdAt: "desc" },
+            },
+          },
+        },
+      },
     });
 
     if (!podcast) {
@@ -83,9 +90,10 @@ export async function fetchPodcastEpisodes(podcastId: string) {
       collectionId: podcast.id,
       collectionName: podcast.title,
       artistName: `${podcast.author.firstName} ${podcast.author.lastName}`,
-      artworkUrl100: podcast.coverImage || "/placeholder.svg?height=400&width=400",
+      artworkUrl100:
+        podcast.coverImage || "/placeholder.svg?height=400&width=400",
       primaryGenreName: podcast.genre?.name,
-      description: podcast.description
+      description: podcast.description,
     };
 
     const transformedEpisodes = podcast.episodes.map((episode: any) => ({
@@ -101,11 +109,14 @@ export async function fetchPodcastEpisodes(podcastId: string) {
         author: comment.user.name || "Anonymous",
         authorImage: comment.user.profileImage,
         content: comment.content,
-        date: comment.createdAt
-      }))
+        date: comment.createdAt,
+      })),
     }));
 
-    return { success: true, data: { podcast: transformedPodcast, episodes: transformedEpisodes } };
+    return {
+      success: true,
+      data: { podcast: transformedPodcast, episodes: transformedEpisodes },
+    };
   } catch (error) {
     console.error("Error in fetchPodcastEpisodes:", error);
     return { success: false, error: "Failed to fetch podcast episodes" };
@@ -126,17 +137,14 @@ export async function fetchTopPodcasts(genreId?: string) {
         genre: { select: { name: true } },
         episodes: {
           where: { status: "PUBLISHED" },
-          select: { id: true }
+          select: { id: true },
         },
         _count: {
-          select: { favorites: true }
-        }
+          select: { favorites: true },
+        },
       },
-      orderBy: [
-        { favorites: { _count: "desc" } },
-        { createdAt: "desc" }
-      ],
-      take: 20
+      orderBy: [{ favorites: { _count: "desc" } }, { createdAt: "desc" }],
+      take: 20,
     });
 
     // Transform to match expected format
@@ -144,10 +152,11 @@ export async function fetchTopPodcasts(genreId?: string) {
       collectionId: podcast.id,
       collectionName: podcast.title,
       artistName: `${podcast.author.firstName} ${podcast.author.lastName}`,
-      artworkUrl100: podcast.coverImage || "/placeholder.svg?height=400&width=400",
+      artworkUrl100:
+        podcast.coverImage || "/placeholder.svg?height=400&width=400",
       primaryGenreName: podcast.genre?.name,
       episodeCount: podcast.episodes.length,
-      favoriteCount: podcast._count.favorites
+      favoriteCount: podcast._count.favorites,
     }));
 
     return { success: true, data: formattedResults };
@@ -177,7 +186,7 @@ export async function toggleFavoritePodcast(podcast: FavoritePodcast) {
 
     // Check if podcast exists
     const dbPodcast = await prisma.podcast.findUnique({
-      where: { id: podcast.id }
+      where: { id: podcast.id },
     });
 
     if (!dbPodcast) {
@@ -185,31 +194,31 @@ export async function toggleFavoritePodcast(podcast: FavoritePodcast) {
     }
 
     // Determine if this is a regular user or staff member
-    const isStaff = session.role && session.role !== 'USER';
-    
+    const isStaff = session.role && session.role !== "USER";
+
     // Check if already favorited
-    const whereClause = isStaff 
+    const whereClause = isStaff
       ? { staffId_podcastId: { staffId: session.id, podcastId: podcast.id } }
       : { userId_podcastId: { userId: session.id, podcastId: podcast.id } };
 
     const existingFavorite = await prisma.favorite.findUnique({
-      where: whereClause
+      where: whereClause,
     });
 
     if (existingFavorite) {
       // Remove from favorites
       await prisma.favorite.delete({
-        where: whereClause
+        where: whereClause,
       });
       return { success: true, isFavorite: false };
     } else {
       // Add to favorites
-      const createData = isStaff 
+      const createData = isStaff
         ? { staffId: session.id, podcastId: podcast.id }
         : { userId: session.id, podcastId: podcast.id };
 
       await prisma.favorite.create({
-        data: createData
+        data: createData,
       });
       return { success: true, isFavorite: true };
     }
@@ -227,14 +236,14 @@ export async function checkIsFavorite(podcastId: string) {
     }
 
     // Determine if this is a regular user or staff member
-    const isStaff = session.role && session.role !== 'USER';
-    
-    const whereClause = isStaff 
+    const isStaff = session.role && session.role !== "USER";
+
+    const whereClause = isStaff
       ? { staffId_podcastId: { staffId: session.id, podcastId: podcastId } }
       : { userId_podcastId: { userId: session.id, podcastId: podcastId } };
 
     const favorite = await prisma.favorite.findUnique({
-      where: whereClause
+      where: whereClause,
     });
 
     return { success: true, isFavorite: !!favorite };
@@ -256,9 +265,9 @@ export async function getFavoritePodcasts() {
     }
 
     // Determine if this is a regular user or staff member
-    const isStaff = session.role && session.role !== 'USER';
-    
-    const whereClause = isStaff 
+    const isStaff = session.role && session.role !== "USER";
+
+    const whereClause = isStaff
       ? { staffId: session.id, podcastId: { not: null } }
       : { userId: session.id, podcastId: { not: null } };
 
@@ -271,20 +280,21 @@ export async function getFavoritePodcasts() {
             genre: { select: { name: true } },
             episodes: {
               where: { status: "PUBLISHED" },
-              select: { id: true }
-            }
-          }
-        }
-      }
+              select: { id: true },
+            },
+          },
+        },
+      },
     });
 
     const formattedFavorites = favorites.map((favorite: any) => ({
       collectionId: favorite.podcast.id,
       collectionName: favorite.podcast.title,
       artistName: `${favorite.podcast.author.firstName} ${favorite.podcast.author.lastName}`,
-      artworkUrl100: favorite.podcast.coverImage || "/placeholder.svg?height=400&width=400",
+      artworkUrl100:
+        favorite.podcast.coverImage || "/placeholder.svg?height=400&width=400",
       primaryGenreName: favorite.podcast.genre?.name,
-      episodeCount: favorite.podcast.episodes.length
+      episodeCount: favorite.podcast.episodes.length,
     }));
 
     return { success: true, data: formattedFavorites };
@@ -307,14 +317,15 @@ export async function addComment(episodeId: string, content: string) {
 
     // For now, comments are only supported for regular users
     // We might need to extend the Comment model to support staff later
-    const isStaff = session.role && session.role !== 'USER';
-    
+    const isStaff = session.role && session.role !== "USER";
+
     if (isStaff) {
       // For staff members, we'll create a comment using their name but as a regular user entry
       // This is a temporary solution - ideally we'd extend the Comment model too
       return {
         success: false,
-        error: "Staff commenting is not yet supported. Please sign in with a regular user account.",
+        error:
+          "Staff commenting is not yet supported. Please sign in with a regular user account.",
       };
     }
 
@@ -322,11 +333,11 @@ export async function addComment(episodeId: string, content: string) {
       data: {
         content,
         userId: session.id,
-        podcastEpisodeId: episodeId
+        podcastEpisodeId: episodeId,
       },
       include: {
-        user: { select: { name: true, profileImage: true } }
-      }
+        user: { select: { name: true, profileImage: true } },
+      },
     });
 
     return {
@@ -336,8 +347,8 @@ export async function addComment(episodeId: string, content: string) {
         author: comment.user.name || "Anonymous",
         authorImage: comment.user.profileImage,
         content: comment.content,
-        date: comment.createdAt
-      }
+        date: comment.createdAt,
+      },
     };
   } catch (error) {
     console.error("Error in addComment:", error);
@@ -350,9 +361,9 @@ export async function getEpisodeComments(episodeId: string) {
     const comments = await prisma.comment.findMany({
       where: { podcastEpisodeId: episodeId },
       include: {
-        user: { select: { name: true, profileImage: true } }
+        user: { select: { name: true, profileImage: true } },
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
 
     const formattedComments = comments.map((comment: any) => ({
@@ -360,7 +371,7 @@ export async function getEpisodeComments(episodeId: string) {
       author: comment.user.name || "Anonymous",
       authorImage: comment.user.profileImage,
       content: comment.content,
-      date: comment.createdAt
+      date: comment.createdAt,
     }));
 
     return { success: true, data: formattedComments };
@@ -374,7 +385,7 @@ export async function getEpisodeTranscript(episodeId: string) {
   try {
     const episode = await prisma.podcastEpisode.findUnique({
       where: { id: episodeId },
-      select: { transcript: true, transcriptFile: true }
+      select: { transcript: true, transcriptFile: true },
     });
 
     if (!episode) {
@@ -389,12 +400,14 @@ export async function getEpisodeTranscript(episodeId: string) {
         segments = JSON.parse(episode.transcript);
       } catch {
         // If not JSON, treat as plain text and create basic segments
-        const lines = episode.transcript.split('\n').filter(line => line.trim());
-        segments = lines.map((line, index) => ({
+        const lines = episode.transcript
+          .split("\n")
+          .filter((line: any) => line.trim());
+        segments = lines.map((line: string, index: number) => ({
           id: `segment-${index}`,
           speaker: "Speaker",
           content: line.trim(),
-          timestamp: `00:${String(index).padStart(2, '0')}:00`
+          timestamp: `00:${String(index).padStart(2, "0")}:00`,
         }));
       }
     }

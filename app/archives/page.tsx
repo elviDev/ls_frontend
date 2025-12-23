@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 async function ArchivesContent() {
   try {
     // Fetch directly from database to avoid API calls during build
-    let archives = [];
+    let archives: any[] = [];
     let categories: string[] = [];
     
     try {

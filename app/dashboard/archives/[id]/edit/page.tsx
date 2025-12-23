@@ -141,42 +141,43 @@ export default function EditArchivePage() {
     setError(null);
 
     try {
-      const data = await fetchWithErrorHandling(
+      const result = await fetchWithErrorHandling(
         `/api/admin/archives/${params.id}`,
         {
           timeout: 30000,
           retries: isRetry ? 0 : 2,
           context: "Loading archive for editing"
         }
-      );
+      ) as { data: any };
+      const archiveData = result.data;
       setFormData({
-        title: data.title || "",
-        description: data.description || "",
-        host: data.host || "",
-        guests: data.guests || "",
-        category: data.category || "",
-        type: data.type || "PODCAST",
-        status: data.status || "ACTIVE",
-        duration: data.duration || 0,
-        fileSize: data.fileSize || 0,
-        audioFile: data.audioFile || "",
-        downloadUrl: data.downloadUrl || "",
-        coverImage: data.coverImage || "",
-        thumbnailImage: data.thumbnailImage || "",
-        originalAirDate: data.originalAirDate 
-          ? new Date(data.originalAirDate).toISOString().split('T')[0]
+        title: archiveData.title || "",
+        description: archiveData.description || "",
+        host: archiveData.host || "",
+        guests: archiveData.guests || "",
+        category: archiveData.category || "",
+        type: archiveData.type || "PODCAST",
+        status: archiveData.status || "ACTIVE",
+        duration: archiveData.duration || 0,
+        fileSize: archiveData.fileSize || 0,
+        audioFile: archiveData.audioFile || "",
+        downloadUrl: archiveData.downloadUrl || "",
+        coverImage: archiveData.coverImage || "",
+        thumbnailImage: archiveData.thumbnailImage || "",
+        originalAirDate: archiveData.originalAirDate 
+          ? new Date(archiveData.originalAirDate).toISOString().split('T')[0]
           : "",
-        isDownloadable: data.isDownloadable || false,
-        isFeatured: data.isFeatured || false,
-        isExclusive: data.isExclusive || false,
-        accessLevel: data.accessLevel || "PUBLIC",
-        tags: data.tags || [],
-        transcript: data.transcript || "",
-        transcriptFile: data.transcriptFile || "",
-        podcastId: data.podcastId || "",
-        audiobookId: data.audiobookId || "",
-        broadcastId: data.broadcastId || "",
-        episodeId: data.episodeId || "",
+        isDownloadable: archiveData.isDownloadable || false,
+        isFeatured: archiveData.isFeatured || false,
+        isExclusive: archiveData.isExclusive || false,
+        accessLevel: archiveData.accessLevel || "PUBLIC",
+        tags: archiveData.tags || [],
+        transcript: archiveData.transcript || "",
+        transcriptFile: archiveData.transcriptFile || "",
+        podcastId: archiveData.podcastId || "",
+        audiobookId: archiveData.audiobookId || "",
+        broadcastId: archiveData.broadcastId || "",
+        episodeId: archiveData.episodeId || "",
       });
       setError(null);
     } catch (error) {

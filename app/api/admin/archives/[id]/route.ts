@@ -16,7 +16,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await staffOnly(user);
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 });
+    }
     const resolvedParams = await params;
 
     const archive = await prisma.archive.findUnique({
@@ -142,7 +146,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await staffOnly(user);
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 });
+    }
     const resolvedParams = await params;
 
     const data = await request.json();
@@ -290,7 +298,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await staffOnly(user);
+    if (!user.isApproved) {
+      return NextResponse.json({ 
+        error: "Staff approval required. Your account is pending admin approval." 
+      }, { status: 403 });
+    }
     const resolvedParams = await params;
 
     // Check if archive exists

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { UnifiedAudioListener } from "@/lib/unified-audio-system"
+import { useAudioPlayer } from "@/components/live-player/hooks/use-audio-player"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -44,39 +44,12 @@ interface BroadcastPageProps {
 }
 
 export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [volume, setVolume] = useState(75)
-  const [isMuted, setIsMuted] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
-  const audioListenerRef = useRef<UnifiedAudioListener | null>(null)
+  const { state, togglePlay, setVolume, toggleMute } = useAudioPlayer()
+  const streamUrl = `${process.env.NEXT_PUBLIC_SRS_URL || 'http://localhost:1985'}/live/${broadcast.id}.m3u8`
 
   const handlePlayPause = async () => {
-    if (!isPlaying) {
-      // Start listening
-      try {
-        if (!audioListenerRef.current) {
-          audioListenerRef.current = new UnifiedAudioListener(broadcast.id)
-        }
-        await audioListenerRef.current.startListening()
-        setIsPlaying(true)
-      } catch (error) {
-        console.error('Failed to start listening:', error)
-      }
-    } else {
-      // Stop listening
-      if (audioListenerRef.current) {
-        audioListenerRef.current.stopListening()
-        setIsPlaying(false)
-      }
-    }
-  }
-
-  const toggleMute = () => {
-    const newMuted = !isMuted
-    setIsMuted(newMuted)
-    if (audioListenerRef.current) {
-      audioListenerRef.current.setVolume(newMuted ? 0 : volume)
-    }
+    await togglePlay(streamUrl)
   }
 
   const formatTime = (dateString: string) => {
@@ -180,9 +153,10 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                     <Button
                       onClick={handlePlayPause}
                       size="lg"
-                      className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg transition-all duration-200 hover:scale-105"
+                      disabled={state.isLoading}
+                      className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50"
                     >
-                      {isPlaying ? (
+                      {state.isPlaying ? (
                         <Pause className="h-6 w-6 sm:h-8 sm:w-8" />
                       ) : (
                         <Play className="h-6 w-6 sm:h-8 sm:w-8 ml-0.5" />
@@ -197,7 +171,7 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                       onClick={toggleMute}
                       className="h-8 w-8 sm:h-10 sm:w-10 shrink-0"
                     >
-                      {isMuted || volume === 0 ? (
+                      {state.isMuted || state.volume === 0 ? (
                         <VolumeX className="h-4 w-4" />
                       ) : (
                         <Volume2 className="h-4 w-4" />
@@ -208,22 +182,19 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                         type="range"
                         min="0"
                         max="100"
-                        value={isMuted ? 0 : volume}
+                        value={state.isMuted ? 0 : state.volume}
                         onChange={(e) => {
                           const newVolume = parseInt(e.target.value)
                           setVolume(newVolume)
-                          if (audioListenerRef.current && !isMuted) {
-                            audioListenerRef.current.setVolume(newVolume)
-                          }
                         }}
                         className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer slider"
                         style={{
-                          background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${isMuted ? 0 : volume}%, #e2e8f0 ${isMuted ? 0 : volume}%, #e2e8f0 100%)`
+                          background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${state.isMuted ? 0 : state.volume}%, #e2e8f0 ${state.isMuted ? 0 : state.volume}%, #e2e8f0 100%)`
                         }}
                       />
                     </div>
                     <span className="text-xs sm:text-sm text-gray-500 w-8 sm:w-12 text-right font-medium">
-                      {isMuted ? 0 : volume}%
+                      {state.isMuted ? 0 : state.volume}%
                     </span>
                   </div>
                 </CardContent>

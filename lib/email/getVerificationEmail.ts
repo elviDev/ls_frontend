@@ -1,6 +1,10 @@
 import { resend } from "../resend";
 
 export const sendVerificationEmail = async (token: string, email: string) => {
+  if (!resend) {
+    throw new Error('Resend client is not initialized');
+  }
+  
   await resend.emails.send({
     from: "RadioStation <no-reply@yourapp.com>",
     to: email,

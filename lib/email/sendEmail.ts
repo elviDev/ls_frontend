@@ -6,6 +6,10 @@ export const sendEmail = async (
     html: string;
   }
 ) => {
+  if (!resend) {
+    throw new Error('Resend client is not initialized');
+  }
+  
   await resend.emails.send({
     from: "RadioStation <no-reply@yourapp.com>",
     to: email,

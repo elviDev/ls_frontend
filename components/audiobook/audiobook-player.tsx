@@ -74,7 +74,7 @@ export function AudiobookPlayer({
   >([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
   const progressSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get the current chapter based on playback position
@@ -126,7 +126,9 @@ export function AudiobookPlayer({
         setIsPlaying(true);
       } else {
         setCurrentTime(0);
-        cancelAnimationFrame(animationRef.current!);
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
       }
     };
 

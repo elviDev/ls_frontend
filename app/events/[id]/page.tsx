@@ -59,11 +59,22 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState(false)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [eventId, setEventId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchEventDetail()
-    fetchCurrentUser()
-  }, [params.id])
+    const getParams = async () => {
+      const resolvedParams = await params
+      setEventId(resolvedParams.id)
+    }
+    getParams()
+  }, [])
+
+  useEffect(() => {
+    if (eventId) {
+      fetchEventDetail()
+      fetchCurrentUser()
+    }
+  }, [eventId])
 
   const fetchCurrentUser = async () => {
     try {
@@ -78,9 +89,10 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
   }
 
   const fetchEventDetail = async () => {
+    if (!eventId) return
     try {
       setLoading(true)
-      const response = await fetch(`/api/events/${params.id}`)
+      const response = await fetch(`/api/events/${eventId}`)
       if (response.ok) {
         const data = await response.json()
         setEvent(data)

@@ -22,7 +22,11 @@ export async function getCurrentUser() {
       return null;
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; iat: number; exp: number };
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: string;
+      iat: number;
+      exp: number;
+    };
     console.log("[getCurrentUser] Decoded token userId:", decoded.userId);
 
     // First check User table
@@ -44,32 +48,34 @@ export async function getCurrentUser() {
       console.log("[getCurrentUser] Returning regular user");
       return {
         ...regularUser,
-        role: 'USER',
+        role: "USER",
         isApproved: true,
-        firstName: regularUser.name?.split(' ')[0] || '',
-        lastName: regularUser.name?.split(' ').slice(1).join(' ') || '',
+        firstName: regularUser.name?.split(" ")[0] || "",
+        lastName: regularUser.name?.split(" ").slice(1).join(" ") || "",
       };
     }
 
     // If not found in User table, try Staff table
     console.log("[getCurrentUser] Checking Staff table for:", decoded.userId);
-    let user = await prisma.staff.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isApproved: true,
-        profileImage: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    }).catch((error) => {
-      console.log("[getCurrentUser] Staff query error:", error.message);
-      return null;
-    });
+    let user = await prisma.staff
+      .findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isApproved: true,
+          profileImage: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })
+      .catch((error: any) => {
+        console.log("[getCurrentUser] Staff query error:", error.message);
+        return null;
+      });
     console.log("[getCurrentUser] Staff user found:", !!user);
 
     if (user) {

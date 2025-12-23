@@ -170,10 +170,12 @@ export function EnhancedChat({ isLive, isBroadcastLive, hostId, broadcastId, bro
         likeMessage(messageId)
         break
       case 'pin':
-      case 'unpin':
       case 'delete':
       case 'highlight':
         moderateMessage(messageId, action)
+        break
+      case 'unpin':
+        moderateMessage(messageId, 'pin') // Use 'pin' action to toggle unpin
         break
     }
   }

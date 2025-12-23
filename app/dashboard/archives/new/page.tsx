@@ -225,7 +225,7 @@ export default function NewArchivePage() {
           retries: 2,
           context: "Creating archive record"
         }
-      );
+      ) as { archive: { id: string } };
       setUploadStage("Archive created successfully!");
       setUploadProgress(100);
       

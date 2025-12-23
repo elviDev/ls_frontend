@@ -39,7 +39,7 @@ export async function POST(
     select: {
       id: true,
       status: true,
-      authorId: true,
+      createdById: true,
     },
   });
 
@@ -47,7 +47,7 @@ export async function POST(
     return NextResponse.json({ error: "Audiobook not found" }, { status: 404 });
   }
 
-  const isAuthorized = user.role === "ADMIN" || user.id === audiobook.authorId;
+  const isAuthorized = user.role === "ADMIN" || user.id === audiobook.createdById;
   if (!isAuthorized) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -79,7 +79,7 @@ export async function POST(
       trackNumber,
       audioFile: audioUrl,
       audiobookId: audiobook.id,
-      isDraft: true,
+      status: "DRAFT",
       duration: durationInSeconds,
     },
   });

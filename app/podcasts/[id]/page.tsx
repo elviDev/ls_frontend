@@ -41,43 +41,53 @@ export default function PodcastDetailPage({
   >([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingTranscript, setLoadingTranscript] = useState(false);
+  const [podcastId, setPodcastId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const { id } = params;
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch podcast details and episodes
-        const result = await fetchPodcastEpisodes(params.id);
-
-        if (result.success) {
-          setPodcastData(result.data);
-
-          // Set the first episode as current if available
-          if (result.data?.episodes && result.data.episodes.length > 0) {
-            setCurrentEpisode(result.data.episodes[0]);
-          }
-        } else {
-          setError(result.error || "Failed to load podcast");
-        }
-
-        // Check if this podcast is in favorites
-        const favoriteResult = await checkIsFavorite(params.id);
-        if (favoriteResult.success) {
-          setIsFavorite(favoriteResult.isFavorite!);
-        }
-      } catch (err) {
-        setError("An unexpected error occurred");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setPodcastId(resolvedParams.id);
     };
+    getParams();
+  }, []);
 
-    fetchData();
-  }, [id]);
+  useEffect(() => {
+    if (podcastId) {
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+
+          // Fetch podcast details and episodes
+          const result = await fetchPodcastEpisodes(podcastId);
+
+          if (result.success) {
+            setPodcastData(result.data);
+
+            // Set the first episode as current if available
+            if (result.data?.episodes && result.data.episodes.length > 0) {
+              setCurrentEpisode(result.data.episodes[0]);
+            }
+          } else {
+            setError(result.error || "Failed to load podcast");
+          }
+
+          // Check if this podcast is in favorites
+          const favoriteResult = await checkIsFavorite(podcastId);
+          if (favoriteResult.success) {
+            setIsFavorite(favoriteResult.isFavorite!);
+          }
+        } catch (err) {
+          setError("An unexpected error occurred");
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+    }
+  }, [podcastId]);
 
   const handlePlayEpisode = async (episode: any) => {
     setCurrentEpisode(episode);
@@ -98,7 +108,7 @@ export default function PodcastDetailPage({
     try {
       const commentsResult = await getEpisodeComments(episodeId);
       if (commentsResult.success) {
-        setCurrentEpisodeComments(commentsResult.data);
+        setCurrentEpisodeComments(commentsResult.data || []);
       }
     } catch (error) {
       console.error("Failed to load comments:", error);
@@ -146,11 +156,11 @@ export default function PodcastDetailPage({
   };
 
   const handleFavoriteToggle = async () => {
-    if (!podcastData?.podcast) return;
+    if (!podcastData?.podcast || !podcastId) return;
 
     try {
       const result = await toggleFavoritePodcast({
-        id: params.id,
+        id: podcastId,
         title: podcastData.podcast.collectionName,
         image: podcastData.podcast.artworkUrl100 || "",
         artist: podcastData.podcast.artistName,
@@ -353,11 +363,11 @@ export default function PodcastDetailPage({
               </TabsContent>
 
               <TabsContent value="reviews">
-                <ReviewSection podcastId={params.id} />
+                <ReviewSection podcastId={podcastId || ""} />
               </TabsContent>
 
               <TabsContent value="comments">
-                <CommentSection podcastId={params.id} />
+                <CommentSection podcastId={podcastId || ""} />
               </TabsContent>
 
               <TabsContent value="transcript">

@@ -63,7 +63,7 @@ export async function POST(req: Request) {
           coverImage: upload.url,
           genreId,
           duration: 0,
-          authorId: user.id,
+          createdById: user.id,
           releaseDate: new Date(),
           status: AudiobookStatus.DRAFT,
         },
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") ?? "published";
-    const authorId = searchParams.get("authorId") || undefined;
+    const createdById = searchParams.get("createdById") || undefined;
     const query = searchParams.get("q") || "";
 
     const user = await getCurrentUser();
@@ -95,7 +95,7 @@ export async function GET(req: Request) {
     const filters: any = {
       status,
       title: query ? { contains: query, mode: "insensitive" } : undefined,
-      ...(authorId && { authorId }),
+      ...(createdById && { createdById }),
     };
 
     // Only show draft if user is authorized
@@ -119,10 +119,11 @@ export async function GET(req: Request) {
         duration: true,
         releaseDate: true,
         createdAt: true,
-        author: {
+        createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             profileImage: true,
           },
         },

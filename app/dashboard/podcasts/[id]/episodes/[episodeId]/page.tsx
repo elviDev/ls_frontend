@@ -1,28 +1,66 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useRouter, useParams } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Progress } from "@/components/ui/progress"
-import { Slider } from "@/components/ui/slider"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  ArrowLeft, 
-  Upload, 
-  X, 
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ArrowLeft,
+  Upload,
+  X,
   Plus,
   FileAudio,
   Save,
@@ -49,369 +87,403 @@ import {
   Heart,
   Users,
   CheckCircle,
-  RefreshCw
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+  RefreshCw,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const episodeSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(200, "Title must be less than 200 characters"),
   description: z.string().optional(),
-  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT")
-})
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
+});
 
-type EpisodeFormData = z.infer<typeof episodeSchema>
+type EpisodeFormData = z.infer<typeof episodeSchema>;
 
 type Episode = {
-  id: string
-  title: string
-  description: string | null
-  episodeNumber: number
-  audioFile: string
-  duration: number
-  publishedAt: string | null
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
-  transcript: string | null
-  transcriptFile: string | null
-  createdAt: string
-  updatedAt: string
+  id: string;
+  title: string;
+  description: string | null;
+  episodeNumber: number;
+  audioFile: string;
+  duration: number;
+  publishedAt: string | null;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  transcript: string | null;
+  transcriptFile: string | null;
+  createdAt: string;
+  updatedAt: string;
   podcast: {
-    id: string
-    title: string
-    host: string
-  }
+    id: string;
+    title: string;
+    host: string;
+  };
   _count: {
-    comments: number
-    favorites: number
-    playbackProgress: number
-  }
-}
+    comments: number;
+    favorites: number;
+    playbackProgress: number;
+  };
+};
 
 type Comment = {
-  id: string
-  content: string
-  createdAt: string
+  id: string;
+  content: string;
+  createdAt: string;
   user: {
-    id: string
-    name: string
-    email: string
-  }
-}
+    id: string;
+    name: string;
+    email: string;
+  };
+};
 
 export default function EpisodeDetailPage() {
-  const router = useRouter()
-  const params = useParams()
-  const { toast } = useToast()
-  const [episode, setEpisode] = useState<Episode | null>(null)
-  const [comments, setComments] = useState<Comment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isEditing, setIsEditing] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  
+  const router = useRouter();
+  const params = useParams();
+  const { toast } = useToast();
+  const [episode, setEpisode] = useState<Episode | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   // Audio player state
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [audioDuration, setAudioDuration] = useState(0)
-  const [volume, setVolume] = useState(1)
-  const [isMuted, setIsMuted] = useState(false)
-  const audioRef = useRef<HTMLAudioElement>(null)
-  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   // Transcript editing
-  const [transcriptDialog, setTranscriptDialog] = useState(false)
-  const [transcriptContent, setTranscriptContent] = useState("")
-  const [transcriptOption, setTranscriptOption] = useState<"manual" | "upload" | "none">("none")
-  const [transcriptFile, setTranscriptFile] = useState<File | null>(null)
-  const [isUploadingTranscript, setIsUploadingTranscript] = useState(false)
+  const [transcriptDialog, setTranscriptDialog] = useState(false);
+  const [transcriptContent, setTranscriptContent] = useState("");
+  const [transcriptOption, setTranscriptOption] = useState<
+    "manual" | "upload" | "none"
+  >("none");
+  const [transcriptFile, setTranscriptFile] = useState<File | null>(null);
+  const [isUploadingTranscript, setIsUploadingTranscript] = useState(false);
 
   const form = useForm<EpisodeFormData>({
     resolver: zodResolver(episodeSchema),
     defaultValues: {
       title: "",
       description: "",
-      status: "DRAFT"
-    }
-  })
+      status: "DRAFT",
+    },
+  });
 
   useEffect(() => {
     if (params.id && params.episodeId) {
-      fetchEpisode()
-      fetchComments()
+      fetchEpisode();
+      fetchComments();
     }
-  }, [params.id, params.episodeId])
+  }, [params.id, params.episodeId]);
 
   useEffect(() => {
     if (episode) {
       form.reset({
         title: episode.title,
         description: episode.description || "",
-        status: episode.status
-      })
-      setTranscriptContent(episode.transcript || "")
-      setTranscriptOption(episode.transcript ? "manual" : "none")
-      setAudioDuration(episode.duration)
+        status: episode.status,
+      });
+      setTranscriptContent(episode.transcript || "");
+      setTranscriptOption(episode.transcript ? "manual" : "none");
+      setAudioDuration(episode.duration);
     }
-  }, [episode, form])
+  }, [episode, form]);
 
   const fetchEpisode = async () => {
     try {
-      setLoading(true)
-      const response = await fetch(`/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`)
-      if (!response.ok) throw new Error('Failed to fetch episode')
-      
-      const data = await response.json()
-      setEpisode(data)
+      setLoading(true);
+      const response = await fetch(
+        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch episode");
+
+      const data = await response.json();
+      setEpisode(data);
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to fetch episode details",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`/api/admin/podcasts/${params.id}/episodes/${params.episodeId}/comments`)
+      const response = await fetch(
+        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}/comments`
+      );
       if (response.ok) {
-        const data = await response.json()
-        setComments(data)
+        const data = await response.json();
+        setComments(data);
       }
     } catch (error) {
-      console.error('Failed to fetch comments:', error)
+      console.error("Failed to fetch comments:", error);
     }
-  }
+  };
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`, {
-        method: 'DELETE'
-      })
-      
-      if (!response.ok) throw new Error('Failed to delete episode')
-      
+      const response = await fetch(
+        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete episode");
+
       toast({
         title: "Success",
-        description: "Episode deleted successfully"
-      })
-      router.push(`/dashboard/podcasts/${params.id}`)
+        description: "Episode deleted successfully",
+      });
+      router.push(`/dashboard/podcasts/${params.id}`);
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete episode",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const handleStatusChange = async (status: string) => {
     try {
-      const response = await fetch(`/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      })
-      
-      if (!response.ok) throw new Error('Failed to update status')
-      
-      setEpisode(prev => prev ? { ...prev, status: status as any } : null)
+      const response = await fetch(
+        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update status");
+
+      setEpisode((prev) => (prev ? { ...prev, status: status as any } : null));
       toast({
         title: "Success",
-        description: `Episode ${status.toLowerCase()} successfully`
-      })
+        description: `Episode ${status.toLowerCase()} successfully`,
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update episode status",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const onSubmit = async (data: EpisodeFormData) => {
-    setIsSubmitting(true)
-    setUploadProgress(0)
+    setIsSubmitting(true);
+    setUploadProgress(0);
 
     try {
       // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 90) {
-            clearInterval(progressInterval)
-            return prev
+            clearInterval(progressInterval);
+            return prev;
           }
-          return prev + 20
-        })
-      }, 200)
+          return prev + 20;
+        });
+      }, 200);
 
-      const response = await fetch(`/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
+      const response = await fetch(
+        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
 
-      clearInterval(progressInterval)
-      setUploadProgress(100)
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to update episode')
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update episode");
       }
 
-      const updatedEpisode = await response.json()
-      setEpisode(updatedEpisode)
-      setIsEditing(false)
-      
+      const updatedEpisode = await response.json();
+      setEpisode(updatedEpisode);
+      setIsEditing(false);
+
       toast({
         title: "Success",
-        description: "Episode updated successfully!"
-      })
+        description: "Episode updated successfully!",
+      });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to update episode",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     } finally {
-      setIsSubmitting(false)
-      setUploadProgress(0)
+      setIsSubmitting(false);
+      setUploadProgress(0);
     }
-  }
+  };
 
-  const handleTranscriptUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const handleTranscriptUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
     if (file) {
-      if (file.type === 'text/plain' || file.type === 'text/vtt' || file.name.endsWith('.srt')) {
-        setTranscriptFile(file)
-        
+      if (
+        file.type === "text/plain" ||
+        file.type === "text/vtt" ||
+        file.name.endsWith(".srt")
+      ) {
+        setTranscriptFile(file);
+
         // Read file content and set as transcript
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onload = (e) => {
-          const content = e.target?.result as string
-          setTranscriptContent(content)
-          setTranscriptOption("upload")
-        }
-        reader.readAsText(file)
+          const content = e.target?.result as string;
+          setTranscriptContent(content);
+          setTranscriptOption("upload");
+        };
+        reader.readAsText(file);
       } else {
         toast({
           title: "Invalid file type",
           description: "Please select a text file (.txt, .vtt, .srt)",
-          variant: "destructive"
-        })
+          variant: "destructive",
+        });
       }
     }
-  }
+  };
 
   const handleTranscriptSave = async () => {
     try {
-      setIsUploadingTranscript(true)
-      
-      const formData = new FormData()
-      
+      setIsUploadingTranscript(true);
+
+      const formData = new FormData();
+
       if (transcriptOption === "manual" && transcriptContent.trim()) {
-        formData.append('transcript', transcriptContent.trim())
+        formData.append("transcript", transcriptContent.trim());
       } else if (transcriptOption === "upload" && transcriptFile) {
-        formData.append('transcriptFile', transcriptFile)
+        formData.append("transcriptFile", transcriptFile);
         if (transcriptContent.trim()) {
-          formData.append('transcript', transcriptContent.trim())
+          formData.append("transcript", transcriptContent.trim());
         }
       } else if (transcriptOption === "none") {
-        formData.append('transcript', '')
+        formData.append("transcript", "");
       }
 
-      const response = await fetch(`/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`, {
-        method: 'PATCH',
-        body: formData
-      })
-      
-      if (!response.ok) throw new Error('Failed to save transcript')
-      
-      const updatedEpisode = await response.json()
-      setEpisode(updatedEpisode)
-      setTranscriptDialog(false)
-      
+      const response = await fetch(
+        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        {
+          method: "PATCH",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to save transcript");
+
+      const updatedEpisode = await response.json();
+      setEpisode(updatedEpisode);
+      setTranscriptDialog(false);
+
       toast({
         title: "Success",
-        description: "Transcript saved successfully"
-      })
+        description: "Transcript saved successfully",
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to save transcript",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     } finally {
-      setIsUploadingTranscript(false)
+      setIsUploadingTranscript(false);
     }
-  }
+  };
 
   const recalculateDuration = async () => {
-    if (!episode?.audioFile) return
-    
+    if (!episode?.audioFile) return;
+
     try {
-      const audio = new Audio(episode.audioFile)
-      audio.addEventListener('loadedmetadata', async () => {
-        const newDuration = Math.floor(audio.duration)
-        
+      const audio = new Audio(episode.audioFile);
+      audio.addEventListener("loadedmetadata", async () => {
+        const newDuration = Math.floor(audio.duration);
+
         // Update the episode duration in the database
-        const response = await fetch(`/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ duration: newDuration })
-        })
-        
+        const response = await fetch(
+          `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ duration: newDuration }),
+          }
+        );
+
         if (response.ok) {
-          const updatedEpisode = await response.json()
-          setEpisode(updatedEpisode)
-          setAudioDuration(newDuration)
+          const updatedEpisode = await response.json();
+          setEpisode(updatedEpisode);
+          setAudioDuration(newDuration);
           toast({
             title: "Success",
-            description: `Duration updated to ${formatDuration(newDuration)}`
-          })
+            description: `Duration updated to ${formatDuration(newDuration)}`,
+          });
         }
-      })
-      audio.addEventListener('error', () => {
+      });
+      audio.addEventListener("error", () => {
         toast({
           title: "Error",
           description: "Failed to load audio file for duration calculation",
-          variant: "destructive"
-        })
-      })
+          variant: "destructive",
+        });
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to recalculate duration",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = Math.floor(seconds % 60)
-    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
     if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PUBLISHED': return 'bg-green-100 text-green-800 border-green-200'
-      case 'DRAFT': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'ARCHIVED': return 'bg-gray-100 text-gray-800 border-gray-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case "PUBLISHED":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "DRAFT":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "ARCHIVED":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -421,7 +493,7 @@ export default function EpisodeDetailPage() {
           <p className="text-muted-foreground">Loading episode...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!episode) {
@@ -429,13 +501,17 @@ export default function EpisodeDetailPage() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Episode not found</h2>
-          <p className="text-muted-foreground mb-4">The episode you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push(`/dashboard/podcasts/${params.id}`)}>
+          <p className="text-muted-foreground mb-4">
+            The episode you're looking for doesn't exist.
+          </p>
+          <Button
+            onClick={() => router.push(`/dashboard/podcasts/${params.id}`)}
+          >
             Back to Podcast
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -447,7 +523,9 @@ export default function EpisodeDetailPage() {
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">Episode #{episode.episodeNumber}: {episode.title}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Episode #{episode.episodeNumber}: {episode.title}
+            </h1>
             <Badge className={getStatusColor(episode.status)}>
               {episode.status}
             </Badge>
@@ -464,14 +542,17 @@ export default function EpisodeDetailPage() {
             <Edit className="h-4 w-4 mr-2" />
             {isEditing ? "Cancel Edit" : "Edit Episode"}
           </Button>
-          {episode.status === 'DRAFT' && (
-            <Button onClick={() => handleStatusChange('PUBLISHED')}>
+          {episode.status === "DRAFT" && (
+            <Button onClick={() => handleStatusChange("PUBLISHED")}>
               <Play className="h-4 w-4 mr-2" />
               Publish
             </Button>
           )}
-          {episode.status === 'PUBLISHED' && (
-            <Button variant="outline" onClick={() => handleStatusChange('ARCHIVED')}>
+          {episode.status === "PUBLISHED" && (
+            <Button
+              variant="outline"
+              onClick={() => handleStatusChange("ARCHIVED")}
+            >
               <Pause className="h-4 w-4 mr-2" />
               Archive
             </Button>
@@ -487,12 +568,17 @@ export default function EpisodeDetailPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Episode</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "Episode #{episode.episodeNumber}: {episode.title}"? This action cannot be undone.
+                  Are you sure you want to delete "Episode #
+                  {episode.episodeNumber}: {episode.title}"? This action cannot
+                  be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -509,65 +595,81 @@ export default function EpisodeDetailPage() {
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Episode #{episode.episodeNumber}: {episode.title}</h2>
+                  <h2 className="text-xl font-semibold mb-2">
+                    Episode #{episode.episodeNumber}: {episode.title}
+                  </h2>
                   {episode.description && (
-                    <p className="text-muted-foreground">{episode.description}</p>
+                    <p className="text-muted-foreground">
+                      {episode.description}
+                    </p>
                   )}
                 </div>
-                
+
                 {/* Audio Player Controls */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-4">
-                    <Button 
-                      size="icon" 
+                    <Button
+                      size="icon"
                       variant="outline"
-                      onClick={() => audioRef.current && (audioRef.current.currentTime -= 10)}
+                      onClick={() =>
+                        audioRef.current && (audioRef.current.currentTime -= 10)
+                      }
                     >
                       <SkipBack className="h-4 w-4" />
                     </Button>
-                    <Button 
-                      size="icon" 
+                    <Button
+                      size="icon"
                       className="h-12 w-12"
                       onClick={() => {
                         if (audioRef.current) {
                           if (isPlaying) {
-                            audioRef.current.pause()
+                            audioRef.current.pause();
                           } else {
-                            audioRef.current.play()
+                            audioRef.current.play();
                           }
                         }
                       }}
                     >
-                      {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                      {isPlaying ? (
+                        <Pause className="h-5 w-5" />
+                      ) : (
+                        <Play className="h-5 w-5" />
+                      )}
                     </Button>
-                    <Button 
-                      size="icon" 
+                    <Button
+                      size="icon"
                       variant="outline"
-                      onClick={() => audioRef.current && (audioRef.current.currentTime += 10)}
+                      onClick={() =>
+                        audioRef.current && (audioRef.current.currentTime += 10)
+                      }
                     >
                       <SkipForward className="h-4 w-4" />
                     </Button>
                     <div className="flex items-center gap-2">
-                      <Button 
-                        size="icon" 
+                      <Button
+                        size="icon"
                         variant="outline"
                         onClick={() => {
                           if (audioRef.current) {
-                            const newMuted = !isMuted
-                            audioRef.current.muted = newMuted
-                            setIsMuted(newMuted)
+                            const newMuted = !isMuted;
+                            audioRef.current.muted = newMuted;
+                            setIsMuted(newMuted);
                           }
                         }}
                       >
-                        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                        {isMuted ? (
+                          <VolumeX className="h-4 w-4" />
+                        ) : (
+                          <Volume2 className="h-4 w-4" />
+                        )}
                       </Button>
                       <Slider
                         value={[volume]}
                         onValueChange={(value) => {
-                          const newVolume = value[0]
-                          setVolume(newVolume)
+                          const newVolume = value[0];
+                          setVolume(newVolume);
                           if (audioRef.current) {
-                            audioRef.current.volume = newVolume
+                            audioRef.current.volume = newVolume;
                           }
                         }}
                         max={1}
@@ -577,16 +679,17 @@ export default function EpisodeDetailPage() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Progress 
-                      value={(currentTime / audioDuration) * 100} 
-                      className="w-full cursor-pointer" 
+                    <Progress
+                      value={(currentTime / audioDuration) * 100}
+                      className="w-full cursor-pointer"
                       onClick={(e) => {
                         if (audioRef.current) {
-                          const rect = e.currentTarget.getBoundingClientRect()
-                          const percent = (e.clientX - rect.left) / rect.width
-                          audioRef.current.currentTime = percent * audioDuration
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const percent = (e.clientX - rect.left) / rect.width;
+                          audioRef.current.currentTime =
+                            percent * audioDuration;
                         }
                       }}
                     />
@@ -595,13 +698,17 @@ export default function EpisodeDetailPage() {
                       <span>{formatDuration(episode.duration)}</span>
                     </div>
                   </div>
-                  
+
                   {/* Hidden audio element for actual playback */}
                   <audio
                     ref={audioRef}
                     className="hidden"
-                    onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                    onLoadedMetadata={(e) => setAudioDuration(e.currentTarget.duration)}
+                    onTimeUpdate={(e) =>
+                      setCurrentTime(e.currentTarget.currentTime)
+                    }
+                    onLoadedMetadata={(e) =>
+                      setAudioDuration(e.currentTarget.duration)
+                    }
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                   >
@@ -633,7 +740,10 @@ export default function EpisodeDetailPage() {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={form.control}
                       name="title"
@@ -641,7 +751,10 @@ export default function EpisodeDetailPage() {
                         <FormItem>
                           <FormLabel>Episode Title *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter episode title..." {...field} />
+                            <Input
+                              placeholder="Enter episode title..."
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -655,7 +768,7 @@ export default function EpisodeDetailPage() {
                         <FormItem>
                           <FormLabel>Description</FormLabel>
                           <FormControl>
-                            <Textarea 
+                            <Textarea
                               placeholder="Describe this episode..."
                               className="min-h-[100px]"
                               {...field}
@@ -672,7 +785,10 @@ export default function EpisodeDetailPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Status</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue />
@@ -720,7 +836,11 @@ export default function EpisodeDetailPage() {
                         <Save className="h-4 w-4 mr-2" />
                         {isSubmitting ? "Updating..." : "Update Episode"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsEditing(false)}
+                      >
                         Cancel
                       </Button>
                     </div>
@@ -746,29 +866,39 @@ export default function EpisodeDetailPage() {
                 <CardContent className="space-y-4">
                   <div>
                     <Label className="text-sm font-medium">Title</Label>
-                    <p className="text-sm text-muted-foreground mt-1">{episode.title}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {episode.title}
+                    </p>
                   </div>
-                  
+
                   {episode.description && (
                     <div>
                       <Label className="text-sm font-medium">Description</Label>
-                      <p className="text-sm text-muted-foreground mt-1">{episode.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {episode.description}
+                      </p>
                     </div>
                   )}
-                  
+
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <Label className="text-sm font-medium">Episode Number</Label>
-                      <p className="text-sm text-muted-foreground mt-1">#{episode.episodeNumber}</p>
+                      <Label className="text-sm font-medium">
+                        Episode Number
+                      </Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        #{episode.episodeNumber}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Duration</Label>
                       <div className="flex items-center gap-2 mt-1">
-                        <p className="text-sm text-muted-foreground">{formatDuration(episode.duration)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDuration(episode.duration)}
+                        </p>
                         {episode.duration === 0 && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={recalculateDuration}
                             className="h-6 px-2 text-xs"
                           >
@@ -781,7 +911,10 @@ export default function EpisodeDetailPage() {
                     <div>
                       <Label className="text-sm font-medium">Status</Label>
                       <div className="mt-1">
-                        <Badge className={getStatusColor(episode.status)} variant="outline">
+                        <Badge
+                          className={getStatusColor(episode.status)}
+                          variant="outline"
+                        >
                           {episode.status}
                         </Badge>
                       </div>
@@ -818,7 +951,10 @@ export default function EpisodeDetailPage() {
                         Episode transcript for accessibility and searchability
                       </CardDescription>
                     </div>
-                    <Dialog open={transcriptDialog} onOpenChange={setTranscriptDialog}>
+                    <Dialog
+                      open={transcriptDialog}
+                      onOpenChange={setTranscriptDialog}
+                    >
                       <DialogTrigger asChild>
                         <Button variant="outline">
                           <Edit className="h-4 w-4 mr-2" />
@@ -838,23 +974,33 @@ export default function EpisodeDetailPage() {
                             <div className="grid grid-cols-3 gap-4">
                               <Button
                                 type="button"
-                                variant={transcriptOption === "none" ? "default" : "outline"}
+                                variant={
+                                  transcriptOption === "none"
+                                    ? "default"
+                                    : "outline"
+                                }
                                 onClick={() => {
-                                  setTranscriptOption("none")
-                                  setTranscriptContent("")
-                                  setTranscriptFile(null)
+                                  setTranscriptOption("none");
+                                  setTranscriptContent("");
+                                  setTranscriptFile(null);
                                 }}
                                 className="h-auto flex-col gap-2 p-4"
                               >
                                 <X className="h-5 w-5" />
-                                <span className="text-sm">Remove Transcript</span>
+                                <span className="text-sm">
+                                  Remove Transcript
+                                </span>
                               </Button>
                               <Button
                                 type="button"
-                                variant={transcriptOption === "manual" ? "default" : "outline"}
+                                variant={
+                                  transcriptOption === "manual"
+                                    ? "default"
+                                    : "outline"
+                                }
                                 onClick={() => {
-                                  setTranscriptOption("manual")
-                                  setTranscriptFile(null)
+                                  setTranscriptOption("manual");
+                                  setTranscriptFile(null);
                                 }}
                                 className="h-auto flex-col gap-2 p-4"
                               >
@@ -863,7 +1009,11 @@ export default function EpisodeDetailPage() {
                               </Button>
                               <Button
                                 type="button"
-                                variant={transcriptOption === "upload" ? "default" : "outline"}
+                                variant={
+                                  transcriptOption === "upload"
+                                    ? "default"
+                                    : "outline"
+                                }
                                 onClick={() => setTranscriptOption("upload")}
                                 className="h-auto flex-col gap-2 p-4"
                               >
@@ -875,16 +1025,22 @@ export default function EpisodeDetailPage() {
 
                           {transcriptOption === "manual" && (
                             <div className="space-y-2">
-                              <Label htmlFor="transcript">Transcript Content</Label>
+                              <Label htmlFor="transcript">
+                                Transcript Content
+                              </Label>
                               <Textarea
                                 id="transcript"
                                 placeholder="Enter the transcript content here...&#10;&#10;You can format it with timestamps like:&#10;[00:00] Speaker: Hello and welcome...&#10;[00:30] Speaker: Today we'll discuss..."
                                 value={transcriptContent}
-                                onChange={(e) => setTranscriptContent(e.target.value)}
+                                onChange={(e) =>
+                                  setTranscriptContent(e.target.value)
+                                }
                                 className="min-h-[300px] font-mono text-sm"
                               />
                               <p className="text-xs text-muted-foreground">
-                                Use a consistent format with timestamps for better usability. Example: [00:00] Speaker: Content
+                                Use a consistent format with timestamps for
+                                better usability. Example: [00:00] Speaker:
+                                Content
                               </p>
                             </div>
                           )}
@@ -898,9 +1054,14 @@ export default function EpisodeDetailPage() {
                                       <FileText className="h-5 w-5 text-muted-foreground" />
                                     </div>
                                     <div className="flex-1">
-                                      <p className="font-medium">{transcriptFile.name}</p>
+                                      <p className="font-medium">
+                                        {transcriptFile.name}
+                                      </p>
                                       <p className="text-sm text-muted-foreground">
-                                        {(transcriptFile.size / 1024).toFixed(2)} KB
+                                        {(transcriptFile.size / 1024).toFixed(
+                                          2
+                                        )}{" "}
+                                        KB
                                       </p>
                                     </div>
                                     <Button
@@ -908,8 +1069,10 @@ export default function EpisodeDetailPage() {
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => {
-                                        setTranscriptFile(null)
-                                        setTranscriptContent(episode?.transcript || "")
+                                        setTranscriptFile(null);
+                                        setTranscriptContent(
+                                          episode?.transcript || ""
+                                        );
                                       }}
                                     >
                                       <X className="h-4 w-4" />
@@ -919,7 +1082,9 @@ export default function EpisodeDetailPage() {
                                   <div className="text-center space-y-4">
                                     <FileText className="h-8 w-8 text-muted-foreground mx-auto" />
                                     <div className="space-y-2">
-                                      <p className="text-sm font-medium">Upload transcript file</p>
+                                      <p className="text-sm font-medium">
+                                        Upload transcript file
+                                      </p>
                                       <p className="text-xs text-muted-foreground">
                                         Supported formats: .txt, .vtt, .srt
                                       </p>
@@ -931,7 +1096,11 @@ export default function EpisodeDetailPage() {
                                         onChange={handleTranscriptUpload}
                                         className="absolute inset-0 opacity-0 cursor-pointer"
                                       />
-                                      <Button type="button" variant="outline" className="pointer-events-none">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="pointer-events-none"
+                                      >
                                         <Upload className="h-4 w-4 mr-2" />
                                         Choose File
                                       </Button>
@@ -939,18 +1108,21 @@ export default function EpisodeDetailPage() {
                                   </div>
                                 )}
                               </div>
-                              
+
                               {transcriptContent && (
                                 <div className="space-y-2">
                                   <Label>Content Preview</Label>
                                   <Textarea
                                     value={transcriptContent}
-                                    onChange={(e) => setTranscriptContent(e.target.value)}
+                                    onChange={(e) =>
+                                      setTranscriptContent(e.target.value)
+                                    }
                                     className="min-h-[200px] font-mono text-sm"
                                     placeholder="Edit the transcript content here..."
                                   />
                                   <p className="text-xs text-muted-foreground">
-                                    You can edit the uploaded content above before saving.
+                                    You can edit the uploaded content above
+                                    before saving.
                                   </p>
                                 </div>
                               )}
@@ -958,10 +1130,16 @@ export default function EpisodeDetailPage() {
                           )}
                         </div>
                         <DialogFooter>
-                          <Button variant="outline" onClick={() => setTranscriptDialog(false)}>
+                          <Button
+                            variant="outline"
+                            onClick={() => setTranscriptDialog(false)}
+                          >
                             Cancel
                           </Button>
-                          <Button onClick={handleTranscriptSave} disabled={isUploadingTranscript}>
+                          <Button
+                            onClick={handleTranscriptSave}
+                            disabled={isUploadingTranscript}
+                          >
                             {isUploadingTranscript ? (
                               <>
                                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -1001,9 +1179,12 @@ export default function EpisodeDetailPage() {
                   ) : (
                     <div className="text-center py-12">
                       <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="font-semibold mb-2">No transcript available</h3>
+                      <h3 className="font-semibold mb-2">
+                        No transcript available
+                      </h3>
                       <p className="text-muted-foreground mb-4">
-                        Add a transcript to improve accessibility and searchability
+                        Add a transcript to improve accessibility and
+                        searchability
                       </p>
                       <Button onClick={() => setTranscriptDialog(true)}>
                         <Plus className="h-4 w-4 mr-2" />
@@ -1027,19 +1208,28 @@ export default function EpisodeDetailPage() {
                   {comments.length > 0 ? (
                     <div className="space-y-4">
                       {comments.map((comment) => (
-                        <div key={comment.id} className="border-b pb-4 last:border-b-0">
+                        <div
+                          key={comment.id}
+                          className="border-b pb-4 last:border-b-0"
+                        >
                           <div className="flex items-start gap-3">
                             <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                               <User className="h-4 w-4" />
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium text-sm">{comment.user.name}</span>
+                                <span className="font-medium text-sm">
+                                  {comment.user.name}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(comment.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    comment.createdAt
+                                  ).toLocaleDateString()}
                                 </span>
                               </div>
-                              <p className="text-sm text-muted-foreground">{comment.content}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {comment.content}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -1070,14 +1260,18 @@ export default function EpisodeDetailPage() {
                   <Play className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Plays</span>
                 </div>
-                <span className="font-semibold">{formatNumber(episode._count.playbackProgress)}</span>
+                <span className="font-semibold">
+                  {formatNumber(episode._count.playbackProgress)}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Favorites</span>
                 </div>
-                <span className="font-semibold">{episode._count.favorites}</span>
+                <span className="font-semibold">
+                  {episode._count.favorites}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1091,7 +1285,9 @@ export default function EpisodeDetailPage() {
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Transcript</span>
                 </div>
-                <span className="font-semibold">{episode.transcript ? "Available" : "None"}</span>
+                <span className="font-semibold">
+                  {episode.transcript ? "Available" : "None"}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -1110,11 +1306,13 @@ export default function EpisodeDetailPage() {
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Duration:</span>
-                <span className="font-medium">{formatDuration(episode.duration)}</span>
+                <span className="font-medium">
+                  {formatDuration(episode.duration)}
+                </span>
                 {episode.duration === 0 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={recalculateDuration}
                     className="h-5 px-1 text-xs ml-1"
                   >
@@ -1125,12 +1323,17 @@ export default function EpisodeDetailPage() {
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Created:</span>
-                <span className="font-medium">{new Date(episode.createdAt).toLocaleDateString()}</span>
+                <span className="font-medium">
+                  {new Date(episode.createdAt).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Eye className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Status:</span>
-                <Badge className={getStatusColor(episode.status)} variant="outline">
+                <Badge
+                  className={getStatusColor(episode.status)}
+                  variant="outline"
+                >
                   {episode.status}
                 </Badge>
               </div>
@@ -1143,20 +1346,28 @@ export default function EpisodeDetailPage() {
               <CardTitle className="text-lg">Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 variant={isEditing ? "destructive" : "default"}
                 onClick={() => setIsEditing(!isEditing)}
               >
                 <Edit className="h-4 w-4 mr-2" />
                 {isEditing ? "Cancel Edit" : "Edit Episode"}
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => setTranscriptDialog(true)}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setTranscriptDialog(true)}
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 Edit Transcript
               </Button>
               {episode.duration === 0 && (
-                <Button variant="outline" className="w-full" onClick={recalculateDuration}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={recalculateDuration}
+                >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Recalculate Duration
                 </Button>
@@ -1174,5 +1385,5 @@ export default function EpisodeDetailPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

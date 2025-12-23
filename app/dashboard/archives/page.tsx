@@ -525,7 +525,7 @@ export default function ArchivesManagePage() {
                   ))}
                   {filteredArchives.length > 5 && (
                     <div className="text-center pt-4">
-                      <Button variant="outline" size="sm" onClick={() => document.querySelector('[value="archives"]')?.click()}>
+                      <Button variant="outline" size="sm" onClick={() => (document.querySelector('[value="archives"]') as HTMLElement)?.click()}>
                         View All Archives
                       </Button>
                     </div>

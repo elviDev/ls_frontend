@@ -71,7 +71,7 @@ export function AudiobookCard({
       });
 
       if (result.success) {
-        setIsFavorite(result.isFavorite);
+        setIsFavorite(result.isFavorite ?? false);
         toast({
           title: result.isFavorite
             ? "Added to favorites"
