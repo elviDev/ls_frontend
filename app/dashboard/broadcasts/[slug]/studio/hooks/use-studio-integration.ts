@@ -1,63 +1,51 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
-import { useBroadcast } from "@/contexts/broadcast";
+import { useLiveKitBroadcast } from "@/contexts/broadcast";
 import { useChat } from "@/contexts/chat";
 import { toast } from "sonner";
 import type { Broadcast } from "../types";
+
+interface ProgramInfo {
+  title?: string;
+  description?: string;
+  currentTrack?: string;
+  [key: string]: any;
+}
 
 export function useStudioIntegration(
   broadcast: Broadcast | null,
   isLive: boolean
 ) {
-  const broadcastContext = useBroadcast();
+  const broadcastContext = useLiveKitBroadcast();
   const { state: chatState, joinBroadcast, setBroadcastLive } = useChat();
 
   // Initialize studio when broadcast is available
   useEffect(() => {
     if (broadcast && broadcastContext) {
-      const initStudio = async () => {
-        try {
-          const srsUrl = process.env.NEXT_PUBLIC_SRS_URL || "http://localhost:1985";
-          const streamKey = broadcast.id;
-          
-          console.log("🎙️ Initializing studio with SRS URL:", srsUrl);
-          console.log("🎙️ Using stream key:", streamKey);
-          await broadcastContext.studio.initializeStudio(srsUrl, streamKey);
-          console.log("✅ Studio initialized successfully for broadcast:", broadcast.id);
-        } catch (error) {
-          console.error("❌ Failed to initialize studio:", error);
-          toast.error(
-            "Failed to connect to streaming server. Please check your connection and try again."
-          );
-          throw error;
-        }
-      };
-      initStudio();
+      console.log("🎙️ LiveKit studio ready for broadcast:", broadcast.id?.substring(0, 8) + "...");
     }
   }, [broadcast?.id, broadcastContext]);
 
-  // Get live status safely and log for debugging
+  // Get live status from LiveKit
   const contextIsLive = broadcastContext?.studio?.state?.isLive;
-  const isStreaming = broadcastContext?.studio?.state?.isLive;
-  const isConnected = broadcastContext?.studio?.state ? true : false;
+  const isConnected = !!broadcastContext?.studio?.state;
   
   // Debug logging (throttled)
   useEffect(() => {
     if (!broadcast) return;
     
     const logInterval = setInterval(() => {
-      console.log('🎯 Studio broadcast status:', {
-        broadcastId: broadcast.id,
-        isStreaming,
+      console.log('🎯 LiveKit broadcast status:', {
+        broadcastId: broadcast.id?.substring(0, 8) + "...",
+        isLive: contextIsLive,
         isConnected,
-        chatLive: chatState.isBroadcastLive,
-        isLive: contextIsLive
+        chatLive: chatState.isBroadcastLive
       });
     }, 60000); // Changed from 30000 to 60000 (60 seconds)
     
     return () => clearInterval(logInterval);
-  }, [broadcast?.id, isStreaming, isConnected, chatState.isBroadcastLive, contextIsLive]);
+  }, [broadcast?.id, contextIsLive, isConnected, chatState.isBroadcastLive]);
 
   // Sync broadcast context streaming status with chat context AND database
   useEffect(() => {
@@ -66,7 +54,7 @@ export function useStudioIntegration(
 
       if (currentChatLiveStatus !== contextIsLive) {
         console.log(
-          "🔄 Studio: Syncing broadcast streaming status with chat:",
+          "🔄 LiveKit: Syncing broadcast status with chat:",
           contextIsLive
         );
         
@@ -131,7 +119,7 @@ export function useStudioIntegration(
           );
           joinBroadcast(broadcast.id, {
             id: broadcast.hostUser.id,
-            username: `${broadcast.hostUser.firstName} ${broadcast.hostUser.lastName}`,
+            username: `${broadcast.hostUser?.firstName || 'Host'} ${broadcast.hostUser?.lastName || ''}`.trim(),
             role: "host",
             isOnline: true,
             isTyping: false,
@@ -154,19 +142,13 @@ export function useStudioIntegration(
   ]);
 
   const updateProgramInfo = useCallback(
-    (newInfo: any) => {
-      if (isLive && broadcast) {
-        const programInfo = {
-          title: newInfo.title || broadcast.title,
-          description: newInfo.description || broadcast.description,
-          host: `${broadcast.hostUser.firstName} ${broadcast.hostUser.lastName}`,
-          currentTrack: newInfo.currentTrack,
-          ...newInfo,
-        };
+    (newInfo: ProgramInfo) => {
+      if ((contextIsLive || isLive) && broadcast) {
+        console.log("📡 Program info updated:", newInfo.currentTrack || 'No track');
         toast.success("📡 Program info updated for listeners");
       }
     },
-    [isLive, broadcast]
+    [contextIsLive, isLive, broadcast]
   );
 
   return {

@@ -5,8 +5,9 @@ import { useRouter, useParams } from "next/navigation"
 import { AlertTriangle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BroadcastProvider } from "@/contexts/broadcast"
+import { LiveKitBroadcastProvider, useLiveKitBroadcast } from "@/contexts/broadcast"
 import { ChatProvider } from "@/contexts/chat"
+import { LiveKitStudioControls } from "@/components/livekit/studio-controls"
 import { StudioHeader } from "./components/studio-header"
 import { StreamStatusBar } from "./components/stream-status-bar"
 import { BroadcastStatusCard } from "./components/broadcast-status-card"
@@ -30,9 +31,12 @@ function StudioInterface() {
   // Use custom hooks for data and integration
   const { broadcast, isLoading } = useStudioData(broadcastSlug)
   const { broadcastContext, chatState, updateProgramInfo } = useStudioIntegration(broadcast, false)
+  
+  // Get LiveKit broadcast context
+  const liveKitBroadcast = useLiveKitBroadcast()
 
-  // Get live status from broadcast context
-  const isLive = broadcastContext?.studio?.state?.isLive || false
+  // Get live status from LiveKit broadcast context
+  const isLive = liveKitBroadcast?.studio?.state?.isLive || false
   
   // Track broadcast start time
   useEffect(() => {
@@ -62,7 +66,8 @@ function StudioInterface() {
     
     return () => clearInterval(interval)
   }, [isLive, broadcastStartTime])
-  const currentListenerCount = 0
+  // Get listener count from LiveKit
+  const currentListenerCount = liveKitBroadcast?.studio?.state?.listenerCount || 0
   const peakListeners = 0
   const studioMetrics = {
     cpuUsage: isLive ? 45 : 15,
@@ -166,6 +171,8 @@ function StudioInterface() {
         />
 
         <div className="space-y-4 sm:space-y-6">
+          <LiveKitStudioControls />
+          
           <BroadcastStatusCard
             broadcast={broadcast}
             isLive={isLive}
@@ -205,11 +212,77 @@ function StudioInterface() {
 }
 
 export default function StudioPage() {
+  const [liveKitToken, setLiveKitToken] = useState<string>('');
+  const [tokenLoading, setTokenLoading] = useState(true);
+  const params = useParams();
+  const broadcastSlug = params.slug as string;
+
+  useEffect(() => {
+    const fetchLiveKitToken = async () => {
+      try {
+        const response = await fetch('/api/livekit/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: `broadcaster-${Date.now()}`,
+            roomName: `broadcast-${broadcastSlug}`,
+            userName: 'Studio Host',
+            role: 'broadcaster'
+          })
+        });
+        
+        const data = await response.json();
+        setLiveKitToken(data.token);
+      } catch (error) {
+        console.error('Failed to fetch LiveKit token:', error);
+      } finally {
+        setTokenLoading(false);
+      }
+    };
+
+    fetchLiveKitToken();
+  }, [broadcastSlug]);
+
+  if (tokenLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-slate-900 mx-auto"></div>
+          <p className="text-slate-500">Connecting to LiveKit...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!liveKitToken) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertTriangle className="h-16 w-16 text-red-300 mb-6" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              Connection Failed
+            </h2>
+            <p className="text-slate-500 text-center mb-6">
+              Unable to connect to LiveKit streaming service.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Retry Connection
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <ChatProvider>
-      <BroadcastProvider>
+      <LiveKitBroadcastProvider 
+        serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_SERVER_URL || 'ws://localhost:7880'}
+        token={liveKitToken}
+      >
         <StudioInterface />
-      </BroadcastProvider>
+      </LiveKitBroadcastProvider>
     </ChatProvider>
   );
 }

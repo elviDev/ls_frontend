@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { BroadcastData, ScheduleItem, PlayerState } from '../types';
-import { SRSApiService } from '@/contexts/broadcast/services/srs-api';
 
 export function useBroadcastData(broadcastId?: string) {
   const [state, setState] = useState<PlayerState>({
@@ -11,8 +10,6 @@ export function useBroadcastData(broadcastId?: string) {
     isLoading: false,
     streamUrl: null
   });
-
-  const srsApi = new SRSApiService(process.env.NEXT_PUBLIC_SRS_URL || 'http://localhost:1985');
 
   const fetchBroadcastData = async () => {
     try {

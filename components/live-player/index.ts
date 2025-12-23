@@ -1,4 +1,4 @@
-export { default as LivePlayer } from '../live-player';
+export { LiveKitPlayer } from './livekit-player';
 export * from './types';
 export * from './hooks/use-broadcast-data';
 export * from './components/play-button';

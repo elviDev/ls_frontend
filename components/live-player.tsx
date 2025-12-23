@@ -5,7 +5,6 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/auth-context";
 import { useBroadcastData } from "./live-player/hooks/use-broadcast-data";
-import { useAudioPlayer } from "./live-player/hooks/use-audio-player";
 import { PlayButton } from "./live-player/components/play-button";
 import { VolumeControl } from "./live-player/components/volume-control";
 import { BroadcastInfo } from "./live-player/components/broadcast-info";
@@ -14,6 +13,7 @@ import { ConnectionStatus } from "./live-player/components/connection-status";
 import { ShareButton } from "./live-player/components/share-button";
 import { ScheduleSheet } from "./live-player/components/schedule-sheet";
 import { ChatToggle } from "./live-player/components/chat-toggle";
+import { LiveKitListener } from "./live-player/components/livekit-listener";
 
 interface LivePlayerProps {
   broadcastId?: string;
@@ -22,27 +22,91 @@ interface LivePlayerProps {
 function LivePlayerInterface({ broadcastId }: LivePlayerProps) {
   const { user } = useAuth();
   const { state: broadcastState } = useBroadcastData(broadcastId);
-  const audioPlayer = useAudioPlayer();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [volume, setVolume] = useState(80);
+  const [isMuted, setIsMuted] = useState(false);
+  const [liveKitToken, setLiveKitToken] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+
+  const isLive = !!broadcastState.currentBroadcast;
+
+  // Get LiveKit token when broadcast is live
+  useEffect(() => {
+    if (isLive && broadcastState.currentBroadcast) {
+      const fetchToken = async () => {
+        try {
+          const response = await fetch('/api/livekit/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: `listener-${Date.now()}`,
+              roomName: `broadcast-${broadcastState.currentBroadcast.slug}`,
+              userName: user?.email || 'Anonymous Listener',
+              role: 'listener'
+            })
+          });
+          
+          const data = await response.json();
+          setLiveKitToken(data.token);
+        } catch (error) {
+          console.error('Failed to get LiveKit token:', error);
+          setError('Failed to connect to live stream');
+        }
+      };
+
+      fetchToken();
+    } else {
+      setLiveKitToken('');
+      setIsPlaying(false);
+    }
+  }, [isLive, broadcastState.currentBroadcast, user]);
 
   const togglePlay = async () => {
-    if (broadcastState.streamUrl) {
-      await audioPlayer.togglePlay(broadcastState.streamUrl);
+    if (!isLive || !liveKitToken) {
+      setError('No live broadcast available');
+      return;
     }
+
+    setIsPlaying(!isPlaying);
   };
 
-  const isPlaying = audioPlayer.state.isPlaying;
-  const isLoading = audioPlayer.state.isLoading;
-  const connectionState = audioPlayer.state.isPlaying ? 'connected' : 'disconnected';
-  const isLive = !!broadcastState.currentBroadcast;
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+  };
+
+  const handleMuteToggle = () => {
+    setIsMuted(!isMuted);
+  };
+
+  const connectionState = isPlaying ? 'connected' : 'disconnected';
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
       <div className="container mx-auto px-2 sm:px-4 py-2">
-        {audioPlayer.state.error && (
+        {error && (
           <Alert className="mb-2">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{audioPlayer.state.error}</AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
+        )}
+
+        {/* LiveKit Audio Listener */}
+        {isPlaying && isLive && liveKitToken && (
+          <LiveKitListener
+            serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_SERVER_URL || 'ws://localhost:7880'}
+            token={liveKitToken}
+            onConnectionChange={(connected) => {
+              if (!connected && isPlaying) {
+                setError('Connection lost');
+                setIsPlaying(false);
+              } else {
+                setError(null);
+              }
+            }}
+            volume={volume}
+            muted={isMuted}
+          />
         )}
 
         {/* Mobile Layout */}
@@ -65,10 +129,10 @@ function LivePlayerInterface({ broadcastId }: LivePlayerProps) {
             </div>
             <div className="flex items-center space-x-2 flex-shrink-0">
               <VolumeControl 
-                volume={audioPlayer.state.volume}
-                isMuted={audioPlayer.state.isMuted}
-                onVolumeChange={audioPlayer.setVolume}
-                onMuteToggle={audioPlayer.toggleMute}
+                volume={volume}
+                isMuted={isMuted}
+                onVolumeChange={handleVolumeChange}
+                onMuteToggle={handleMuteToggle}
                 className="w-8 h-8"
               />
               <ShareButton 
@@ -85,10 +149,10 @@ function LivePlayerInterface({ broadcastId }: LivePlayerProps) {
           
           <div className="flex items-center space-x-2 mb-1">
             <VolumeControl 
-              volume={audioPlayer.state.volume}
-              isMuted={audioPlayer.state.isMuted}
-              onVolumeChange={audioPlayer.setVolume}
-              onMuteToggle={audioPlayer.toggleMute}
+              volume={volume}
+              isMuted={isMuted}
+              onVolumeChange={handleVolumeChange}
+              onMuteToggle={handleMuteToggle}
               className="flex-1"
             />
             <ScheduleSheet schedule={broadcastState.schedule} size="sm" />
@@ -98,7 +162,7 @@ function LivePlayerInterface({ broadcastId }: LivePlayerProps) {
             <ConnectionStatus connectionState={connectionState} isLive={isLive} />
             <AudioVisualizer 
               isPlaying={isPlaying} 
-              audioLevel={audioPlayer.state.bufferHealth} 
+              audioLevel={isPlaying ? 50 : 0} 
               barCount={3} 
               size="sm" 
             />
@@ -125,10 +189,10 @@ function LivePlayerInterface({ broadcastId }: LivePlayerProps) {
           </div>
 
           <VolumeControl 
-            volume={audioPlayer.state.volume}
-            isMuted={audioPlayer.state.isMuted}
-            onVolumeChange={audioPlayer.setVolume}
-            onMuteToggle={audioPlayer.toggleMute}
+            volume={volume}
+            isMuted={isMuted}
+            onVolumeChange={handleVolumeChange}
+            onMuteToggle={handleMuteToggle}
             className="w-1/3"
           />
 
@@ -136,7 +200,7 @@ function LivePlayerInterface({ broadcastId }: LivePlayerProps) {
             <div className="hidden lg:block mr-4">
               <AudioVisualizer 
                 isPlaying={isPlaying} 
-                audioLevel={audioPlayer.state.bufferHealth} 
+                audioLevel={isPlaying ? 50 : 0} 
               />
             </div>
             <ShareButton 

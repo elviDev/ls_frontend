@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useBroadcast } from "@/contexts/broadcast"
+import { useLiveKitBroadcast } from "@/contexts/broadcast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
@@ -29,7 +29,7 @@ interface AudioPlayerProps {
 }
 
 export function AudioPlayer({ isLive, onTrackChange, onPlaylistChange }: AudioPlayerProps) {
-  const broadcast = useBroadcast()
+  const broadcast = useLiveKitBroadcast()
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(50)

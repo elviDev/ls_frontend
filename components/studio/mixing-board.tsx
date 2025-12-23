@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { ChannelAudioMonitor } from "./channel-audio-monitor"
-import { useAudioProcessor } from "@/hooks/use-audio-processor"
-import { useBroadcast } from "@/contexts/broadcast"
+import { useLiveKitBroadcast } from "@/contexts/broadcast"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -91,7 +90,7 @@ export function MixingBoard({
   const toggleGlobalMusicMute = () => setGlobalMusicMuted(!globalMusicMuted)
   const updateGlobalMusicEQ = (eq: any) => setGlobalMusicEQ(eq)
   // Get broadcast context
-  const { studio } = useBroadcast()
+  const { studio } = useLiveKitBroadcast()
   
   const startBroadcast = async () => {
     try {
@@ -113,54 +112,19 @@ export function MixingBoard({
     }
   }
 
-  // Initialize audio processor
-  const audioProcessor = useAudioProcessor({
-    masterVolume: 75,
-    limiterThreshold: 85,
-    noiseGate: 15,
-    channels: [
-      {
-        id: "mic1",
-        type: "mic",
-        volume: 75,
-        gain: 50,
-        muted: false,
-        solo: false,
-        eq: { low: 50, mid: 50, high: 50 },
-        effects: { reverb: 10, echo: 0, chorus: 0 }
-      },
-      {
-        id: "mic2",
-        type: "mic",
-        volume: 0,
-        gain: 50,
-        muted: true,
-        solo: false,
-        eq: { low: 50, mid: 50, high: 50 },
-        effects: { reverb: 5, echo: 0, chorus: 0 }
-      },
-      {
-        id: "music",
-        type: "music",
-        volume: 60,
-        gain: 45,
-        muted: false,
-        solo: false,
-        eq: { low: 55, mid: 50, high: 48 },
-        effects: { reverb: 0, echo: 0, chorus: 0 }
-      },
-      {
-        id: "effects",
-        type: "effects",
-        volume: 45,
-        gain: 40,
-        muted: false,
-        solo: false,
-        eq: { low: 45, mid: 55, high: 60 },
-        effects: { reverb: 15, echo: 5, chorus: 0 }
-      }
-    ]
-  })
+  // Initialize audio processor (simplified for LiveKit)
+  const audioProcessor = {
+    audioState: {
+      masterVolume: 75,
+      limiterThreshold: 85,
+      noiseGate: 15
+    },
+    initializeAudio: async () => true,
+    updateChannel: () => {},
+    updateMasterVolume: () => {},
+    updateLimiterThreshold: () => {},
+    updateNoiseGate: () => {}
+  }
   const [channels, setChannels] = useState<AudioChannel[]>([
     {
       id: "mic1",
