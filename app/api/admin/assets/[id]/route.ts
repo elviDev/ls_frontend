@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { adminOnly } from "@/lib/auth/adminOnly";
 import { z } from "zod";
-import { AssetType } from "@prisma/client";
 
 const updateAssetSchema = z.object({
   description: z.string().optional(),
