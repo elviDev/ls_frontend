@@ -1,92 +1,101 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { AlertCircle, Play, Pause } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { useBroadcastStore } from "@/stores/broadcast-store";
-import { PlayButton } from "./live-player/components/play-button";
-import { VolumeControl } from "./live-player/components/volume-control";
-import { BroadcastInfo } from "./live-player/components/broadcast-info";
-import { AudioVisualizer } from "./live-player/components/audio-visualizer";
-import { ConnectionStatus } from "./live-player/components/connection-status";
-import { ShareButton } from "./live-player/components/share-button";
-import { ScheduleSheet } from "./live-player/components/schedule-sheet";
-import { ChatToggle } from "./live-player/components/chat-toggle";
 import { LiveKitListener } from "./live-player/components/livekit-listener";
 
 function LivePlayerInterface() {
   const { user } = useAuth();
-  const {
-    currentBroadcast,
-    upcomingBroadcast,
-    currentShow,
-    streamUrl,
-    schedule,
-    liveKit,
-  } = useBroadcastStore();
+  const { currentBroadcast } = useBroadcastStore();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [volume, setVolume] = useState(80);
-  const [isMuted, setIsMuted] = useState(false);
-  const [liveKitToken, setLiveKitToken] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [connectionAttempts, setConnectionAttempts] = useState(0);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
   const isLive = currentBroadcast?.status === "LIVE";
-
-  // Get LiveKit token when broadcast is live
-  useEffect(() => {
-    if (isLive && currentBroadcast) {
-      const fetchToken = async () => {
-        try {
-          const response = await fetch("/api/livekit/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: `listener-${Date.now()}`,
-              roomName: `broadcast-${currentBroadcast.slug || currentBroadcast.id}`,
-              userName: user?.email || "Anonymous Listener",
-              role: "listener",
-            }),
-          });
-
-          const data = await response.json();
-          setLiveKitToken(data.token);
-        } catch (error) {
-          console.error("Failed to get LiveKit token:", error);
-          setError("Failed to connect to live stream");
-        }
-      };
-
-      fetchToken();
-    } else {
-      setLiveKitToken("");
-      setIsPlaying(false);
-    }
-  }, [isLive, currentBroadcast, user]);
+  const maxRetries = 3;
 
   const togglePlay = async () => {
-    if (!isLive || !liveKitToken) {
+    if (!isLive) {
       setError("No live broadcast available");
       return;
+    }
+
+    if (!isPlaying) {
+      // Reset connection attempts when starting fresh
+      setConnectionAttempts(0);
+      setError(null);
+
+      // Initialize AudioContext with user gesture before connecting
+      try {
+        if (typeof window !== "undefined" && window.AudioContext) {
+          const audioContext = new (
+            window.AudioContext || (window as any).webkitAudioContext
+          )();
+          if (audioContext.state === "suspended") {
+            await audioContext.resume();
+            console.log("✅ AudioContext resumed for live player");
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ AudioContext initialization failed:", error);
+      }
     }
 
     setIsPlaying(!isPlaying);
   };
 
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
+  const handleConnectionChange = (connected: boolean) => {
+    if (!connected && isPlaying) {
+      setConnectionAttempts((prev) => prev + 1);
+
+      if (connectionAttempts < maxRetries) {
+        setIsReconnecting(true);
+        setError(
+          `Connection lost. Retrying... (${connectionAttempts + 1}/${maxRetries})`
+        );
+
+        // Auto-retry after a delay
+        setTimeout(
+          () => {
+            setIsReconnecting(false);
+            // Force re-render of LiveKitListener by toggling state
+            setIsPlaying(false);
+            setTimeout(() => setIsPlaying(true), 100);
+          },
+          2000 + connectionAttempts * 1000
+        ); // Increasing delay
+      } else {
+        setError(
+          "Connection failed after multiple attempts. Please try again."
+        );
+        setIsPlaying(false);
+        setConnectionAttempts(0);
+      }
+    } else if (connected) {
+      setError(null);
+      setConnectionAttempts(0);
+      setIsReconnecting(false);
+    }
   };
 
-  const handleMuteToggle = () => {
-    setIsMuted(!isMuted);
-  };
-
-  const connectionState = isPlaying ? "connected" : "disconnected";
+  if (!isLive) {
+    return (
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
+        <div className="container mx-auto px-4 py-4 text-center">
+          <p className="text-gray-500">No live broadcast available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
-      <div className="container mx-auto px-2 sm:px-4 py-2">
+      <div className="container mx-auto px-4 py-2">
         {error && (
           <Alert className="mb-2">
             <AlertCircle className="h-4 w-4" />
@@ -94,133 +103,58 @@ function LivePlayerInterface() {
           </Alert>
         )}
 
-        {/* LiveKit Audio Listener */}
-        {isPlaying && isLive && liveKitToken && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={togglePlay}
+              variant={isPlaying ? "secondary" : "default"}
+              size="sm"
+              className="flex items-center gap-2"
+              disabled={isReconnecting}
+            >
+              {isReconnecting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  Reconnecting...
+                </>
+              ) : isPlaying ? (
+                <>
+                  <Pause className="h-4 w-4" />
+                  Leave Broadcast
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" />
+                  Join Live Broadcast
+                </>
+              )}
+            </Button>
+
+            {currentBroadcast && (
+              <div className="text-sm">
+                <span className="font-medium">
+                  {currentBroadcast.title || "Live Broadcast"}
+                </span>
+                <div className="flex items-center gap-1 text-xs text-red-600">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  LIVE
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {isLive && isPlaying && !isReconnecting && (
           <LiveKitListener
-            serverUrl={
-              liveKit.url ||
-              process.env.NEXT_PUBLIC_LIVEKIT_SERVER_URL ||
-              "ws://localhost:7880"
-            }
-            token={liveKitToken}
-            onConnectionChange={(connected) => {
-              if (!connected && isPlaying) {
-                setError("Connection lost");
-                setIsPlaying(false);
-              } else {
-                setError(null);
-              }
-            }}
-            volume={volume}
-            muted={isMuted}
+            key={`listener-${connectionAttempts}`} // Force re-mount on retry
+            roomName={`broadcast-${currentBroadcast.slug || currentBroadcast.id}`}
+            userId={`listener-${Date.now()}`}
+            userName={user?.email || "Anonymous Listener"}
+            onConnectionChange={handleConnectionChange}
+            volume={80}
+            muted={false}
           />
         )}
-
-        {/* Mobile Layout */}
-        <div className="md:hidden">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-3 flex-1 min-w-0">
-              <PlayButton
-                isPlaying={isPlaying}
-                isLoading={isLoading}
-                onToggle={togglePlay}
-                size="sm"
-              />
-              <BroadcastInfo
-                currentBroadcast={currentBroadcast}
-                upcomingBroadcast={upcomingBroadcast}
-                currentShow={currentShow}
-                isLive={isLive}
-                size="sm"
-              />
-            </div>
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <VolumeControl
-                volume={volume}
-                isMuted={isMuted}
-                onVolumeChange={handleVolumeChange}
-                onMuteToggle={handleMuteToggle}
-                className="w-8 h-8"
-              />
-              <ShareButton
-                streamUrl={streamUrl}
-                currentBroadcast={currentBroadcast}
-                size="sm"
-              />
-              <ChatToggle size="sm" />
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 mb-1">
-            <VolumeControl
-              volume={volume}
-              isMuted={isMuted}
-              onVolumeChange={handleVolumeChange}
-              onMuteToggle={handleMuteToggle}
-              className="flex-1"
-            />
-            <ScheduleSheet schedule={schedule} size="sm" />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <ConnectionStatus
-              connectionState={connectionState}
-              isLive={isLive}
-            />
-            <AudioVisualizer
-              isPlaying={isPlaying}
-              audioLevel={isPlaying ? 50 : 0}
-              barCount={3}
-              size="sm"
-            />
-          </div>
-        </div>
-
-        {/* Desktop Layout */}
-        <div className="hidden md:flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <PlayButton
-              isPlaying={isPlaying}
-              isLoading={isLoading}
-              onToggle={togglePlay}
-            />
-            <div>
-              <BroadcastInfo
-                currentBroadcast={currentBroadcast}
-                upcomingBroadcast={upcomingBroadcast}
-                currentShow={currentShow}
-                isLive={isLive}
-              />
-              <ConnectionStatus
-                connectionState={connectionState}
-                isLive={isLive}
-              />
-            </div>
-          </div>
-
-          <VolumeControl
-            volume={volume}
-            isMuted={isMuted}
-            onVolumeChange={handleVolumeChange}
-            onMuteToggle={handleMuteToggle}
-            className="w-1/3"
-          />
-
-          <div className="flex items-center">
-            <div className="hidden lg:block mr-4">
-              <AudioVisualizer
-                isPlaying={isPlaying}
-                audioLevel={isPlaying ? 50 : 0}
-              />
-            </div>
-            <ShareButton
-              streamUrl={streamUrl}
-              currentBroadcast={currentBroadcast}
-            />
-            <ChatToggle />
-            <ScheduleSheet schedule={schedule} />
-          </div>
-        </div>
       </div>
     </div>
   );

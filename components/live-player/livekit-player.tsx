@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { LiveKitRoom } from '@livekit/components-react';
-import { LiveKitListener } from '@/components/livekit/audio-components';
+import { LiveKitListener } from './components/livekit-listener';
 
 interface LiveKitPlayerProps {
   broadcastSlug: string;
@@ -12,6 +12,10 @@ interface LiveKitPlayerProps {
 export function LiveKitPlayer({ broadcastSlug, className }: LiveKitPlayerProps) {
   const [token, setToken] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(false);
+  const userId = `listener-${Date.now()}`;
+  const roomName = `broadcast-${broadcastSlug}`;
+  const userName = 'Listener';
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -20,9 +24,9 @@ export function LiveKitPlayer({ broadcastSlug, className }: LiveKitPlayerProps) 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: `listener-${Date.now()}`,
-            roomName: `broadcast-${broadcastSlug}`,
-            userName: 'Listener',
+            userId,
+            roomName,
+            userName,
             role: 'listener'
           })
         });
@@ -54,7 +58,14 @@ export function LiveKitPlayer({ broadcastSlug, className }: LiveKitPlayerProps) 
         token={token}
         connectOptions={{ autoSubscribe: true }}
       >
-        <LiveKitListener />
+        <LiveKitListener 
+          roomName={roomName}
+          userId={userId}
+          userName={userName}
+          onConnectionChange={setConnected}
+          volume={100}
+          muted={false}
+        />
       </LiveKitRoom>
     </div>
   );

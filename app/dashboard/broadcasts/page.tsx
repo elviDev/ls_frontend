@@ -121,7 +121,7 @@ export default function BroadcastsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {broadcasts.map((broadcast) => (
+            {broadcasts.map((broadcast: Broadcast) => (
               <BroadcastCard
                 key={broadcast.id}
                 broadcast={broadcast}

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useLiveKitBroadcast } from "@/contexts/broadcast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
@@ -16,20 +15,15 @@ interface Track {
   assetUrl?: string
 }
 
-interface Playlist {
-  id: string
-  name: string
-  tracks: Track[]
-}
+
 
 interface AudioPlayerProps {
   isLive: boolean
   onTrackChange: (track: Track | null) => void
-  onPlaylistChange: (playlist: Playlist) => void
 }
 
-export function AudioPlayer({ isLive, onTrackChange, onPlaylistChange }: AudioPlayerProps) {
-  const broadcast = useLiveKitBroadcast()
+export function AudioPlayer({ isLive, onTrackChange }: AudioPlayerProps) {
+
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(50)
@@ -56,7 +50,6 @@ export function AudioPlayer({ isLive, onTrackChange, onPlaylistChange }: AudioPl
     if (audioRef.current) {
       audioRef.current.volume = newVolume / 100
     }
-    broadcast.studio.updateChannel('music', { volume: newVolume })
   }
 
   const handleToggleMute = () => {
@@ -65,7 +58,6 @@ export function AudioPlayer({ isLive, onTrackChange, onPlaylistChange }: AudioPl
     if (audioRef.current) {
       audioRef.current.muted = muted
     }
-    broadcast.studio.updateChannel('music', { isMuted: muted })
   }
 
   // Connect audio to broadcast mixer when playing
@@ -79,34 +71,12 @@ export function AudioPlayer({ isLive, onTrackChange, onPlaylistChange }: AudioPl
         source.connect(destination)
         source.connect(audioContext.destination)
         
-        // Add music channel to broadcast mixer
-        broadcast.studio.addUser({
-          id: 'music-player',
-          username: 'Music Player',
-          role: 'guest',
-          permissions: {
-            canControlMixer: false,
-            canManageGuests: false,
-            canPlayMedia: true,
-            canModerateChat: false
-          },
-          audioChannel: {
-            id: 'music',
-            name: 'Music',
-            type: 'music',
-            volume: volume,
-            isMuted: isMuted,
-            isActive: isPlaying,
-            eq: { high: 0, mid: 0, low: 0 },
-            effects: { compressor: false, reverb: 0, gate: false }
-          },
-          isConnected: true
-        }, destination.stream).catch(console.error)
+        console.log('Audio connected to mixer:', currentTrack.title)
       } catch (error) {
         console.error('Failed to connect audio to mixer:', error)
       }
     }
-  }, [isPlaying, currentTrack, broadcast.studio, volume, isMuted])
+  }, [isPlaying, currentTrack, volume, isMuted])
 
   useEffect(() => {
     if (currentTrack) {

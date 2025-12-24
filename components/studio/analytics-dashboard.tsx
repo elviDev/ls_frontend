@@ -1,226 +1,174 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useEffect } from "react";
+import {
+  useParticipants,
+  useRoomContext,
+  useChat,
+} from "@livekit/components-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users,
   TrendingUp,
-  TrendingDown,
-  Globe,
   MessageSquare,
-  Heart,
   Clock,
-  Radio,
   Activity,
-  BarChart3,
-  Eye,
-  MapPin,
-  Smartphone,
   Monitor,
-  Headphones,
-  Zap,
   Signal,
   Wifi,
-  Volume2
-} from "lucide-react"
+  Volume2,
+} from "lucide-react";
 
 interface ListenerData {
-  id: string
-  name: string
+  id: string;
+  name: string;
   location: {
-    city: string
-    country: string
-    countryCode: string
-  }
-  joinedAt: Date
-  device: 'desktop' | 'mobile' | 'tablet'
-  browser: string
-  listenDuration: number
-  quality: 'high' | 'medium' | 'low'
-  interactions: number
-  isActive: boolean
+    city: string;
+    country: string;
+    countryCode: string;
+  };
+  joinedAt: Date;
+  device: "desktop" | "mobile" | "tablet";
+  browser: string;
+  listenDuration: number;
+  quality: "high" | "medium" | "low";
+  interactions: number;
+  isActive: boolean;
 }
 
 interface AnalyticsData {
-  currentListeners: number
-  peakListeners: number
-  totalListeners: number
-  averageListenTime: number
-  chatMessages: number
-  likes: number
-  shares: number
-  streamQuality: number
-  bandwidth: number
-  locations: { [country: string]: number }
-  devices: { [device: string]: number }
-  qualityDistribution: { [quality: string]: number }
+  currentListeners: number;
+  peakListeners: number;
+  totalListeners: number;
+  averageListenTime: number;
+  chatMessages: number;
+  likes: number;
+  shares: number;
+  streamQuality: number;
+  bandwidth: number;
+  locations: { [country: string]: number };
+  devices: { [device: string]: number };
+  qualityDistribution: { [quality: string]: number };
   hourlyStats: Array<{
-    hour: number
-    listeners: number
-    engagement: number
-  }>
+    hour: number;
+    listeners: number;
+    engagement: number;
+  }>;
 }
 
 interface AnalyticsDashboardProps {
-  isLive: boolean
-  listeners: ListenerData[]
-  onListenerUpdate?: (listeners: ListenerData[]) => void
+  isLive: boolean;
 }
 
-export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: AnalyticsDashboardProps) {
-  const [analytics, setAnalytics] = useState<AnalyticsData>({
-    currentListeners: 0,
-    peakListeners: 0,
-    totalListeners: 0,
-    averageListenTime: 0,
-    chatMessages: 0,
-    likes: 0,
-    shares: 0,
-    streamQuality: 98.5,
-    bandwidth: 256,
-    locations: {},
-    devices: {},
-    qualityDistribution: {},
-    hourlyStats: []
-  })
+export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
+  const participants = useParticipants();
+  const room = useRoomContext();
+  const { chatMessages } = useChat();
+  const [sessionStats, setSessionStats] = useState({
+    peakParticipants: 0,
+    totalJoined: 0,
+    sessionStart: new Date(),
+    totalChatMessages: 0,
+  });
 
-  const [realtimeListeners, setRealtimeListeners] = useState<ListenerData[]>(listeners)
-
-  // Simulate real-time analytics
+  // Track session statistics
   useEffect(() => {
-    if (!isLive) return
+    const currentCount = participants.length;
+    
+    // Log participant details for debugging
+    console.log('📊 Participants Update:', {
+      count: currentCount,
+      participants: participants.map(p => ({
+        identity: p.identity,
+        name: p.name,
+        sid: p.sid,
+        connectionQuality: p.connectionQuality,
+        isLocal: p.isLocal
+      }))
+    });
+    
+    setSessionStats((prev) => ({
+      ...prev,
+      peakParticipants: Math.max(prev.peakParticipants, currentCount),
+      totalJoined: Math.max(prev.totalJoined, currentCount),
+      totalChatMessages: chatMessages.length,
+    }));
+  }, [participants.length, chatMessages.length, participants]);
+
+  // Calculate session duration
+  const [sessionDuration, setSessionDuration] = useState(0);
+  useEffect(() => {
+    if (!isLive) return;
 
     const interval = setInterval(() => {
-      // Update analytics
-      setAnalytics(prev => {
-        const currentTime = new Date().getHours()
-        const baseListeners = 150 + Math.sin(currentTime * Math.PI / 12) * 100
-        const variation = Math.random() * 50 - 25
-        const currentListeners = Math.max(0, Math.floor(baseListeners + variation))
+      const duration = Math.floor(
+        (Date.now() - sessionStats.sessionStart.getTime()) / 1000 / 60
+      );
+      setSessionDuration(duration);
+    }, 60000);
 
-        // Generate locations data
-        const locations = {
-          'United States': Math.floor(currentListeners * 0.35),
-          'United Kingdom': Math.floor(currentListeners * 0.15),
-          'Canada': Math.floor(currentListeners * 0.12),
-          'Australia': Math.floor(currentListeners * 0.08),
-          'Germany': Math.floor(currentListeners * 0.07),
-          'France': Math.floor(currentListeners * 0.06),
-          'Japan': Math.floor(currentListeners * 0.05),
-          'Others': Math.floor(currentListeners * 0.12)
-        }
+    return () => clearInterval(interval);
+  }, [isLive, sessionStats.sessionStart]);
 
-        const devices = {
-          'mobile': Math.floor(currentListeners * 0.6),
-          'desktop': Math.floor(currentListeners * 0.3),
-          'tablet': Math.floor(currentListeners * 0.1)
-        }
+  // Calculate listener count (exclude hosts and moderators)
+  const listenerCount = participants.filter(p => 
+    !p.identity.includes('host') && !p.identity.includes('moderator')
+  ).length;
 
-        const qualityDistribution = {
-          'high': Math.floor(currentListeners * 0.7),
-          'medium': Math.floor(currentListeners * 0.25),
-          'low': Math.floor(currentListeners * 0.05)
-        }
+  // Analyze participant data
+  const participantAnalytics = {
+    byRole: participants.reduce(
+      (acc, p) => {
+        const role = p.identity.includes("host")
+          ? "host"
+          : p.identity.includes("moderator")
+            ? "moderator"
+            : "listener";
+        acc[role] = (acc[role] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    ),
 
-        return {
-          ...prev,
-          currentListeners,
-          peakListeners: Math.max(prev.peakListeners, currentListeners),
-          totalListeners: prev.totalListeners + Math.floor(Math.random() * 5),
-          averageListenTime: 23 + Math.random() * 10,
-          chatMessages: prev.chatMessages + Math.floor(Math.random() * 3),
-          likes: prev.likes + Math.floor(Math.random() * 2),
-          shares: prev.shares + (Math.random() > 0.9 ? 1 : 0),
-          streamQuality: 95 + Math.random() * 5,
-          bandwidth: 240 + Math.random() * 32,
-          locations,
-          devices,
-          qualityDistribution,
-          hourlyStats: [
-            ...prev.hourlyStats.slice(-23),
-            {
-              hour: currentTime,
-              listeners: currentListeners,
-              engagement: Math.floor(50 + Math.random() * 40)
-            }
-          ]
-        }
-      })
+    withAudio: participants.filter((p) =>
+      [...p.audioTrackPublications.values()].some((pub) => !pub.isMuted)
+    ).length,
 
-      // Update listener list
-      setRealtimeListeners(prev => {
-        const updated = prev.map(listener => ({
-          ...listener,
-          listenDuration: listener.listenDuration + 10,
-          interactions: listener.interactions + (Math.random() > 0.8 ? 1 : 0),
-          isActive: Math.random() > 0.05
-        })).filter(l => l.isActive)
+    connectionQuality: participants.reduce(
+      (acc, p) => {
+        const quality = p.connectionQuality || "unknown";
+        acc[quality] = (acc[quality] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    ),
+  };
 
-        // Add new listeners occasionally
-        if (Math.random() > 0.7 && updated.length < analytics.currentListeners) {
-          const cities = ['New York', 'London', 'Toronto', 'Sydney', 'Berlin', 'Paris', 'Tokyo', 'Los Angeles']
-          const countries = ['US', 'UK', 'CA', 'AU', 'DE', 'FR', 'JP', 'US']
-          const browsers = ['Chrome', 'Safari', 'Firefox', 'Edge']
-          const devices = ['desktop', 'mobile', 'tablet'] as const
-          const qualities = ['high', 'medium', 'low'] as const
-
-          const randomIndex = Math.floor(Math.random() * cities.length)
-          const newListener: ListenerData = {
-            id: Date.now().toString(),
-            name: `User${Math.floor(Math.random() * 1000)}`,
-            location: {
-              city: cities[randomIndex],
-              country: cities[randomIndex],
-              countryCode: countries[randomIndex]
-            },
-            joinedAt: new Date(),
-            device: devices[Math.floor(Math.random() * devices.length)],
-            browser: browsers[Math.floor(Math.random() * browsers.length)],
-            listenDuration: 0,
-            quality: qualities[Math.floor(Math.random() * qualities.length)],
-            interactions: 0,
-            isActive: true
-          }
-          updated.push(newListener)
-        }
-
-        return updated.slice(0, analytics.currentListeners)
-      })
-    }, 10000)
-
-    return () => clearInterval(interval)
-  }, [isLive, analytics.currentListeners])
-
-  const getDeviceIcon = (device: string) => {
-    switch (device) {
-      case 'mobile': return Smartphone
-      case 'desktop': return Monitor
-      case 'tablet': return Monitor
-      default: return Monitor
-    }
-  }
-
-  const getQualityColor = (quality: string) => {
+  const getConnectionQualityColor = (quality: string) => {
     switch (quality) {
-      case 'high': return 'text-green-600'
-      case 'medium': return 'text-yellow-600'
-      case 'low': return 'text-red-600'
-      default: return 'text-gray-600'
+      case "excellent":
+        return "text-green-600";
+      case "good":
+        return "text-blue-600";
+      case "poor":
+        return "text-yellow-600";
+      default:
+        return "text-red-600";
     }
-  }
+  };
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const hours = Math.floor(mins / 60)
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
     if (hours > 0) {
-      return `${hours}h ${mins % 60}m`
+      return `${hours}h ${mins}m`;
     }
-    return `${mins}m`
-  }
+    return `${mins}m`;
+  };
 
   return (
     <div className="space-y-6">
@@ -231,13 +179,15 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
             <div className="flex items-center space-x-2">
               <Users className="h-8 w-8 text-blue-600" />
               <div>
-                <div className="text-2xl font-bold">{analytics.currentListeners}</div>
+                <div className="text-2xl font-bold">{listenerCount}</div>
                 <div className="text-xs text-gray-500">Live Listeners</div>
               </div>
             </div>
             <div className="mt-2 flex items-center text-xs">
               <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              <span className="text-green-500">Peak: {analytics.peakListeners}</span>
+              <span className="text-green-500">
+                Total: {participants.length} participants
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -247,13 +197,17 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
             <div className="flex items-center space-x-2">
               <Clock className="h-8 w-8 text-green-600" />
               <div>
-                <div className="text-2xl font-bold">{Math.round(analytics.averageListenTime)}</div>
-                <div className="text-xs text-gray-500">Avg. Listen Time (min)</div>
+                <div className="text-2xl font-bold">{sessionDuration}</div>
+                <div className="text-xs text-gray-500">
+                  Session Duration (min)
+                </div>
               </div>
             </div>
             <div className="mt-2 flex items-center text-xs">
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              <span className="text-green-500">+12% vs yesterday</span>
+              <Activity className="h-3 w-3 text-blue-500 mr-1" />
+              <span className="text-blue-500">
+                {isLive ? "Live" : "Offline"}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -263,13 +217,15 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
             <div className="flex items-center space-x-2">
               <MessageSquare className="h-8 w-8 text-purple-600" />
               <div>
-                <div className="text-2xl font-bold">{analytics.chatMessages}</div>
+                <div className="text-2xl font-bold">{chatMessages.length}</div>
                 <div className="text-xs text-gray-500">Chat Messages</div>
               </div>
             </div>
             <div className="mt-2 flex items-center text-xs">
-              <Heart className="h-3 w-3 text-red-500 mr-1" />
-              <span className="text-red-500">{analytics.likes} likes</span>
+              <Volume2 className="h-3 w-3 text-purple-500 mr-1" />
+              <span className="text-purple-500">
+                {participantAnalytics.withAudio} speaking
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -279,160 +235,178 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
             <div className="flex items-center space-x-2">
               <Signal className="h-8 w-8 text-orange-600" />
               <div>
-                <div className="text-2xl font-bold">{analytics.streamQuality.toFixed(1)}%</div>
-                <div className="text-xs text-gray-500">Stream Quality</div>
+                <div className="text-2xl font-bold">
+                  {room?.state || "Unknown"}
+                </div>
+                <div className="text-xs text-gray-500">Room Status</div>
               </div>
             </div>
             <div className="mt-2 flex items-center text-xs">
               <Wifi className="h-3 w-3 text-blue-500 mr-1" />
-              <span className="text-blue-500">{Math.round(analytics.bandwidth)} kbps</span>
+              <span className="text-blue-500">LiveKit Connected</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Detailed Analytics */}
-      <Tabs defaultValue="listeners" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="listeners">Live Listeners</TabsTrigger>
-          <TabsTrigger value="geography">Geography</TabsTrigger>
-          <TabsTrigger value="devices">Devices</TabsTrigger>
-          <TabsTrigger value="quality">Stream Quality</TabsTrigger>
+      <Tabs defaultValue="participants" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="participants">Live Participants</TabsTrigger>
+          <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
+          <TabsTrigger value="quality">Connection Quality</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="listeners" className="space-y-4">
+        <TabsContent value="participants" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Active Listeners</span>
-                <Badge variant="outline">{realtimeListeners.length} online</Badge>
+                <span>Active Participants</span>
+                <Badge variant="outline">{participants.length} connected</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-96">
                 <div className="space-y-2">
-                  {realtimeListeners.map((listener) => {
-                    const DeviceIcon = getDeviceIcon(listener.device)
+                  {participants.map((participant) => {
+                    const hasAudio = [
+                      ...participant.audioTrackPublications.values(),
+                    ].some((pub) => !pub.isMuted);
+                    const hasVideo = [
+                      ...participant.videoTrackPublications.values(),
+                    ].some((pub) => !pub.isMuted);
+
                     return (
-                      <div key={listener.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={participant.identity}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex items-center space-x-3">
                           <div className="relative">
-                            <DeviceIcon className="h-5 w-5 text-gray-600" />
-                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium">
+                              {participant.name?.charAt(0) ||
+                                participant.identity.charAt(0)}
+                            </div>
+                            <div
+                              className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
+                                participant.connectionQuality === "excellent"
+                                  ? "bg-green-500"
+                                  : participant.connectionQuality === "good"
+                                    ? "bg-blue-500"
+                                    : participant.connectionQuality === "poor"
+                                      ? "bg-yellow-500"
+                                      : "bg-red-500"
+                              }`}
+                            />
                           </div>
                           <div>
-                            <div className="font-medium text-sm">{listener.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {listener.location.city}, {listener.location.countryCode}
+                            <div className="font-medium text-sm">
+                              {participant.name || participant.identity}
+                            </div>
+                            <div className="text-xs text-gray-500 flex items-center gap-2">
+                              {hasAudio && (
+                                <Volume2 className="h-3 w-3 text-green-500" />
+                              )}
+                              {hasVideo && (
+                                <Monitor className="h-3 w-3 text-blue-500" />
+                              )}
+                              <span>
+                                {participant.connectionQuality || "unknown"}{" "}
+                                connection
+                              </span>
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">
-                            {formatDuration(listener.listenDuration)}
+                            {participant.identity.includes("host")
+                              ? "Host"
+                              : participant.identity.includes("moderator")
+                                ? "Moderator"
+                                : "Listener"}
                           </div>
-                          <div className={`text-xs ${getQualityColor(listener.quality)}`}>
-                            {listener.quality} quality
+                          <div className="text-xs text-gray-500">
+                            {participant.joinedAt
+                              ? formatDuration(
+                                  Math.floor(
+                                    (Date.now() -
+                                      participant.joinedAt.getTime()) /
+                                      1000 /
+                                      60
+                                  )
+                                )
+                              : "Just joined"}
                           </div>
                         </div>
                       </div>
-                    )
+                    );
                   })}
+                  {participants.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No participants connected
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="geography" className="space-y-4">
+        <TabsContent value="roles" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Geographic Distribution
+                <Users className="h-5 w-5" />
+                Role Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(analytics.locations).map(([country, count]) => (
-                  <div key={country} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">{country}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">{count} listeners</span>
-                        <span className="text-xs text-gray-500">
-                          ({((count / analytics.currentListeners) * 100).toFixed(1)}%)
-                        </span>
-                      </div>
-                    </div>
-                    <Progress 
-                      value={(count / analytics.currentListeners) * 100} 
-                      className="h-2"
-                    />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="devices" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Monitor className="h-5 w-5" />
-                Device & Platform Analytics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <h4 className="font-medium text-sm sm:text-base">Device Types</h4>
-                  {Object.entries(analytics.devices).map(([device, count]) => {
-                    const DeviceIcon = getDeviceIcon(device)
-                    return (
-                      <div key={device} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <DeviceIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                            <span className="font-medium capitalize text-sm">{device}</span>
-                          </div>
-                          <div className="flex items-center gap-1 sm:gap-2">
-                            <span className="text-xs sm:text-sm text-gray-600">{count}</span>
-                            <span className="text-xs text-gray-500">
-                              ({((count / analytics.currentListeners) * 100).toFixed(1)}%)
-                            </span>
-                          </div>
+                {Object.entries(participantAnalytics.byRole).map(
+                  ([role, count]) => (
+                    <div key={role} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              role === "host"
+                                ? "bg-purple-500"
+                                : role === "moderator"
+                                  ? "bg-blue-500"
+                                  : "bg-green-500"
+                            }`}
+                          />
+                          <span className="font-medium capitalize">
+                            {role}s
+                          </span>
                         </div>
-                        <Progress 
-                          value={(count / analytics.currentListeners) * 100} 
-                          className="h-1.5 sm:h-2"
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-medium text-sm sm:text-base">Top Browsers</h4>
-                  {['Chrome', 'Safari', 'Firefox', 'Edge'].map((browser, index) => {
-                    const count = Math.floor(analytics.currentListeners * [0.45, 0.25, 0.15, 0.15][index])
-                    return (
-                      <div key={browser} className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{browser}</span>
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          <span className="text-xs sm:text-sm text-gray-600">{count}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">{count}</span>
                           <span className="text-xs text-gray-500">
-                            ({((count / analytics.currentListeners) * 100).toFixed(1)}%)
+                            (
+                            {participants.length > 0
+                              ? ((count / participants.length) * 100).toFixed(1)
+                              : 0}
+                            %)
                           </span>
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
+                      <Progress
+                        value={
+                          participants.length > 0
+                            ? (count / participants.length) * 100
+                            : 0
+                        }
+                        className="h-2"
+                      />
+                    </div>
+                  )
+                )}
+                {Object.keys(participantAnalytics.byRole).length === 0 && (
+                  <div className="text-center py-4 text-gray-500">
+                    No role data available
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -443,59 +417,78 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                Stream Quality Metrics
+                Connection Quality Metrics
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">Stream Stability</span>
-                      <span className="text-xs sm:text-sm font-mono">{analytics.streamQuality.toFixed(1)}%</span>
-                    </div>
-                    <Progress value={analytics.streamQuality} className="h-1.5 sm:h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">Bandwidth Usage</span>
-                      <span className="text-xs sm:text-sm font-mono">{Math.round(analytics.bandwidth)} kbps</span>
-                    </div>
-                    <Progress value={(analytics.bandwidth / 320) * 100} className="h-1.5 sm:h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">Buffer Health</span>
-                      <span className="text-xs sm:text-sm font-mono">98.2%</span>
-                    </div>
-                    <Progress value={98.2} className="h-1.5 sm:h-2" />
-                  </div>
+                  <h4 className="font-medium text-sm">
+                    Connection Quality Distribution
+                  </h4>
+                  {Object.entries(participantAnalytics.connectionQuality).map(
+                    ([quality, count]) => (
+                      <div key={quality} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Signal
+                              className={`h-4 w-4 ${getConnectionQualityColor(quality)}`}
+                            />
+                            <span className="font-medium capitalize">
+                              {quality}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600">
+                              {count}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              (
+                              {participants.length > 0
+                                ? ((count / participants.length) * 100).toFixed(
+                                    1
+                                  )
+                                : 0}
+                              %)
+                            </span>
+                          </div>
+                        </div>
+                        <Progress
+                          value={
+                            participants.length > 0
+                              ? (count / participants.length) * 100
+                              : 0
+                          }
+                          className="h-2"
+                        />
+                      </div>
+                    )
+                  )}
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm sm:text-base">Quality Distribution</h4>
-                  {Object.entries(analytics.qualityDistribution).map(([quality, count]) => (
-                    <div key={quality} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Volume2 className={`h-3 w-3 sm:h-4 sm:w-4 ${getQualityColor(quality)}`} />
-                          <span className="font-medium capitalize text-sm">{quality} Quality</span>
-                        </div>
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          <span className="text-xs sm:text-sm text-gray-600">{count}</span>
-                          <span className="text-xs text-gray-500">
-                            ({((count / analytics.currentListeners) * 100).toFixed(1)}%)
-                          </span>
-                        </div>
-                      </div>
-                      <Progress 
-                        value={(count / analytics.currentListeners) * 100} 
-                        className="h-1.5 sm:h-2"
-                      />
+                  <h4 className="font-medium text-sm">Audio Activity</h4>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Participants with Audio</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">
+                        {participantAnalytics.withAudio}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        of {participants.length} total
+                      </span>
                     </div>
-                  ))}
+                  </div>
+                  <Progress
+                    value={
+                      participants.length > 0
+                        ? (participantAnalytics.withAudio /
+                            participants.length) *
+                          100
+                        : 0
+                    }
+                    className="h-2"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -503,5 +496,5 @@ export function AnalyticsDashboard({ isLive, listeners, onListenerUpdate }: Anal
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

@@ -2,99 +2,123 @@ import { Mic, MicOff, UserPlus, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocalParticipant, useRemoteParticipants, ConnectionQualityIndicator, BarVisualizer, useTracks } from "@livekit/components-react";
+import { Track } from "livekit-client";
 
-interface StudioUser {
-  id: string;
-  username: string;
-  role: 'host' | 'co-host' | 'guest';
-  isConnected: boolean;
-  isMuted: boolean;
-  audioLevel: number;
-}
+export function StudioUsers() {
+  const { localParticipant } = useLocalParticipant();
+  const remoteParticipants = useRemoteParticipants();
+  const tracks = useTracks([Track.Source.Microphone], { onlySubscribed: false });
 
-interface StudioUsersProps {
-  users: StudioUser[];
-  onAddUser: (user: StudioUser) => void;
-  onRemoveUser: (userId: string) => void;
-  onToggleMute: (userId: string, muted: boolean) => void;
-}
-
-export function StudioUsers({
-  users,
-  onAddUser,
-  onRemoveUser,
-  onToggleMute
-}: StudioUsersProps) {
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'host': return 'bg-purple-500';
-      case 'co-host': return 'bg-blue-500';
-      case 'guest': return 'bg-green-500';
-      default: return 'bg-gray-500';
-    }
+  const handleMuteParticipant = async (participantId: string, mute: boolean) => {
+    // Host can request participant to mute (this would need server-side implementation)
+    console.log(`Request ${mute ? 'mute' : 'unmute'} for participant:`, participantId);
   };
+
+  const handleRemoveParticipant = (participantId: string) => {
+    // Host can remove participant (this would need server-side implementation)
+    console.log('Remove participant:', participantId);
+  };
+
+  const getRoleColor = (identity: string) => {
+    if (identity.includes('host')) return 'bg-purple-500';
+    if (identity.includes('broadcaster')) return 'bg-blue-500';
+    return 'bg-green-500';
+  };
+
+  const getRole = (identity: string) => {
+    if (identity.includes('host')) return 'host';
+    if (identity.includes('broadcaster')) return 'broadcaster';
+    return 'listener';
+  };
+
+  const allParticipants = [localParticipant, ...remoteParticipants];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Studio Users ({users.length})</span>
+          <span>Studio Participants ({allParticipants.length})</span>
           <Button size="sm" onClick={() => {}}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Add User
+            Invite User
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {users.map((user) => (
-            <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className={`w-3 h-3 rounded-full ${
-                  user.isConnected ? 'bg-green-500' : 'bg-gray-300'
-                }`} />
-                <div>
-                  <p className="font-medium">{user.username}</p>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getRoleColor(user.role)} variant="secondary">
-                      {user.role}
-                    </Badge>
-                    {user.audioLevel > 0 && (
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-xs text-muted-foreground">
-                          {Math.round(user.audioLevel)}%
-                        </span>
-                      </div>
-                    )}
+          {allParticipants.map((participant) => {
+            const isLocal = participant === localParticipant;
+            const micTrack = tracks.find(t => t.participant === participant);
+            const isMuted = !participant.isMicrophoneEnabled;
+            
+            return (
+              <div key={participant.identity} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    participant.connectionQuality !== 'unknown' ? 'bg-green-500' : 'bg-gray-300'
+                  }`} />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">
+                        {participant.name || participant.identity}
+                        {isLocal && ' (You)'}
+                      </p>
+                      <ConnectionQualityIndicator participant={participant} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={getRoleColor(participant.identity)} variant="secondary">
+                        {getRole(participant.identity)}
+                      </Badge>
+                      {micTrack && !isMuted && (
+                        <div className="w-16 h-4">
+                          <BarVisualizer trackRef={micTrack} />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+                
+                <div className="flex items-center space-x-2">
+                  {!isLocal && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant={isMuted ? "destructive" : "outline"}
+                        onClick={() => handleMuteParticipant(participant.identity, !isMuted)}
+                        title={isMuted ? 'Request Unmute' : 'Request Mute'}
+                      >
+                        {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRemoveParticipant(participant.identity)}
+                        title="Remove Participant"
+                      >
+                        <UserMinus className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                  {isLocal && (
+                    <Button
+                      size="sm"
+                      variant={isMuted ? "destructive" : "outline"}
+                      onClick={() => localParticipant.setMicrophoneEnabled(!localParticipant.isMicrophoneEnabled)}
+                    >
+                      {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    </Button>
+                  )}
+                </div>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <Button
-                  size="sm"
-                  variant={user.isMuted ? "destructive" : "outline"}
-                  onClick={() => onToggleMute(user.id, !user.isMuted)}
-                >
-                  {user.isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onRemoveUser(user.id)}
-                >
-                  <UserMinus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           
-          {users.length === 0 && (
+          {allParticipants.length === 1 && (
             <div className="text-center py-8 text-muted-foreground">
               <UserPlus className="h-8 w-8 mx-auto mb-2" />
-              <p>No users in studio</p>
-              <p className="text-sm">Add users to start broadcasting</p>
+              <p>Only you in the studio</p>
+              <p className="text-sm">Invite participants to start broadcasting</p>
             </div>
           )}
         </div>

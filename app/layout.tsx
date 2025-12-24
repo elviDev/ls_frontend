@@ -5,6 +5,7 @@ import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { QueryProvider } from "@/providers/query-provider"
+import { GlobalLiveKitProvider } from "@/providers/global-livekit-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 import { ErrorBoundary } from "@/components/error-boundary"
@@ -32,11 +33,13 @@ export default function RootLayout({
           <ErrorBoundary>
             <QueryProvider>
               <AuthProvider>
-                <GlobalAudioProvider>
-                  <ConditionalLayout>
-                    {children}
-                  </ConditionalLayout>
-                </GlobalAudioProvider>
+                <GlobalLiveKitProvider>
+                  <GlobalAudioProvider>
+                    <ConditionalLayout>
+                      {children}
+                    </ConditionalLayout>
+                  </GlobalAudioProvider>
+                </GlobalLiveKitProvider>
                 <Toaster />
                 <SonnerToaster position="top-right" />
               </AuthProvider>
