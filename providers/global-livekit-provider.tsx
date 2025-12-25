@@ -12,9 +12,12 @@ interface LiveKitRoom {
 
 interface GlobalLiveKitContextType {
   rooms: Map<string, LiveKitRoom>;
+  activeBroadcasts: string[];
   createRoom: (roomId: string, roomName: string, userId: string, userName?: string, role?: 'broadcaster' | 'listener') => Promise<Room>;
   disconnectRoom: (roomId: string) => void;
   getRoom: (roomId: string) => Room | null;
+  onBroadcastStarted?: (broadcastId: string) => void;
+  onBroadcastEnded?: (broadcastId: string) => void;
 }
 
 const GlobalLiveKitContext = createContext<GlobalLiveKitContextType | null>(null);
@@ -33,7 +36,47 @@ interface GlobalLiveKitProviderProps {
 
 export function GlobalLiveKitProvider({ children }: GlobalLiveKitProviderProps) {
   const [rooms] = useState(() => new Map<string, LiveKitRoom>());
+  const [activeBroadcasts, setActiveBroadcasts] = useState<string[]>([]);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
+
+  // Listen for broadcast events instead of polling
+  useEffect(() => {
+    const handleBroadcastLive = (event: CustomEvent) => {
+      const broadcast = event.detail;
+      setActiveBroadcasts(prev => 
+        prev.includes(broadcast.id) ? prev : [...prev, broadcast.id]
+      );
+    };
+
+    const handleBroadcastEnded = (event: CustomEvent) => {
+      const { broadcastId } = event.detail;
+      setActiveBroadcasts(prev => prev.filter(id => id !== broadcastId));
+    };
+
+    window.addEventListener('broadcast-live', handleBroadcastLive as EventListener);
+    window.addEventListener('broadcast-ended', handleBroadcastEnded as EventListener);
+
+    // Initial check for existing live broadcasts
+    const checkInitialBroadcasts = async () => {
+      try {
+        const response = await fetch('/api/broadcasts/current');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isLive && data.id) {
+            setActiveBroadcasts([data.id]);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to check initial broadcasts:', error);
+      }
+    };
+    checkInitialBroadcasts();
+
+    return () => {
+      window.removeEventListener('broadcast-live', handleBroadcastLive as EventListener);
+      window.removeEventListener('broadcast-ended', handleBroadcastEnded as EventListener);
+    };
+  }, []);
 
   // Initialize AudioContext on first user interaction
   useEffect(() => {
@@ -169,6 +212,7 @@ export function GlobalLiveKitProvider({ children }: GlobalLiveKitProviderProps) 
 
   const contextValue: GlobalLiveKitContextType = {
     rooms,
+    activeBroadcasts,
     createRoom,
     disconnectRoom,
     getRoom,

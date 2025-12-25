@@ -6,17 +6,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { useBroadcastStore } from "@/stores/broadcast-store";
+import { useBroadcastDiscovery } from "@/hooks/use-broadcast-discovery";
 import { LiveKitListener } from "./live-player/components/livekit-listener";
 
 function LivePlayerInterface() {
   const { user } = useAuth();
   const { currentBroadcast } = useBroadcastStore();
+  const { liveBroadcasts, hasLiveBroadcasts } = useBroadcastDiscovery();
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const [isReconnecting, setIsReconnecting] = useState(false);
 
-  const isLive = currentBroadcast?.status === "LIVE";
+  // Use discovered broadcasts if current broadcast is not set
+  const activeBroadcast = currentBroadcast || (hasLiveBroadcasts ? liveBroadcasts[0] : null);
+  const isLive = activeBroadcast?.status === "LIVE" || activeBroadcast?.isLive;
   const maxRetries = 3;
 
   const togglePlay = async () => {
@@ -130,10 +134,10 @@ function LivePlayerInterface() {
               )}
             </Button>
 
-            {currentBroadcast && (
+            {activeBroadcast && (
               <div className="text-sm">
                 <span className="font-medium">
-                  {currentBroadcast.title || "Live Broadcast"}
+                  {activeBroadcast.title || "Live Broadcast"}
                 </span>
                 <div className="flex items-center gap-1 text-xs text-red-600">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -147,7 +151,7 @@ function LivePlayerInterface() {
         {isLive && isPlaying && !isReconnecting && (
           <LiveKitListener
             key={`listener-${connectionAttempts}`} // Force re-mount on retry
-            roomName={`broadcast-${currentBroadcast.slug || currentBroadcast.id}`}
+            roomName={`broadcast-${activeBroadcast.slug || activeBroadcast.id}`}
             userId={`listener-${Date.now()}`}
             userName={user?.email || "Anonymous Listener"}
             onConnectionChange={handleConnectionChange}

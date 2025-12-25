@@ -130,7 +130,27 @@ export const useBroadcastStore = create<BroadcastStore>((set, get) => ({
       
       if (response.ok) {
         const updatedBroadcast = await response.json();
-        get().setBroadcast(updatedBroadcast);
+        
+        if (status === 'LIVE') {
+          get().setBroadcast(updatedBroadcast);
+          get().setCurrentShow(updatedBroadcast.title);
+          // Notify all users about the live broadcast
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('broadcast-live', { 
+              detail: updatedBroadcast 
+            }));
+          }
+        } else if (status === 'ENDED') {
+          get().setBroadcast(null);
+          get().setCurrentShow('No live broadcast');
+          // Notify all users broadcast ended
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('broadcast-ended', { 
+              detail: { broadcastId: slug } 
+            }));
+          }
+        }
+        
         console.log('✅ Broadcast status updated to:', status);
       } else {
         throw new Error('Failed to update broadcast status');
