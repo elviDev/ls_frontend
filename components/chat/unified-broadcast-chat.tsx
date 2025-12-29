@@ -66,7 +66,7 @@ export function UnifiedBroadcastChat({
   // Initialize Socket.IO connection
   useEffect(() => {
     const SOCKET_SERVER_URL =
-      process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ||
+      process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ||
       "https://lsbackend-production-46d9.up.railway.app";
     const token = getAuthToken();
 
@@ -211,9 +211,7 @@ export function UnifiedBroadcastChat({
       const API_BASE_URL =
         process.env.NEXT_PUBLIC_API_URL ||
         "https://lsbackend-production-46d9.up.railway.app/api";
-      const response = await fetch(
-        `${API_BASE_URL}/chat/${broadcastId}`
-      );
+      const response = await fetch(`${API_BASE_URL}/chat/${broadcastId}`);
       if (response.ok) {
         const data = await response.json();
         console.log("[Chat] Loaded messages:", data.messages?.length || 0);
@@ -248,7 +246,7 @@ export function UnifiedBroadcastChat({
       id: tempId,
       broadcastId,
       userId: user?.id || "anonymous",
-      username: user?.name || "Anonymous",
+      username: user?.username || user?.name || "Anonymous",
       content: newMessage,
       messageType: messageType as any,
       isPinned: false,
@@ -301,7 +299,9 @@ export function UnifiedBroadcastChat({
   const getRoleIcon = (messageType: string) => {
     switch (messageType) {
       case "host":
-        return <Crown className="h-3 w-3 text-yellow-500 dark:text-yellow-400" />;
+        return (
+          <Crown className="h-3 w-3 text-yellow-500 dark:text-yellow-400" />
+        );
       case "moderator":
         return <Shield className="h-3 w-3 text-blue-500 dark:text-blue-400" />;
       case "announcement":
@@ -315,10 +315,16 @@ export function UnifiedBroadcastChat({
     switch (messageType) {
       case "host":
         return (
-          <Badge className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs">Host</Badge>
+          <Badge className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs">
+            Host
+          </Badge>
         );
       case "moderator":
-        return <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs">Mod</Badge>;
+        return (
+          <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs">
+            Mod
+          </Badge>
+        );
       case "announcement":
         return (
           <Badge className="bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 text-xs">
@@ -372,7 +378,7 @@ export function UnifiedBroadcastChat({
                   <span className="font-medium">{message.username}:</span>{" "}
                   {message.content}
                 </div>
-              ))}}
+              ))}
             </div>
           )}
 
