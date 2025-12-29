@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -59,7 +60,7 @@ export default function UserDetailPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}`)
+      const response = await apiClient.request(`/users/${userId}`)
       if (response.ok) {
         const data = await response.json()
         setUser(data)
@@ -79,7 +80,7 @@ export default function UserDetailPage() {
     if (!user) return
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await apiClient.request(`/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -105,7 +106,7 @@ export default function UserDetailPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await apiClient.request(`/users/${userId}`, {
         method: "DELETE"
       })
 

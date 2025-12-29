@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -199,7 +200,7 @@ export default function EpisodeDetailPage() {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`
+        `/podcasts/${params.id}/episodes/${params.episodeId}`
       );
       if (!response.ok) throw new Error("Failed to fetch episode");
 
@@ -219,7 +220,7 @@ export default function EpisodeDetailPage() {
   const fetchComments = async () => {
     try {
       const response = await fetch(
-        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}/comments`
+        `/podcasts/${params.id}/episodes/${params.episodeId}/comments`
       );
       if (response.ok) {
         const data = await response.json();
@@ -233,7 +234,7 @@ export default function EpisodeDetailPage() {
   const handleDelete = async () => {
     try {
       const response = await fetch(
-        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        `/podcasts/${params.id}/episodes/${params.episodeId}`,
         {
           method: "DELETE",
         }
@@ -258,7 +259,7 @@ export default function EpisodeDetailPage() {
   const handleStatusChange = async (status: string) => {
     try {
       const response = await fetch(
-        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        `/podcasts/${params.id}/episodes/${params.episodeId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -299,7 +300,7 @@ export default function EpisodeDetailPage() {
       }, 200);
 
       const response = await fetch(
-        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        `/podcasts/${params.id}/episodes/${params.episodeId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -383,7 +384,7 @@ export default function EpisodeDetailPage() {
       }
 
       const response = await fetch(
-        `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+        `/podcasts/${params.id}/episodes/${params.episodeId}`,
         {
           method: "PATCH",
           body: formData,
@@ -421,7 +422,7 @@ export default function EpisodeDetailPage() {
 
         // Update the episode duration in the database
         const response = await fetch(
-          `/api/admin/podcasts/${params.id}/episodes/${params.episodeId}`,
+          `/podcasts/${params.id}/episodes/${params.episodeId}`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },

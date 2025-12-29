@@ -1,126 +1,27 @@
+"use client";
+
 import { Suspense } from "react";
-import { PodcastList } from "@/components/podcast/podcast-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { prisma } from "@/lib/prisma";
-import { getFavoritePodcasts } from "@/app/podcasts/actions";
+import { PodcastList } from "@/components/podcast/podcast-list";
+import { useFeaturedPodcasts, usePopularPodcasts, useRecentPodcasts, useFavoritePodcasts, useGenres } from "@/hooks/use-podcasts";
+import { usePodcastStore } from "@/stores/podcast-store";
 
-// This is a server component that fetches the initial data
-async function PodcastsContent() {
-  try {
-    // First, let's check if there are any podcasts at all
-    const allPodcasts = await prisma.podcast.findMany({
-      include: {
-        author: { select: { firstName: true, lastName: true } },
-        genre: { select: { name: true } },
-      },
-    });
+function PodcastsContent() {
+  const { filters } = usePodcastStore();
+  const { data: featuredPodcasts = [], isLoading: loadingFeatured } = useFeaturedPodcasts();
+  const { data: popularPodcasts = [], isLoading: loadingPopular } = usePopularPodcasts();
+  const { data: recentPodcasts = [], isLoading: loadingRecent } = useRecentPodcasts();
+  const { data: favoritePodcasts = [], isLoading: loadingFavorites } = useFavoritePodcasts();
+  const { data: genres = [] } = useGenres();
 
-    // Skip user-specific data during build to avoid dynamic server usage
-    const currentUser = null;
+  const isLoading = loadingFeatured || loadingPopular || loadingRecent;
 
-    // Fetch podcasts from database
-    const [publishedPodcasts, genres, userFavorites] = await Promise.all([
-      prisma.podcast.findMany({
-        where: { status: "PUBLISHED" },
-        include: {
-          author: { select: { firstName: true, lastName: true } },
-          genre: { select: { name: true } },
-          episodes: {
-            where: { status: "PUBLISHED" },
-            select: { id: true },
-          },
-          _count: {
-            select: { favorites: true },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.genre.findMany({
-        select: { id: true, name: true, slug: true },
-        orderBy: { name: "asc" },
-      }),
-      // Skip favorites during build to avoid dynamic server usage
-      [],
-    ]);
+  if (isLoading) {
+    return <PodcastsLoading />;
+  }
 
-    // Create a set of favorite podcast IDs for quick lookup
-    const favoritePodcastIds = new Set(userFavorites.map((f: any) => f.postId));
-
-    // Transform the data to match component's expected format
-    const formattedPodcasts = publishedPodcasts.map((podcast: any) => ({
-      collectionId: podcast.id,
-      collectionName: podcast.title,
-      artistName: `${podcast.author.firstName} ${podcast.author.lastName}`,
-      artworkUrl100:
-        podcast.coverImage || "/placeholder.svg?height=400&width=400",
-      primaryGenreName: podcast.genre?.name,
-      episodeCount: podcast.episodes.length,
-      favoriteCount: podcast._count.favorites,
-      releaseDate: podcast.releaseDate,
-      description: podcast.description,
-      isFavorite: favoritePodcastIds.has(podcast.id),
-    }));
-
-    console.log("Formatted podcasts:", formattedPodcasts.length);
-    console.log("Sample formatted podcast:", formattedPodcasts[0]);
-
-    // If no podcasts found, show a helpful message
-    if (formattedPodcasts.length === 0) {
-      return (
-        <div className="container mx-auto px-4 py-12">
-          <div className="max-w-4xl mx-auto text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Explore Our Podcasts</h1>
-            <p className="text-xl text-muted-foreground">
-              Discover thought-provoking conversations, inspiring stories, and
-              expert insights across a variety of topics.
-            </p>
-          </div>
-
-          <div className="text-center py-12">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 p-6 rounded-lg max-w-md mx-auto">
-              <h2 className="text-lg font-semibold mb-2">
-                No Podcasts Available
-              </h2>
-              <p className="mb-4">
-                {allPodcasts.length === 0
-                  ? "No podcasts have been created yet."
-                  : `Found ${allPodcasts.length} podcast(s) but none are published.`}
-              </p>
-              {allPodcasts.length > 0 && (
-                <details className="text-left">
-                  <summary className="cursor-pointer">
-                    View all podcasts status
-                  </summary>
-                  <pre className="text-xs mt-2 bg-gray-100 dark:bg-gray-800 p-2 rounded">
-                    {JSON.stringify(
-                      allPodcasts.map((p: any) => ({
-                        title: p.title,
-                        status: p.status,
-                      })),
-                      null,
-                      2
-                    )}
-                  </pre>
-                </details>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Get popular podcasts (by favorite count)
-    const popularPodcasts = [...formattedPodcasts].sort(
-      (a, b) => b.favoriteCount - a.favoriteCount
-    );
-
-    // Get recent podcasts
-    const recentPodcasts = [...formattedPodcasts].sort(
-      (a, b) =>
-        new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
-    );
-
+  if (featuredPodcasts.length === 0 && popularPodcasts.length === 0 && recentPodcasts.length === 0) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto text-center mb-12">
@@ -130,100 +31,118 @@ async function PodcastsContent() {
             expert insights across a variety of topics.
           </p>
         </div>
-
-        <Tabs defaultValue="featured" className="mb-12">
-          <TabsList className="flex flex-wrap h-auto p-1 mb-8">
-            <TabsTrigger value="featured">Featured</TabsTrigger>
-            <TabsTrigger value="popular">Popular</TabsTrigger>
-            <TabsTrigger value="recent">Recent</TabsTrigger>
-            <TabsTrigger value="favorites">My Favorites</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="featured" className="mt-0">
-            <PodcastList
-              initialPodcasts={formattedPodcasts}
-              title="Featured Podcasts"
-              availableGenres={genres}
-            />
-          </TabsContent>
-
-          <TabsContent value="popular" className="mt-0">
-            <PodcastList
-              initialPodcasts={popularPodcasts}
-              title="Popular Podcasts"
-              availableGenres={genres}
-            />
-          </TabsContent>
-
-          <TabsContent value="recent" className="mt-0">
-            <PodcastList
-              initialPodcasts={recentPodcasts}
-              title="Recently Added"
-              availableGenres={genres}
-            />
-          </TabsContent>
-
-          <TabsContent value="favorites" className="mt-0">
-            <PodcastList
-              initialPodcasts={[]}
-              title="My Favorites"
-              showFavoritesOnly={true}
-              availableGenres={genres}
-            />
-          </TabsContent>
-        </Tabs>
-
-        <div className="space-y-12">
-          {genres
-            .slice(0, 3)
-            .map((genre: { id: string; name: string; slug: string }) => {
-              const genrePodcasts = formattedPodcasts
-                .filter(
-                  (podcast: any) => podcast.primaryGenreName === genre.name
-                )
-                .slice(0, 4);
-
-              if (genrePodcasts.length === 0) return null;
-
-              return (
-                <section key={genre.id} className="space-y-6">
-                  <h2 className="text-2xl font-bold">{genre.name} Podcasts</h2>
-                  <PodcastList
-                    initialPodcasts={genrePodcasts}
-                    showSearch={false}
-                    showFilters={false}
-                    title=""
-                    availableGenres={genres}
-                  />
-                </section>
-              );
-            })}
-        </div>
-      </div>
-    );
-  } catch (error: any) {
-    console.error("Error in PodcastsContent:", error);
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold">Error loading podcasts</h2>
-          <p>
-            We encountered an issue while loading the podcast data. Please try
-            again later.
-          </p>
-          <details className="mt-2">
-            <summary>Error details (for debugging)</summary>
-            <pre className="text-xs mt-2 bg-gray-100 dark:bg-gray-800 p-2 rounded">
-              {error.message}
-            </pre>
-          </details>
+        <div className="text-center py-12">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 p-6 rounded-lg max-w-md mx-auto">
+            <h2 className="text-lg font-semibold mb-2">No Podcasts Available</h2>
+            <p>No podcasts have been published yet. Check back later!</p>
+          </div>
         </div>
       </div>
     );
   }
+
+  return (
+    <div className="container mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4">Explore Our Podcasts</h1>
+        <p className="text-xl text-muted-foreground">
+          Discover thought-provoking conversations, inspiring stories, and
+          expert insights across a variety of topics.
+        </p>
+      </div>
+
+      <Tabs defaultValue="featured" className="mb-12">
+        <TabsList className="flex flex-wrap h-auto p-1 mb-8">
+          <TabsTrigger value="featured">Featured</TabsTrigger>
+          <TabsTrigger value="popular">Popular</TabsTrigger>
+          <TabsTrigger value="recent">Recent</TabsTrigger>
+          <TabsTrigger value="favorites">My Favorites</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="featured" className="mt-0">
+          <PodcastList
+            initialPodcasts={featuredPodcasts.map(transformPodcast)}
+            title="Featured Podcasts"
+            availableGenres={genres}
+          />
+        </TabsContent>
+
+        <TabsContent value="popular" className="mt-0">
+          <PodcastList
+            initialPodcasts={popularPodcasts.map(transformPodcast)}
+            title="Popular Podcasts"
+            availableGenres={genres}
+          />
+        </TabsContent>
+
+        <TabsContent value="recent" className="mt-0">
+          <PodcastList
+            initialPodcasts={recentPodcasts.map(transformPodcast)}
+            title="Recently Added"
+            availableGenres={genres}
+          />
+        </TabsContent>
+
+        <TabsContent value="favorites" className="mt-0">
+          {loadingFavorites ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {Array(4).fill(0).map((_, i) => (
+                <Skeleton key={i} className="aspect-square w-full" />
+              ))}
+            </div>
+          ) : (
+            <PodcastList
+              initialPodcasts={favoritePodcasts.map(transformPodcast)}
+              title="My Favorites"
+              showFavoritesOnly={true}
+              availableGenres={genres}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
+
+      <div className="space-y-12">
+        {genres.slice(0, 3).map((genre) => {
+          const genrePodcasts = featuredPodcasts
+            .filter((podcast) => podcast.genre?.name === genre.name)
+            .slice(0, 4);
+
+          if (genrePodcasts.length === 0) return null;
+
+          return (
+            <section key={genre.id} className="space-y-6">
+              <h2 className="text-2xl font-bold">{genre.name} Podcasts</h2>
+              <PodcastList
+                initialPodcasts={genrePodcasts.map(transformPodcast)}
+                showSearch={false}
+                showFilters={false}
+                title=""
+                availableGenres={genres}
+              />
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
-// Loading skeleton for the podcasts page
+// Transform podcast data to match component's expected format
+function transformPodcast(podcast: any) {
+  return {
+    collectionId: podcast.id,
+    collectionName: podcast.title,
+    artistName: `${podcast.author.firstName} ${podcast.author.lastName}`,
+    artworkUrl100: podcast.coverImage || "/placeholder.svg?height=400&width=400",
+    primaryGenreName: podcast.genre?.name,
+    episodeCount: podcast._count?.episodes || 0,
+    favoriteCount: podcast._count?.favorites || 0,
+    releaseDate: podcast.releaseDate,
+    description: podcast.description,
+    isFavorite: false, // This will be updated by the component
+  };
+}
+
 function PodcastsLoading() {
   return (
     <div className="container mx-auto px-4 py-12">
@@ -231,19 +150,15 @@ function PodcastsLoading() {
         <Skeleton className="h-10 w-64 mx-auto mb-4" />
         <Skeleton className="h-6 w-full max-w-lg mx-auto" />
       </div>
-
       <Skeleton className="h-10 w-96 mb-8" />
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-        {Array(8)
-          .fill(0)
-          .map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="aspect-square w-full" />
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          ))}
+        {Array(8).fill(0).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="aspect-square w-full" />
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        ))}
       </div>
     </div>
   );

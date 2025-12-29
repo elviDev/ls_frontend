@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client"
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
 import Link from "next/link";
 
 interface StaffDetail {
@@ -88,14 +89,14 @@ interface StaffDetail {
 export default function StaffDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { toast } = useToast();
   const [staff, setStaff] = useState<StaffDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   const staffId = params.id as string;
   const isOwnProfile = user?.id === staffId;
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.userType === 'staff' && user?.role === 'ADMIN';
   const canEdit = isOwnProfile || isAdmin;
   const canDelete = isAdmin && !isOwnProfile;
 
@@ -106,7 +107,7 @@ export default function StaffDetailPage() {
   const fetchStaffDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/staff/${staffId}`);
+      const response = await apiClient.request(`/staff/${staffId}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -135,7 +136,7 @@ export default function StaffDetailPage() {
     if (!staff) return;
 
     try {
-      const response = await fetch(`/api/admin/staff/${staffId}`, {
+      const response = await apiClient.request(`/staff/${staffId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !staff.isActive }),
@@ -172,7 +173,7 @@ export default function StaffDetailPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/staff/${staffId}`, {
+      const response = await apiClient.request(`/staff/${staffId}`, {
         method: "DELETE",
       });
 

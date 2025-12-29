@@ -1,154 +1,165 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Loader2, Plus, X, Users, UserPlus, Upload, Image } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
-import type { Program, StaffMember } from "../types"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  CalendarIcon,
+  Loader2,
+  Plus,
+  X,
+  Users,
+  UserPlus,
+  Upload,
+  Image,
+} from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useCreateBroadcast, useUpdateBroadcast, useUploadAsset, useStaff, usePrograms } from "@/hooks/use-broadcasts";
+import { useBroadcastStore } from "@/stores/broadcast-store";
 
 interface CreateBroadcastDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  programs: Program[]
-  staff: StaffMember[]
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+  editingBroadcast?: any | null;
 }
 
-export function CreateBroadcastDialog({ 
-  open, 
-  onOpenChange, 
-  programs, 
-  staff, 
-  onSuccess 
+export function CreateBroadcastDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+  editingBroadcast = null,
 }: CreateBroadcastDialogProps) {
-  const [isCreating, setIsCreating] = useState(false)
-  const [uploadingBanner, setUploadingBanner] = useState(false)
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    startTime: undefined as Date | undefined,
-    startTimeHour: "09",
-    startTimeMinute: "00",
-    endTime: undefined as Date | undefined,
-    endTimeHour: "10",
-    endTimeMinute: "00",
-    hostId: "",
-    programId: "",
-    bannerId: "",
-    bannerFile: null as File | null,
-    staff: [] as { userId: string; role: string }[],
-    guests: [] as { name: string; title: string; role: string }[]
-  })
+  const {
+    formData,
+    setFormData,
+    resetForm,
+    addStaffMember,
+    removeStaffMember,
+    updateStaffMember,
+    addGuest,
+    removeGuest,
+    updateGuest,
+  } = useBroadcastStore();
+
+  const createBroadcastMutation = useCreateBroadcast();
+  const updateBroadcastMutation = useUpdateBroadcast();
+  const uploadAssetMutation = useUploadAsset();
+
+  const isEditMode = !!editingBroadcast;
+
+  // Fetch staff and programs data
+  const { data: staff = [] } = useStaff();
+  const { data: programs = [] } = usePrograms();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!formData.title || !formData.startTime || !formData.hostId) {
-      toast.error("Please fill in all required fields")
-      return
+      return;
     }
 
     if (!formData.endTime) {
-      toast.error("Please select an end date")
-      return
+      return;
     }
 
-    setIsCreating(true)
-    
     try {
-      let bannerId = formData.bannerId
-      
+      let bannerId = formData.bannerId;
+
       // Upload banner if file is selected
       if (formData.bannerFile) {
-        setUploadingBanner(true)
-        const bannerFormData = new FormData()
-        bannerFormData.append('file', formData.bannerFile)
-        bannerFormData.append('type', 'IMAGE')
-        bannerFormData.append('description', `Banner for ${formData.title}`)
-        
-        const bannerResponse = await fetch('/api/admin/assets', {
-          method: 'POST',
-          body: bannerFormData
-        })
-        
-        if (bannerResponse.ok) {
-          const bannerData = await bannerResponse.json()
-          bannerId = bannerData.id
-        }
-        setUploadingBanner(false)
+        const uploadResult = await uploadAssetMutation.mutateAsync({
+          file: formData.bannerFile,
+          type: "IMAGE",
+          description: `Banner for ${formData.title}`,
+        });
+        bannerId = (uploadResult as any).id;
       }
-      
-      const startDateTime = new Date(formData.startTime)
-      startDateTime.setHours(parseInt(formData.startTimeHour), parseInt(formData.startTimeMinute))
-      
-      const endDateTime = formData.endTime ? new Date(formData.endTime) : new Date(startDateTime)
-      endDateTime.setHours(parseInt(formData.endTimeHour), parseInt(formData.endTimeMinute))
 
-      const response = await fetch('/api/admin/broadcasts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const startDateTime = new Date(formData.startTime);
+      startDateTime.setHours(
+        parseInt(formData.startTimeHour),
+        parseInt(formData.startTimeMinute)
+      );
+
+      const endDateTime = new Date(formData.endTime);
+      endDateTime.setHours(
+        parseInt(formData.endTimeHour),
+        parseInt(formData.endTimeMinute)
+      );
+
+      if (isEditMode) {
+        await updateBroadcastMutation.mutateAsync({
+          id: editingBroadcast.id,
+          data: {
+            title: formData.title,
+            description: formData.description,
+            startTime: startDateTime.toISOString(),
+            endTime: endDateTime.toISOString(),
+            hostId: formData.hostId,
+            programId: formData.programId || undefined,
+            bannerId: bannerId || undefined,
+            staff: formData.staff,
+            guests: formData.guests,
+          },
+        });
+      } else {
+        await createBroadcastMutation.mutateAsync({
           title: formData.title,
           description: formData.description,
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
           hostId: formData.hostId,
-          programId: formData.programId || null,
-          bannerId: bannerId || null,
+          programId: formData.programId || undefined,
+          bannerId: bannerId || undefined,
           staff: formData.staff,
-          guests: formData.guests
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create broadcast')
+          guests: formData.guests,
+        });
       }
 
-      toast.success("Broadcast created successfully!")
-      onSuccess()
-      onOpenChange(false)
-      
-      // Reset form
-      setFormData({
-        title: "",
-        description: "",
-        startTime: undefined,
-        startTimeHour: "09",
-        startTimeMinute: "00",
-        endTime: undefined,
-        endTimeHour: "10",
-        endTimeMinute: "00",
-        hostId: "",
-        programId: "",
-        bannerId: "",
-        bannerFile: null,
-        staff: [],
-        guests: []
-      })
+      onSuccess();
+      onOpenChange(false);
+      resetForm();
     } catch (error) {
-      console.error('Error creating broadcast:', error)
-      toast.error("Failed to create broadcast")
-    } finally {
-      setIsCreating(false)
+      // Error handling is done in the mutation
     }
-  }
+  };
+
+  const isLoading =
+    createBroadcastMutation.isPending || 
+    updateBroadcastMutation.isPending || 
+    uploadAssetMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Broadcast</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Broadcast" : "Create New Broadcast"}</DialogTitle>
           <DialogDescription>
-            Set up a new radio broadcast or live show
+            {isEditMode ? "Update your broadcast details and settings" : "Set up a new radio broadcast or live show"}
           </DialogDescription>
         </DialogHeader>
 
@@ -159,7 +170,7 @@ export function CreateBroadcastDialog({
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) => setFormData({ title: e.target.value })}
                 placeholder="Enter broadcast title"
                 required
               />
@@ -170,7 +181,7 @@ export function CreateBroadcastDialog({
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => setFormData({ description: e.target.value })}
                 placeholder="Describe your broadcast"
                 rows={3}
               />
@@ -188,14 +199,16 @@ export function CreateBroadcastDialog({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startTime ? format(formData.startTime, "PPP") : "Pick a date"}
+                    {formData.startTime
+                      ? format(formData.startTime, "PPP")
+                      : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={formData.startTime}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, startTime: date }))}
+                    onSelect={(date) => setFormData({ startTime: date })}
                     initialFocus
                   />
                 </PopoverContent>
@@ -205,24 +218,34 @@ export function CreateBroadcastDialog({
             <div>
               <Label>Start Time</Label>
               <div className="flex gap-2">
-                <Select value={formData.startTimeHour} onValueChange={(value) => setFormData(prev => ({ ...prev, startTimeHour: value }))}>
+                <Select
+                  value={formData.startTimeHour}
+                  onValueChange={(value) =>
+                    setFormData({ startTimeHour: value })
+                  }
+                >
                   <SelectTrigger className="flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 24 }, (_, i) => (
-                      <SelectItem key={i} value={i.toString().padStart(2, '0')}>
-                        {i.toString().padStart(2, '0')}
+                      <SelectItem key={i} value={i.toString().padStart(2, "0")}>
+                        {i.toString().padStart(2, "0")}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={formData.startTimeMinute} onValueChange={(value) => setFormData(prev => ({ ...prev, startTimeMinute: value }))}>
+                <Select
+                  value={formData.startTimeMinute}
+                  onValueChange={(value) =>
+                    setFormData({ startTimeMinute: value })
+                  }
+                >
                   <SelectTrigger className="flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {['00', '15', '30', '45'].map(minute => (
+                    {["00", "15", "30", "45"].map((minute) => (
                       <SelectItem key={minute} value={minute}>
                         {minute}
                       </SelectItem>
@@ -244,14 +267,16 @@ export function CreateBroadcastDialog({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.endTime ? format(formData.endTime, "PPP") : "Pick end date"}
+                    {formData.endTime
+                      ? format(formData.endTime, "PPP")
+                      : "Pick end date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={formData.endTime}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, endTime: date }))}
+                    onSelect={(date) => setFormData({ endTime: date })}
                     initialFocus
                   />
                 </PopoverContent>
@@ -261,24 +286,32 @@ export function CreateBroadcastDialog({
             <div>
               <Label>End Time</Label>
               <div className="flex gap-2">
-                <Select value={formData.endTimeHour} onValueChange={(value) => setFormData(prev => ({ ...prev, endTimeHour: value }))}>
+                <Select
+                  value={formData.endTimeHour}
+                  onValueChange={(value) => setFormData({ endTimeHour: value })}
+                >
                   <SelectTrigger className="flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 24 }, (_, i) => (
-                      <SelectItem key={i} value={i.toString().padStart(2, '0')}>
-                        {i.toString().padStart(2, '0')}
+                      <SelectItem key={i} value={i.toString().padStart(2, "0")}>
+                        {i.toString().padStart(2, "0")}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={formData.endTimeMinute} onValueChange={(value) => setFormData(prev => ({ ...prev, endTimeMinute: value }))}>
+                <Select
+                  value={formData.endTimeMinute}
+                  onValueChange={(value) =>
+                    setFormData({ endTimeMinute: value })
+                  }
+                >
                   <SelectTrigger className="flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {['00', '15', '30', '45'].map(minute => (
+                    {["00", "15", "30", "45"].map((minute) => (
                       <SelectItem key={minute} value={minute}>
                         {minute}
                       </SelectItem>
@@ -290,12 +323,15 @@ export function CreateBroadcastDialog({
 
             <div>
               <Label>Host *</Label>
-              <Select value={formData.hostId} onValueChange={(value) => setFormData(prev => ({ ...prev, hostId: value }))}>
+              <Select
+                value={formData.hostId}
+                onValueChange={(value) => setFormData({ hostId: value })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select host" />
                 </SelectTrigger>
                 <SelectContent>
-                  {staff.map((member) => (
+                  {staff.map((member: any) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.firstName} {member.lastName}
                     </SelectItem>
@@ -306,12 +342,15 @@ export function CreateBroadcastDialog({
 
             <div>
               <Label>Program</Label>
-              <Select value={formData.programId} onValueChange={(value) => setFormData(prev => ({ ...prev, programId: value }))}>
+              <Select
+                value={formData.programId}
+                onValueChange={(value) => setFormData({ programId: value })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select program (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  {programs.map((program) => (
+                  {programs.map((program: any) => (
                     <SelectItem key={program.id} value={program.id}>
                       {program.title}
                     </SelectItem>
@@ -327,7 +366,7 @@ export function CreateBroadcastDialog({
               <Image className="h-4 w-4" />
               Cover Image
             </Label>
-            
+
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
               {formData.bannerFile ? (
                 <div className="space-y-3">
@@ -339,12 +378,14 @@ export function CreateBroadcastDialog({
                     />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-gray-600">{formData.bannerFile.name}</p>
+                    <p className="text-sm text-gray-600">
+                      {formData.bannerFile.name}
+                    </p>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => setFormData(prev => ({ ...prev, bannerFile: null }))}
+                      onClick={() => setFormData({ bannerFile: null })}
                       className="mt-2"
                     >
                       Remove
@@ -355,14 +396,16 @@ export function CreateBroadcastDialog({
                 <div className="text-center">
                   <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                   <div className="space-y-2">
-                    <p className="text-sm text-gray-600">Upload a cover image for your broadcast</p>
+                    <p className="text-sm text-gray-600">
+                      Upload a cover image for your broadcast
+                    </p>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={(e) => {
-                        const file = e.target.files?.[0]
+                        const file = e.target.files?.[0];
                         if (file) {
-                          setFormData(prev => ({ ...prev, bannerFile: file }))
+                          setFormData({ bannerFile: file });
                         }
                       }}
                       className="hidden"
@@ -371,7 +414,9 @@ export function CreateBroadcastDialog({
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => document.getElementById('banner-upload')?.click()}
+                      onClick={() =>
+                        document.getElementById("banner-upload")?.click()
+                      }
                     >
                       Choose Image
                     </Button>
@@ -393,15 +438,13 @@ export function CreateBroadcastDialog({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const availableStaff = staff.filter(s => 
-                    s.id !== formData.hostId && 
-                    !formData.staff.some(fs => fs.userId === s.id)
-                  )
+                  const availableStaff = staff.filter(
+                    (s: any) =>
+                      s.id !== formData.hostId &&
+                      !formData.staff.some((fs) => fs.userId === s.id)
+                  );
                   if (availableStaff.length > 0) {
-                    setFormData(prev => ({
-                      ...prev,
-                      staff: [...prev.staff, { userId: availableStaff[0].id, role: "CO_HOST" }]
-                    }))
+                    addStaffMember(availableStaff[0].id, "CO_HOST");
                   }
                 }}
               >
@@ -409,38 +452,44 @@ export function CreateBroadcastDialog({
                 Add Staff
               </Button>
             </div>
-            
+
             {formData.staff.map((staffMember, index) => {
-              const member = staff.find(s => s.id === staffMember.userId)
+              const member = staff.find(
+                (s: any) => s.id === staffMember.userId
+              );
               return (
-                <div key={index} className="flex items-center gap-2 p-2 border rounded">
-                  <Select 
-                    value={staffMember.userId} 
-                    onValueChange={(value) => {
-                      const newStaff = [...formData.staff]
-                      newStaff[index].userId = value
-                      setFormData(prev => ({ ...prev, staff: newStaff }))
-                    }}
+                <div
+                  key={index}
+                  className="flex items-center gap-2 p-2 border rounded"
+                >
+                  <Select
+                    value={staffMember.userId}
+                    onValueChange={(value) =>
+                      updateStaffMember(index, "userId", value)
+                    }
                   >
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Select staff member" />
                     </SelectTrigger>
                     <SelectContent>
-                      {staff.filter(s => s.id !== formData.hostId).map((member) => (
-                        <SelectItem key={member.id} value={member.id}>
-                          {member.firstName} {member.lastName}
-                        </SelectItem>
-                      ))}
+                      {staff
+                        .filter((s: any) => s.id !== formData.hostId)
+                        .map((staffMember: any) => (
+                          <SelectItem
+                            key={staffMember.id}
+                            value={staffMember.id}
+                          >
+                            {staffMember.firstName} {staffMember.lastName}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
-                  
-                  <Select 
-                    value={staffMember.role} 
-                    onValueChange={(value) => {
-                      const newStaff = [...formData.staff]
-                      newStaff[index].role = value
-                      setFormData(prev => ({ ...prev, staff: newStaff }))
-                    }}
+
+                  <Select
+                    value={staffMember.role}
+                    onValueChange={(value) =>
+                      updateStaffMember(index, "role", value)
+                    }
                   >
                     <SelectTrigger className="w-40">
                       <SelectValue />
@@ -448,26 +497,23 @@ export function CreateBroadcastDialog({
                     <SelectContent>
                       <SelectItem value="CO_HOST">Co-Host</SelectItem>
                       <SelectItem value="PRODUCER">Producer</SelectItem>
-                      <SelectItem value="SOUND_ENGINEER">Sound Engineer</SelectItem>
+                      <SelectItem value="SOUND_ENGINEER">
+                        Sound Engineer
+                      </SelectItem>
                       <SelectItem value="MODERATOR">Moderator</SelectItem>
                     </SelectContent>
                   </Select>
-                  
+
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      setFormData(prev => ({
-                        ...prev,
-                        staff: prev.staff.filter((_, i) => i !== index)
-                      }))
-                    }}
+                    onClick={() => removeStaffMember(index)}
                   >
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -482,58 +528,39 @@ export function CreateBroadcastDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setFormData(prev => ({
-                    ...prev,
-                    guests: [...prev.guests, { name: "", title: "", role: "Guest" }]
-                  }))
-                }}
+                onClick={addGuest}
               >
                 <Plus className="h-3 w-3 mr-1" />
                 Add Guest
               </Button>
             </div>
-            
+
             {formData.guests.map((guest, index) => (
-              <div key={index} className="grid grid-cols-3 gap-2 p-2 border rounded">
+              <div
+                key={index}
+                className="grid grid-cols-3 gap-2 p-2 border rounded"
+              >
                 <Input
                   placeholder="Guest name"
                   value={guest.name}
-                  onChange={(e) => {
-                    const newGuests = [...formData.guests]
-                    newGuests[index].name = e.target.value
-                    setFormData(prev => ({ ...prev, guests: newGuests }))
-                  }}
+                  onChange={(e) => updateGuest(index, "name", e.target.value)}
                 />
                 <Input
                   placeholder="Title/Position"
                   value={guest.title}
-                  onChange={(e) => {
-                    const newGuests = [...formData.guests]
-                    newGuests[index].title = e.target.value
-                    setFormData(prev => ({ ...prev, guests: newGuests }))
-                  }}
+                  onChange={(e) => updateGuest(index, "title", e.target.value)}
                 />
                 <div className="flex gap-1">
                   <Input
                     placeholder="Role"
                     value={guest.role}
-                    onChange={(e) => {
-                      const newGuests = [...formData.guests]
-                      newGuests[index].role = e.target.value
-                      setFormData(prev => ({ ...prev, guests: newGuests }))
-                    }}
+                    onChange={(e) => updateGuest(index, "role", e.target.value)}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      setFormData(prev => ({
-                        ...prev,
-                        guests: prev.guests.filter((_, i) => i !== index)
-                      }))
-                    }}
+                    onClick={() => removeGuest(index)}
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -543,16 +570,24 @@ export function CreateBroadcastDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreating || uploadingBanner}>
-              {(isCreating || uploadingBanner) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {uploadingBanner ? 'Uploading Image...' : isCreating ? 'Creating...' : 'Create Broadcast'}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {uploadAssetMutation.isPending
+                ? "Uploading Image..."
+                : (createBroadcastMutation.isPending || updateBroadcastMutation.isPending)
+                  ? (isEditMode ? "Updating..." : "Creating...")
+                  : (isEditMode ? "Update Broadcast" : "Create Broadcast")}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

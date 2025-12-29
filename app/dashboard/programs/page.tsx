@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -91,7 +92,7 @@ export default function ProgramsPage() {
         status: statusFilter
       })
 
-      const response = await fetch(`/api/admin/programs?${params}`)
+      const response = await apiClient.request(`/programs?${params}`)
       if (response.ok) {
         const data = await response.json()
         setPrograms(data.programs)
@@ -113,7 +114,7 @@ export default function ProgramsPage() {
     if (!confirm("Are you sure you want to delete this program?")) return
 
     try {
-      const response = await fetch(`/api/admin/programs/${id}`, {
+      const response = await apiClient.request(`/programs/${id}`, {
         method: "DELETE"
       })
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client"
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
 import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 
@@ -43,7 +44,7 @@ interface StaffFormData {
 export default function EditStaffPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -68,7 +69,7 @@ export default function EditStaffPage() {
 
   const staffId = params.id as string;
   const isOwnProfile = user?.id === staffId;
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.userType === 'staff' && user?.role === 'ADMIN';
   const canEdit = isOwnProfile || isAdmin;
 
   // Redirect if user doesn't have permission
@@ -85,7 +86,7 @@ export default function EditStaffPage() {
   const fetchStaffDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/staff/${staffId}`);
+      const response = await apiClient.request(`/staff/${staffId}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -186,7 +187,7 @@ export default function EditStaffPage() {
         updateData.isActive = formData.isActive;
       }
 
-      const response = await fetch(`/api/admin/staff/${staffId}`, {
+      const response = await apiClient.request(`/staff/${staffId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),

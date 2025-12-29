@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -66,14 +67,14 @@ export default function TranscriptEditPage() {
       setLoading(true)
       
       // Fetch audiobook details
-      const audiobookResponse = await fetch(`/api/admin/audiobooks/${audiobookId}`)
+      const audiobookResponse = await apiClient.request(`/audiobooks/${audiobookId}`)
       if (audiobookResponse.ok) {
         const audiobookData = await audiobookResponse.json()
         setAudiobook(audiobookData)
       }
 
       // Fetch chapter details
-      const chaptersResponse = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters`)
+      const chaptersResponse = await apiClient.request(`/audiobooks/${audiobookId}/chapters`)
       if (chaptersResponse.ok) {
         const chaptersData = await chaptersResponse.json()
         const currentChapter = chaptersData.find((c: Chapter) => c.id === chapterId)
@@ -84,7 +85,7 @@ export default function TranscriptEditPage() {
       }
 
       // Fetch existing transcription if available
-      const transcriptionResponse = await fetch(`/api/admin/audiobooks/${audiobookId}/transcription`)
+      const transcriptionResponse = await apiClient.request(`/audiobooks/${audiobookId}/transcription`)
       if (transcriptionResponse.ok) {
         const transcriptionData = await transcriptionResponse.json()
         if (transcriptionData) {
@@ -115,7 +116,7 @@ export default function TranscriptEditPage() {
       setIsSaving(true)
 
       // Update chapter transcript
-      const chapterResponse = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters/${chapterId}`, {
+      const chapterResponse = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -130,7 +131,7 @@ export default function TranscriptEditPage() {
       }
 
       // Update audiobook transcription settings
-      const transcriptionResponse = await fetch(`/api/admin/audiobooks/${audiobookId}/transcription`, {
+      const transcriptionResponse = await apiClient.request(`/audiobooks/${audiobookId}/transcription`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

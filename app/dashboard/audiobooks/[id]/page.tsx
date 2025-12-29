@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -110,7 +111,7 @@ export default function AudiobookDetailPage() {
   const fetchAudiobook = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}`)
+      const response = await apiClient.request(`/audiobooks/${audiobookId}`)
       if (response.ok) {
         const data = await response.json()
         setAudiobook(data)
@@ -131,7 +132,7 @@ export default function AudiobookDetailPage() {
 
   const handleStatusChange = async (status: string) => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'

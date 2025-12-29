@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfilePicture } from "@/components/auth/profile-picture";
 
 export function ProfileForm() {
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuthStore();
 
   // Profile tab state
   const [name, setName] = useState(user?.name || "");

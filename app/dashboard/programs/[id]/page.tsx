@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -143,7 +144,7 @@ export default function ProgramDetailPage() {
   const fetchProgram = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/programs/${params.id}`)
+      const response = await apiClient.request(`/programs/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setProgram(data)
@@ -165,7 +166,7 @@ export default function ProgramDetailPage() {
   const fetchEpisodes = async () => {
     try {
       setEpisodesLoading(true)
-      const response = await fetch(`/api/admin/programs/${params.id}/episodes`)
+      const response = await apiClient.request(`/programs/${params.id}/episodes`)
       if (response.ok) {
         const data = await response.json()
         setEpisodes(data)
@@ -179,7 +180,7 @@ export default function ProgramDetailPage() {
 
   const fetchAvailableBroadcasts = async () => {
     try {
-      const response = await fetch(`/api/admin/broadcasts?status=ENDED&programId=null`)
+      const response = await apiClient.request(`/broadcasts?status=ENDED&programId=null`)
       if (response.ok) {
         const data = await response.json()
         setBroadcasts(data.broadcasts || [])
@@ -191,7 +192,7 @@ export default function ProgramDetailPage() {
 
   const handleCreateEpisode = async () => {
     try {
-      const response = await fetch(`/api/admin/programs/${params.id}/episodes`, {
+      const response = await apiClient.request(`/programs/${params.id}/episodes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(episodeForm)
@@ -222,7 +223,7 @@ export default function ProgramDetailPage() {
     if (!selectedBroadcast) return
 
     try {
-      const response = await fetch(`/api/admin/programs/${params.id}/episodes`, {
+      const response = await apiClient.request(`/programs/${params.id}/episodes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -259,7 +260,7 @@ export default function ProgramDetailPage() {
     if (!confirm("Are you sure you want to delete this episode?")) return
 
     try {
-      const response = await fetch(`/api/admin/programs/${params.id}/episodes/${episodeId}`, {
+      const response = await apiClient.request(`/programs/${params.id}/episodes/${episodeId}`, {
         method: "DELETE"
       })
 

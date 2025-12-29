@@ -1,7 +1,7 @@
 "use client"
 
 import { type ReactNode, useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/stores/auth-store"
 import { useRouter } from "next/navigation"
 import {
   AlertDialog,
@@ -27,7 +27,7 @@ export function AuthRequiredAction({
   dialogTitle = "Authentication Required",
   dialogDescription = "You need to be signed in to perform this action.",
 }: AuthRequiredActionProps) {
-  const { user } = useAuth()
+  const { user } = useAuthStore()
   const [showDialog, setShowDialog] = useState(false)
   const router = useRouter()
 

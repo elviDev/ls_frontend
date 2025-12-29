@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/stores/auth-store"
 import { AuthRequiredAction } from "@/components/auth/auth-required-action"
 
 interface Comment {
@@ -35,7 +35,7 @@ export function PodcastComments({
   const [newComment, setNewComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
-  const { user } = useAuth()
+  const { user } = useAuthStore()
 
   // Update comments when initialComments change
   React.useEffect(() => {

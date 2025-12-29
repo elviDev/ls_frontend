@@ -1,22 +1,38 @@
-"use client"
+"use client";
 
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import type { BroadcastFilters, Program } from "../types"
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type { BroadcastFilters } from "@/hooks/use-broadcasts";
 
 interface BroadcastFiltersProps {
-  filters: BroadcastFilters
-  programs: Program[]
-  onFiltersChange: (filters: BroadcastFilters) => void
+  filters: BroadcastFilters;
+  onFiltersChange: (filters: BroadcastFilters) => void;
 }
 
-export function BroadcastFiltersComponent({ filters, programs, onFiltersChange }: BroadcastFiltersProps) {
+export function BroadcastFiltersComponent({
+  filters,
+  onFiltersChange,
+}: BroadcastFiltersProps) {
+  const { data: programs = [] } = useQuery({
+    queryKey: ["programs"],
+    queryFn: () => apiClient.programs.getAll(),
+    select: (data: any) => data.programs || [],
+  });
+
   const updateFilter = (key: keyof BroadcastFilters, value: string) => {
-    onFiltersChange({ ...filters, [key]: value })
-  }
+    onFiltersChange({ ...filters, [key]: value });
+  };
 
   return (
     <div className="space-y-4">
@@ -40,15 +56,18 @@ export function BroadcastFiltersComponent({ filters, programs, onFiltersChange }
             </Button>
           )}
         </div>
-        
-        <Select value={filters.program} onValueChange={(value) => updateFilter("program", value)}>
+
+        <Select
+          value={filters.program}
+          onValueChange={(value) => updateFilter("program", value)}
+        >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="All Programs" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Programs</SelectItem>
             <SelectItem value="null">No Program</SelectItem>
-            {programs.map((program) => (
+            {programs.map((program: any) => (
               <SelectItem key={program.id} value={program.id}>
                 {program.title}
               </SelectItem>
@@ -57,7 +76,10 @@ export function BroadcastFiltersComponent({ filters, programs, onFiltersChange }
         </Select>
       </div>
 
-      <Tabs value={filters.status} onValueChange={(value) => updateFilter("status", value as any)}>
+      <Tabs
+        value={filters.status}
+        onValueChange={(value) => updateFilter("status", value as any)}
+      >
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="LIVE">Live</TabsTrigger>
@@ -67,5 +89,5 @@ export function BroadcastFiltersComponent({ filters, programs, onFiltersChange }
         </TabsList>
       </Tabs>
     </div>
-  )
+  );
 }

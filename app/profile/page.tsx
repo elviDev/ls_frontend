@@ -36,6 +36,7 @@ import {
   BarChart
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/lib/api-client"
 import { MediaItem } from "@/components/profile/media-item"
 
 const profileSchema = z.object({
@@ -67,28 +68,25 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch('/api/profile')
-      if (response.ok) {
-        const data = await response.json()
-        setProfile(data)
-        
-        // Set form values
-        if (data.type === 'staff' && data.profile) {
-          form.reset({
-            firstName: data.profile.firstName || '',
-            lastName: data.profile.lastName || '',
-            bio: data.profile.bio || '',
-            phone: data.profile.phone || '',
-            profileImage: data.profile.profileImage || ''
-          })
-        } else if (data.profile) {
-          form.reset({
-            name: data.profile.name || '',
-            username: data.profile.username || '',
-            bio: data.profile.bio || '',
-            profileImage: data.profile.profileImage || ''
-          })
-        }
+      const data = await apiClient.auth.me()
+      setProfile(data)
+      
+      // Set form values
+      if (data.type === 'staff' && data.profile) {
+        form.reset({
+          firstName: data.profile.firstName || '',
+          lastName: data.profile.lastName || '',
+          bio: data.profile.bio || '',
+          phone: data.profile.phone || '',
+          profileImage: data.profile.profileImage || ''
+        })
+      } else if (data.profile) {
+        form.reset({
+          name: data.profile.name || '',
+          username: data.profile.username || '',
+          bio: data.profile.bio || '',
+          profileImage: data.profile.profileImage || ''
+        })
       }
     } catch (error) {
       console.error('Failed to fetch profile:', error)
@@ -100,20 +98,17 @@ export default function ProfilePage() {
   const onSubmit = async (data: ProfileData) => {
     setIsSaving(true)
     try {
-      const response = await fetch('/api/profile', {
+      await apiClient.request('/profile', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
 
-      if (response.ok) {
-        await fetchProfile()
-        setIsEditing(false)
-        toast({
-          title: "Profile updated",
-          description: "Your profile has been updated successfully"
-        })
-      }
+      await fetchProfile()
+      setIsEditing(false)
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully"
+      })
     } catch (error) {
       toast({
         title: "Error",

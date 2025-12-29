@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,7 +47,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
 import Link from "next/link";
 interface StaffMember {
   id: string;
@@ -87,7 +88,7 @@ interface Pagination {
 }
 
 export default function StaffPage() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [stats, setStats] = useState<StaffStats | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
@@ -108,24 +109,12 @@ export default function StaffPage() {
   });
   const { toast } = useToast();
   
-  const isAdmin = user?.role === 'ADMIN';
-
-  const fetchPendingCount = async () => {
-    try {
-      const response = await fetch("/api/admin/staff/pending");
-      if (response.ok) {
-        const data = await response.json();
-        setPendingCount(data.count || 0);
-      }
-    } catch (error) {
-      console.error("Error fetching pending count:", error);
-    }
-  };
+  const isAdmin = user?.userType === 'staff' && user?.role === 'ADMIN';
 
   const fetchStaff = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
+      const params = {
         page: pagination.page.toString(),
         perPage: pagination.perPage.toString(),
         search: filters.search,
@@ -134,28 +123,44 @@ export default function StaffPage() {
         isActive: filters.isActive,
         sortBy: filters.sortBy,
         sortOrder: filters.sortOrder,
-      });
+      };
 
-      const response = await fetch(`/api/admin/staff?${params}`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        setStaff(data.staff);
-        setStats(data.stats);
-        setPagination(data.pagination);
-      } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to fetch staff",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch staff",
-        variant: "destructive",
+      const data = await apiClient.admin.staff(params);
+      setStaff(data.staff || []);
+      setStats(data.stats || {
+        total: 0,
+        active: 0,
+        inactive: 0,
+        recentHires: 0,
+        byRole: {},
+        byDepartment: {},
       });
+      setPagination(data.pagination || {
+        page: 1,
+        perPage: 10,
+        total: 0,
+        totalPages: 0,
+      });
+      // Get pending count from the main response
+      setPendingCount(data.pendingCount || 0);
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+      setStaff([]);
+      setStats({
+        total: 0,
+        active: 0,
+        inactive: 0,
+        recentHires: 0,
+        byRole: {},
+        byDepartment: {},
+      });
+      setPagination({
+        page: 1,
+        perPage: 10,
+        total: 0,
+        totalPages: 0,
+      });
+      setPendingCount(0);
     } finally {
       setLoading(false);
     }
@@ -163,7 +168,6 @@ export default function StaffPage() {
 
   useEffect(() => {
     fetchStaff();
-    fetchPendingCount();
   }, [pagination.page, filters]);
 
   const handlePageChange = (newPage: number) => {
@@ -176,8 +180,17 @@ export default function StaffPage() {
   };
 
   const handleToggleActive = async (staffId: string, isActive: boolean) => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can modify staff status",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/admin/staff/${staffId}`, {
+      const response = await apiClient.request(`/staff/${staffId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !isActive }),
@@ -212,7 +225,7 @@ export default function StaffPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/staff/${staffId}`, {
+      const response = await apiClient.request(`/staff/${staffId}`, {
         method: "DELETE",
       });
 
@@ -241,7 +254,7 @@ export default function StaffPage() {
 
   const handleApproveStaff = async (staffId: string) => {
     try {
-      const response = await fetch(`/api/admin/staff/${staffId}/approve`, {
+      const response = await apiClient.request(`/staff/${staffId}/approve`, {
         method: "POST",
       });
 
@@ -250,8 +263,7 @@ export default function StaffPage() {
           title: "Success",
           description: "Staff member approved successfully",
         });
-        fetchStaff(); // Refresh the staff list
-        fetchPendingCount(); // Update pending count
+        fetchStaff(); // This will refresh both staff list and pending count
       } else {
         const data = await response.json();
         
@@ -568,6 +580,7 @@ export default function StaffPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleToggleActive(member.id, member.isActive)}
+                          disabled={!isAdmin}
                         >
                           {member.isActive ? (
                             <>

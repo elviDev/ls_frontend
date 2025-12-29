@@ -1,184 +1,186 @@
-import { create } from 'zustand';
-import { BroadcastData, ScheduleItem } from '@/components/live-player/types';
+import { create } from "zustand";
 
-interface LiveKitConfig {
-  url?: string;
-  token?: string;
-  roomName?: string;
+interface BroadcastFormData {
+  title: string;
+  description: string;
+  startTime: Date | undefined;
+  startTimeHour: string;
+  startTimeMinute: string;
+  endTime: Date | undefined;
+  endTimeHour: string;
+  endTimeMinute: string;
+  hostId: string;
+  programId: string;
+  bannerId: string;
+  bannerFile: File | null;
+  staff: { userId: string; role: string }[];
+  guests: { name: string; title: string; role: string }[];
 }
 
 interface BroadcastStore {
-  // Broadcast data
-  currentBroadcast: BroadcastData | null;
-  upcomingBroadcast: BroadcastData | null;
-  schedule: ScheduleItem[];
+  formData: BroadcastFormData;
+  currentBroadcast: any;
   currentShow: string;
-  streamUrl: string | null;
-  isLoading: boolean;
-  error: string | null;
+  selectedBroadcast: any;
+  broadcasts: any[];
+  upcomingBroadcasts: any[];
+  broadcastEvents: { live: any; upcoming: any } | null;
   
-  // LiveKit data
-  liveKit: LiveKitConfig;
+  // Form management
+  setFormData: (data: Partial<BroadcastFormData>) => void;
+  resetForm: () => void;
   
-  // Actions
-  setBroadcast: (broadcast: BroadcastData | null) => void;
-  setUpcoming: (broadcast: BroadcastData | null) => void;
-  setSchedule: (schedule: ScheduleItem[]) => void;
+  // Broadcast state management
+  setBroadcast: (broadcast: any) => void;
   setCurrentShow: (show: string) => void;
-  setStreamUrl: (url: string | null) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  setLiveKit: (config: LiveKitConfig) => void;
-  fetchBroadcastData: (slug?: string) => Promise<void>;
-  updateBroadcastStatus: (slug: string, status: 'LIVE' | 'READY' | 'ENDED') => Promise<void>;
+  setSelectedBroadcast: (broadcast: any) => void;
+  setBroadcasts: (broadcasts: any[]) => void;
+  setUpcomingBroadcasts: (broadcasts: any[]) => void;
+  setBroadcastEvents: (events: { live: any; upcoming: any }) => void;
+  
+  // Staff management
+  addStaffMember: (userId: string, role: string) => void;
+  removeStaffMember: (index: number) => void;
+  updateStaffMember: (index: number, field: 'userId' | 'role', value: string) => void;
+  
+  // Guest management
+  addGuest: () => void;
+  removeGuest: (index: number) => void;
+  updateGuest: (index: number, field: 'name' | 'title' | 'role', value: string) => void;
+  
+  // Broadcast operations
+  updateBroadcastInList: (id: string, updates: any) => void;
+  removeBroadcastFromList: (id: string) => void;
+  addBroadcastToList: (broadcast: any) => void;
 }
 
-export const useBroadcastStore = create<BroadcastStore>((set, get) => ({
+const defaultFormData: BroadcastFormData = {
+  title: "",
+  description: "",
+  startTime: undefined,
+  startTimeHour: "09",
+  startTimeMinute: "00",
+  endTime: undefined,
+  endTimeHour: "10",
+  endTimeMinute: "00",
+  hostId: "",
+  programId: "",
+  bannerId: "",
+  bannerFile: null,
+  staff: [],
+  guests: []
+};
+
+export const useBroadcastStore = create<BroadcastStore>((set) => ({
+  formData: defaultFormData,
   currentBroadcast: null,
-  upcomingBroadcast: null,
-  schedule: [],
-  currentShow: "Loading...",
-  streamUrl: null,
-  isLoading: false,
-  error: null,
-  liveKit: {},
+  currentShow: 'No live broadcast',
+  selectedBroadcast: null,
+  broadcasts: [],
+  upcomingBroadcasts: [],
+  broadcastEvents: null,
   
-  setBroadcast: (broadcast) => set({ currentBroadcast: broadcast }),
-  setUpcoming: (broadcast) => set({ upcomingBroadcast: broadcast }),
-  setSchedule: (schedule) => set({ schedule }),
-  setCurrentShow: (show) => set({ currentShow: show }),
-  setStreamUrl: (url) => set({ streamUrl: url }),
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error }),
-  setLiveKit: (config) => set({ liveKit: config }),
+  // Form management
+  setFormData: (data) =>
+    set((state) => ({
+      formData: { ...state.formData, ...data }
+    })),
   
-  fetchBroadcastData: async (slug?: string) => {
-    const { setLoading, setError } = get();
-    try {
-      setLoading(true);
-      setError(null);
-      
-      if (slug) {
-        const response = await fetch(`/api/admin/broadcasts/${slug}`);
-        if (response.ok) {
-          const broadcast = await response.json();
-          const { setBroadcast, setCurrentShow, setStreamUrl, setLiveKit } = get();
-          
-          if (broadcast.status === "LIVE") {
-            setBroadcast(broadcast);
-            setCurrentShow(broadcast.title);
-            setStreamUrl(broadcast.streamUrl);
-            setLiveKit({
-              url: broadcast.liveKitUrl,
-              token: broadcast.liveKitToken,
-              roomName: broadcast.id
-            });
-          } else {
-            setBroadcast(null);
-            setCurrentShow("No live broadcast");
-            setStreamUrl(null);
-          }
-        }
-      } else {
-        const response = await fetch("/api/broadcasts/current");
-        if (response.ok) {
-          const data = await response.json();
-          const { setBroadcast, setCurrentShow, setStreamUrl, setLiveKit } = get();
-          
-          if (data.status === "LIVE") {
-            setBroadcast(data);
-            setCurrentShow(data.title);
-            setStreamUrl(data.streamUrl);
-            setLiveKit({
-              url: data.liveKitUrl,
-              token: data.liveKitToken,
-              roomName: data.id
-            });
-          } else {
-            const newShow = data.upcoming
-              ? `Up next: ${data.upcoming.title} at ${new Date(data.upcoming.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`
-              : "No live broadcasts at the moment";
-            setCurrentShow(newShow);
-            setStreamUrl(null);
-            setBroadcast(null);
-          }
-        }
-      }
-      
-      // Fetch schedule
-      const scheduleResponse = await fetch("/api/broadcasts/schedule");
-      if (scheduleResponse.ok) {
-        const scheduleData = await scheduleResponse.json();
-        get().setSchedule(scheduleData.schedule || []);
-      }
-    } catch (error) {
-      console.error("Error fetching broadcast data:", error);
-      setError(error instanceof Error ? error.message : "Failed to fetch broadcast data");
-      get().setCurrentShow("Unable to load show info");
-    } finally {
-      setLoading(false);
-    }
-  },
+  resetForm: () =>
+    set({ formData: defaultFormData }),
   
-  updateBroadcastStatus: async (slug: string, status: 'LIVE' | 'READY' | 'ENDED') => {
-    try {
-      console.log('📡 [Broadcast] Updating broadcast status:', { slug, status });
-
-      const response = await fetch(`/api/admin/broadcasts/${slug}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-
-      if (response.ok) {
-        const updatedBroadcast = await response.json();
-
-        console.log('✅ [Broadcast] Status update successful:', {
-          id: updatedBroadcast.id,
-          slug: updatedBroadcast.slug,
-          status: updatedBroadcast.status,
-          title: updatedBroadcast.title
-        });
-
-        if (status === 'LIVE') {
-          get().setBroadcast(updatedBroadcast);
-          get().setCurrentShow(updatedBroadcast.title);
-          // Notify all users about the live broadcast
-          if (typeof window !== 'undefined') {
-            console.log('📢 [Broadcast] Dispatching broadcast-live event:', {
-              id: updatedBroadcast.id,
-              title: updatedBroadcast.title
-            });
-            window.dispatchEvent(new CustomEvent('broadcast-live', {
-              detail: updatedBroadcast
-            }));
-          }
-        } else if (status === 'ENDED') {
-          get().setBroadcast(null);
-          get().setCurrentShow('No live broadcast');
-          // Notify all users broadcast ended
-          if (typeof window !== 'undefined') {
-            console.log('📢 [Broadcast] Dispatching broadcast-ended event:', { broadcastId: slug });
-            window.dispatchEvent(new CustomEvent('broadcast-ended', {
-              detail: { broadcastId: slug }
-            }));
-          }
-        }
-      } else {
-        const errorText = await response.text();
-        console.error('❌ [Broadcast] Status update failed:', {
-          status: response.status,
-          error: errorText
-        });
-        throw new Error(`Failed to update broadcast status: ${response.status}`);
+  // Broadcast state management
+  setBroadcast: (broadcast) =>
+    set({ currentBroadcast: broadcast }),
+  
+  setCurrentShow: (show) =>
+    set({ currentShow: show }),
+  
+  setSelectedBroadcast: (broadcast) =>
+    set({ selectedBroadcast: broadcast }),
+  
+  setBroadcasts: (broadcasts) =>
+    set({ broadcasts }),
+  
+  setUpcomingBroadcasts: (broadcasts) =>
+    set({ upcomingBroadcasts: broadcasts }),
+  
+  setBroadcastEvents: (events) =>
+    set({ broadcastEvents: events }),
+  
+  // Staff management
+  addStaffMember: (userId, role) =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        staff: [...state.formData.staff, { userId, role }]
       }
-    } catch (error) {
-      console.error('❌ [Broadcast] Error updating broadcast status:', {
-        slug,
-        status,
-        error: error instanceof Error ? error.message : error
-      });
-      get().setError(error instanceof Error ? error.message : 'Failed to update broadcast status');
-    }
-  }
+    })),
+  
+  removeStaffMember: (index) =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        staff: state.formData.staff.filter((_, i) => i !== index)
+      }
+    })),
+  
+  updateStaffMember: (index, field, value) =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        staff: state.formData.staff.map((member, i) =>
+          i === index ? { ...member, [field]: value } : member
+        )
+      }
+    })),
+  
+  // Guest management
+  addGuest: () =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        guests: [...state.formData.guests, { name: "", title: "", role: "Guest" }]
+      }
+    })),
+  
+  removeGuest: (index) =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        guests: state.formData.guests.filter((_, i) => i !== index)
+      }
+    })),
+  
+  updateGuest: (index, field, value) =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        guests: state.formData.guests.map((guest, i) =>
+          i === index ? { ...guest, [field]: value } : guest
+        )
+      }
+    })),
+  
+  // Broadcast operations
+  updateBroadcastInList: (id, updates) =>
+    set((state) => ({
+      broadcasts: state.broadcasts.map(broadcast =>
+        broadcast.id === id ? { ...broadcast, ...updates } : broadcast
+      ),
+      upcomingBroadcasts: state.upcomingBroadcasts.map(broadcast =>
+        broadcast.id === id ? { ...broadcast, ...updates } : broadcast
+      )
+    })),
+  
+  removeBroadcastFromList: (id) =>
+    set((state) => ({
+      broadcasts: state.broadcasts.filter(broadcast => broadcast.id !== id),
+      upcomingBroadcasts: state.upcomingBroadcasts.filter(broadcast => broadcast.id !== id)
+    })),
+  
+  addBroadcastToList: (broadcast) =>
+    set((state) => ({
+      broadcasts: [broadcast, ...state.broadcasts]
+    })),
 }));

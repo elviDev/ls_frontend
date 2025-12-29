@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { FullPageLoader } from "@/components/loading-spinner";
+import { apiClient } from "@/lib/api-client";
 
 type User = {
   id: string;
@@ -18,196 +18,73 @@ type User = {
   role: string;
   isApproved: boolean;
   profilePicture?: string | null;
+  userType: 'user' | 'staff';
+  firstName?: string;
+  lastName?: string;
 };
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (
-    email: string,
-    password: string,
-    rememberMe?: boolean
-  ) => Promise<{ success: boolean; error?: string; user?: User }>;
-  register: (
-    name: string,
-    email: string,
-    password: string
-  ) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string; user?: User }>;
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  updateProfile: (data: {
-    name?: string;
-    email?: string;
-    password?: string;
-    currentPassword?: string;
-  }) => Promise<{
-    success: boolean;
-    error?: string;
-  }>;
-  uploadProfilePicture: (
-    file: File
-  ) => Promise<{ success: boolean; error?: string }>;
-  deleteProfilePicture: () => Promise<{ success: boolean; error?: string }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Hydrate user synchronously from localStorage to avoid flashing the
-  // full-page loader on refresh when a cached session exists.
-  const getInitialUser = (): User | null => {
-    try {
-      const cachedUser = localStorage.getItem("user_session");
-      const cacheTimestamp = localStorage.getItem("user_session_timestamp");
-      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-      if (cachedUser && cacheTimestamp) {
-        const isExpired =
-          Date.now() - parseInt(cacheTimestamp) > CACHE_DURATION;
-        if (!isExpired) {
-          return JSON.parse(cachedUser);
-        }
-      }
-    } catch (e) {
-      // ignore localStorage read errors
-    }
-    return null;
-  };
-
-  const initialUser = getInitialUser();
-  const [user, setUser] = useState<User | null>(initialUser);
-  const [loading, setLoading] = useState<boolean>(initialUser ? false : true);
-  const [isAuthenticated, setIsAuthenticated] =
-    useState<boolean>(!!initialUser);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const router = useRouter();
   const { toast } = useToast();
 
-  // Fetch current user on mount with caching
+  // Check authentication on mount
   useEffect(() => {
-    async function loadUserFromSession() {
-      console.log("[AuthContext] Loading user session...");
-
-      // Try to load from localStorage first
-      const cachedUser = localStorage.getItem("user_session");
-      const cacheTimestamp = localStorage.getItem("user_session_timestamp");
-      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-      if (cachedUser && cacheTimestamp) {
-        const isExpired =
-          Date.now() - parseInt(cacheTimestamp) > CACHE_DURATION;
-
-        if (!isExpired) {
-          try {
-            const userData = JSON.parse(cachedUser);
-            setUser(userData);
-            setIsAuthenticated(true);
-            setLoading(false);
-            console.log(
-              "[AuthContext] Loaded user from cache:",
-              userData.email
-            );
-            return;
-          } catch (error) {
-            console.error("[AuthContext] Failed to parse cached user data");
-            localStorage.removeItem("user_session");
-            localStorage.removeItem("user_session_timestamp");
-          }
-        }
-      }
-
-      setLoading(true);
-      try {
-        const res = await fetch("/api/auth/session", {
-          credentials: "include",
-          cache: "no-store",
-          headers: {
-            "Cache-Control": "no-cache",
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          console.log("[AuthContext] Session response:", data);
-          if (data.user) {
-            setUser(data.user);
-            setIsAuthenticated(true);
-            localStorage.setItem("user_session", JSON.stringify(data.user));
-            localStorage.setItem(
-              "user_session_timestamp",
-              Date.now().toString()
-            );
-            console.log("[AuthContext] User authenticated:", data.user.email);
-          } else {
-            setUser(null);
-            setIsAuthenticated(false);
-            localStorage.removeItem("user_session");
-            localStorage.removeItem("user_session_timestamp");
-            console.log("[AuthContext] No user found in session");
-          }
-        } else {
-          console.log(
-            "[AuthContext] Session check failed with status:",
-            res.status
-          );
-          setUser(null);
-          setIsAuthenticated(false);
-          localStorage.removeItem("user_session");
-          localStorage.removeItem("user_session_timestamp");
-        }
-      } catch (error: any) {
-        console.error(
-          "[AuthContext] Failed to load user session:",
-          error.message
-        );
-        if (error.name === "AbortError") {
-          console.error("[AuthContext] Session request timed out");
-        }
-        setUser(null);
-        setIsAuthenticated(false);
-        localStorage.removeItem("user_session");
-        localStorage.removeItem("user_session_timestamp");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUserFromSession();
+    checkAuth();
+    
+    // Set up unauthorized handler
+    apiClient.setUnauthorizedHandler(() => {
+      setUser(null);
+      setIsAuthenticated(false);
+      router.push("/signin");
+      toast({
+        title: "Session Expired",
+        description: "Please log in again to continue.",
+        variant: "destructive",
+      });
+    });
   }, []);
 
-  // Login function
-  const login = async (
-    email: string,
-    password: string,
-    rememberMe: boolean = false
-  ) => {
+  const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password, rememberMe }),
-      });
-
-      const data = await res.json();
-      console.log("Login response data:", data);
-
-      if (!res.ok) {
-        return { success: false, error: data.error || "Login failed" };
+      const data = await apiClient.auth.me();
+      if (data.user) {
+        setUser(data.user);
+        setIsAuthenticated(true);
       }
+    } catch (error) {
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Update state and cache
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
+    try {
+      const data = await apiClient.auth.login({ email, password, rememberMe });
       setUser(data.user);
       setIsAuthenticated(true);
-      localStorage.setItem("user_session", JSON.stringify(data.user));
-      localStorage.setItem("user_session_timestamp", Date.now().toString());
-
       toast({
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
       return { success: true, user: data.user };
-    } catch (error) {
-      console.error("Login error:", error);
-      const errorMessage = "An unexpected error occurred during login";
+    } catch (error: any) {
+      const errorMessage = error.message || "Login failed";
       toast({
         title: "Login Failed",
         description: errorMessage,
@@ -217,35 +94,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Register function
   const register = async (name: string, email: string, password: string) => {
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        return { success: false, error: data.error || "Registration failed" };
-      }
-
+      const data = await apiClient.auth.register({ name, email, password });
       if (data.user) {
         setUser(data.user);
         setIsAuthenticated(true);
       }
-      router.refresh();
       toast({
         title: "Account Created!",
         description: "Your account has been successfully created.",
       });
       return { success: true };
-    } catch (error) {
-      console.error("Registration error:", error);
-      const errorMessage = "An unexpected error occurred during registration";
+    } catch (error: any) {
+      const errorMessage = error.message || "Registration failed";
       toast({
         title: "Registration Failed",
         description: errorMessage,
@@ -255,122 +117,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Logout function
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await apiClient.auth.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
       setUser(null);
       setIsAuthenticated(false);
-      localStorage.removeItem("user_session");
-      localStorage.removeItem("user_session_timestamp");
-      router.refresh();
       router.push("/signin");
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Still clear local state even if API call fails
-      setUser(null);
-      setIsAuthenticated(false);
-      localStorage.removeItem("user_session");
-      localStorage.removeItem("user_session_timestamp");
-      router.push("/signin");
-      toast({
-        title: "Logout Error",
-        description: "There was an issue logging out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Update profile function
-  const updateProfile = async (data: {
-    name?: string;
-    email?: string;
-    password?: string;
-    currentPassword?: string;
-  }) => {
-    try {
-      const res = await fetch("/api/auth/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      const responseData = await res.json();
-
-      if (!res.ok) {
-        return {
-          success: false,
-          error: responseData.error || "Failed to update profile",
-        };
-      }
-
-      setUser((prev) => (prev ? { ...prev, ...responseData.user } : null));
-      router.refresh();
-      return { success: true };
-    } catch (error) {
-      console.error("Profile update error:", error);
-      return { success: false, error: "An unexpected error occurred" };
-    }
-  };
-
-  // Upload profile picture function
-  const uploadProfilePicture = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/auth/profile-picture", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        return {
-          success: false,
-          error: data.error || "Failed to upload profile picture",
-        };
-      }
-
-      setUser((prev) => (prev ? { ...prev, ...data.user } : null));
-      router.refresh();
-      return { success: true };
-    } catch (error) {
-      console.error("Profile picture upload error:", error);
-      return { success: false, error: "An unexpected error occurred" };
-    }
-  };
-
-  // Delete profile picture function
-  const deleteProfilePicture = async () => {
-    try {
-      const res = await fetch("/api/auth/profile-picture", {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        return {
-          success: false,
-          error: data.error || "Failed to delete profile picture",
-        };
-      }
-
-      setUser((prev) => (prev ? { ...prev, ...data.user } : null));
-      router.refresh();
-      return { success: true };
-    } catch (error) {
-      console.error("Profile picture delete error:", error);
-      return { success: false, error: "An unexpected error occurred" };
     }
   };
 
@@ -381,18 +140,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
-    updateProfile,
-    uploadProfilePicture,
-    deleteProfilePicture,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {/* Do not block rendering of the entire app while session validation occurs.
-      Components that require authentication can check `loading` and `user` from
-      the context and render their own placeholders if needed. This prevents
-      a full-page spinner appearing on pages like broadcasts where a cached
-      user is available. */}
       {children}
     </AuthContext.Provider>
   );

@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Play } from "lucide-react"
+import { apiClient } from "@/lib/api-client";
 
 interface Podcast {
   id: string;
@@ -41,11 +42,8 @@ export default function FeaturedPodcasts() {
   useEffect(() => {
     const fetchPodcasts = async () => {
       try {
-        const response = await fetch('/api/podcasts?featured=true&limit=4');
-        if (response.ok) {
-          const data = await response.json();
-          setPodcasts(data.podcasts || []);
-        }
+        const data = await apiClient.podcasts.getAll({ featured: true, limit: 4 });
+        setPodcasts(data.podcasts || []);
       } catch (error) {
         console.error('Error fetching podcasts:', error);
       } finally {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
 import { 
   Clock, 
   CheckCircle, 
@@ -63,17 +64,17 @@ interface PendingStaff {
 
 export default function PendingStaffPage() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [pendingStaff, setPendingStaff] = useState<PendingStaff[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStaff, setSelectedStaff] = useState<PendingStaff | null>(null);
   
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.userType === 'staff' && user?.role === 'ADMIN';
 
   const fetchPendingStaff = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/staff/pending");
+      const response = await apiClient.request("/staff/pending");
       if (response.ok) {
         const data = await response.json();
         setPendingStaff(data.pendingStaff || []);
@@ -98,7 +99,7 @@ export default function PendingStaffPage() {
 
   const handleApproveStaff = async (staffId: string) => {
     try {
-      const response = await fetch(`/api/admin/staff/${staffId}/approve`, {
+      const response = await apiClient.request(`/staff/${staffId}/approve`, {
         method: "POST",
       });
 
@@ -128,7 +129,7 @@ export default function PendingStaffPage() {
 
   const handleRejectStaff = async (staffId: string) => {
     try {
-      const response = await fetch(`/api/admin/staff/${staffId}/reject`, {
+      const response = await apiClient.request(`/staff/${staffId}/reject`, {
         method: "POST",
       });
 

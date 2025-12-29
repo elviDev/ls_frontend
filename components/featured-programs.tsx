@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { apiClient } from "@/lib/api-client";
 
 interface Program {
   id: string;
@@ -36,11 +37,8 @@ export default function FeaturedPrograms() {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const response = await fetch('/api/programs?featured=true&limit=3');
-        if (response.ok) {
-          const data = await response.json();
-          setPrograms(data.programs || []);
-        }
+        const data = await apiClient.programs.getAll({ featured: true, limit: 3 });
+        setPrograms(data.programs || []);
       } catch (error) {
         console.error('Error fetching programs:', error);
       } finally {

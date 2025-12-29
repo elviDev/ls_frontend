@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -159,19 +160,34 @@ export default function ArchivesManagePage() {
         ...(typeFilter !== "all" && { type: typeFilter }),
       });
 
-      const data: ArchiveResponse = await fetchWithErrorHandling(
-        `/api/admin/archives?${params}`,
+      const data: ArchiveResponse = await apiClient.request(
+        `/archives?${params}`,
         {
           timeout: 30000,
           retries: isRetry ? 0 : 2,
-          context: "Loading archives"
         }
       );
       
-      setArchives(data.archives);
-      setStats(data.stats);
-      setTotalPages(data.pagination.totalPages);
-      setTotal(data.pagination.total);
+      // Handle different response structures
+      if (data.archives && data.pagination) {
+        // Full response structure
+        setArchives(data.archives);
+        setStats(data.stats);
+        setTotalPages(data.pagination.totalPages);
+        setTotal(data.pagination.total);
+      } else if (Array.isArray(data)) {
+        // Simple array response
+        setArchives(data);
+        setStats(null);
+        setTotalPages(1);
+        setTotal(data.length);
+      } else {
+        // Fallback
+        setArchives([]);
+        setStats(null);
+        setTotalPages(1);
+        setTotal(0);
+      }
       setError(null);
     } catch (error) {
       console.error("Error loading archives:", error);
@@ -271,7 +287,7 @@ export default function ArchivesManagePage() {
       setDeletingId(id);
       try {
         await fetchWithErrorHandling(
-          `/api/admin/archives/${id}`,
+          `/archives/${id}`,
           {
             method: "DELETE",
             timeout: 15000,
@@ -310,7 +326,7 @@ export default function ArchivesManagePage() {
       };
 
       await fetchWithErrorHandling(
-        `/api/admin/archives/${id}`,
+        `/archives/${id}`,
         {
           method: "PUT",
           headers: {

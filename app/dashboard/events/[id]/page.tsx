@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -186,7 +187,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     if (!eventId) return
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/events/${eventId}`)
+      const response = await apiClient.request(`/events/${eventId}`)
       if (response.ok) {
         const data = await response.json()
         setEvent(data)
@@ -244,7 +245,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     if (!event) return
     setActionLoading('publish')
     try {
-      const response = await fetch(`/api/admin/events/${event.id}`, {
+      const response = await apiClient.request(`/events/${event.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'SCHEDULED' })
@@ -359,7 +360,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : undefined
       }
 
-      const response = await fetch(`/api/admin/events/${eventId}`, {
+      const response = await apiClient.request(`/events/${eventId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

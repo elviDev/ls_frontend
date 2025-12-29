@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -87,7 +88,7 @@ export default function ChapterDetailPage() {
   const fetchChapter = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters/${chapterId}`)
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`)
       if (!response.ok) throw new Error('Failed to fetch chapter')
       
       const data = await response.json()
@@ -105,7 +106,7 @@ export default function ChapterDetailPage() {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters/${chapterId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
         method: 'DELETE'
       })
       
@@ -127,7 +128,7 @@ export default function ChapterDetailPage() {
 
   const handleStatusChange = async (status: string) => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters/${chapterId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

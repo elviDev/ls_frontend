@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { apiClient } from "@/lib/api-client"
 import { toast } from "sonner"
 import { useBroadcastStore } from "@/stores/broadcast-store"
 import type { Broadcast } from "../types"
@@ -12,7 +13,7 @@ export function useStudioData(broadcastSlug: string) {
 
   const fetchBroadcast = useCallback(async () => {
     try {
-      const response = await fetch(`/api/admin/broadcasts/${broadcastSlug}`)
+      const response = await apiClient.request(`/broadcasts/${broadcastSlug}`)
       if (response.ok) {
         const data = await response.json()
         setBroadcast(data)
@@ -37,7 +38,7 @@ export function useStudioData(broadcastSlug: string) {
 
   const updateBroadcastStatus = useCallback(async (status: string) => {
     try {
-      const response = await fetch(`/api/admin/broadcasts/${broadcastSlug}`, {
+      const response = await apiClient.request(`/broadcasts/${broadcastSlug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),

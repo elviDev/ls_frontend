@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api-client";
 
 interface Event {
   id: string;
@@ -37,11 +38,8 @@ export default function UpcomingEvents() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('/api/events?upcoming=true&limit=3');
-        if (response.ok) {
-          const data = await response.json();
-          setEvents(data.events || []);
-        }
+        const data = await apiClient.events.getAll({ upcoming: true, limit: 3 });
+        setEvents(data.events || []);
       } catch (error) {
         console.error('Error fetching events:', error);
       } finally {

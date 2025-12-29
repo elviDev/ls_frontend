@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -140,7 +141,7 @@ export default function AudiobooksPage() {
         sortOrder: filters.sortOrder
       })
 
-      const response = await fetch(`/api/admin/audiobooks?${params}`)
+      const response = await apiClient.request(`/audiobooks?${params}`)
       if (!response.ok) throw new Error('Failed to fetch audiobooks')
       
       const data = await response.json()
@@ -159,10 +160,7 @@ export default function AudiobooksPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/audiobooks/stats')
-      if (!response.ok) throw new Error('Failed to fetch stats')
-      
-      const data = await response.json()
+      const data = await apiClient.audiobooks.getStats()
       setStats(data)
     } catch (error) {
       console.error('Failed to fetch audiobook stats:', error)
@@ -171,7 +169,7 @@ export default function AudiobooksPage() {
 
   const handleDelete = async (audiobookId: string) => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}`, {
         method: 'DELETE'
       })
       
@@ -194,7 +192,7 @@ export default function AudiobooksPage() {
 
   const handleStatusChange = async (audiobookId: string, status: string) => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

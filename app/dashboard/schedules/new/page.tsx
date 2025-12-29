@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -159,7 +160,7 @@ export default function NewSchedulePage() {
 
   const fetchStaff = async () => {
     try {
-      const response = await fetch("/api/admin/staff?perPage=100")
+      const response = await apiClient.request("/staff?perPage=100")
       if (response.ok) {
         const data = await response.json()
         setStaff(data.staff || [])
@@ -171,7 +172,7 @@ export default function NewSchedulePage() {
 
   const fetchPrograms = async () => {
     try {
-      const response = await fetch("/api/admin/programs?perPage=100")
+      const response = await apiClient.request("/programs?perPage=100")
       if (response.ok) {
         const data = await response.json()
         setPrograms(data.programs || [])
@@ -219,7 +220,7 @@ export default function NewSchedulePage() {
         programId: data.programId && data.programId !== "no-program" ? data.programId : null
       }
 
-      const response = await fetch('/api/admin/schedules', {
+      const response = await apiClient.request('/schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(scheduleData)

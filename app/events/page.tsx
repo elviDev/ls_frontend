@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
+import { apiClient } from "@/lib/api-client"
 
 interface Event {
   id: string
@@ -89,11 +90,8 @@ export default function EventsPage() {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await fetch('/api/auth/me')
-      if (response.ok) {
-        const data = await response.json()
-        setCurrentUser(data.user)
-      }
+      const data = await apiClient.auth.me()
+      setCurrentUser(data.user)
     } catch (error) {
       console.error('Error fetching current user:', error)
     }
@@ -102,26 +100,19 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     try {
       setLoading(true)
-      const params = new URLSearchParams({
+      const params = {
         category: selectedCategory,
         search: searchTerm,
         sort: sortBy
-      })
+      }
       
-      const [eventsResponse, featuredResponse] = await Promise.all([
-        fetch(`/api/events?${params}`),
-        fetch(`/api/events?featured=true`)
+      const [eventsData, featuredData] = await Promise.all([
+        apiClient.events.getAll(params),
+        apiClient.events.getAll({ featured: 'true' })
       ])
       
-      if (eventsResponse.ok) {
-        const eventsData = await eventsResponse.json()
-        setEvents(eventsData.events)
-      }
-      
-      if (featuredResponse.ok) {
-        const featuredData = await featuredResponse.json()
-        setFeaturedEvents(featuredData.events.slice(0, 3))
-      }
+      setEvents(eventsData.events || [])
+      setFeaturedEvents((featuredData.events || []).slice(0, 3))
     } catch (error) {
       console.error('Error fetching events:', error)
       toast({
@@ -146,28 +137,19 @@ export default function EventsPage() {
 
     setRegistering(eventId)
     try {
-      const response = await fetch(`/api/events/${eventId}/register`, {
+      await apiClient.request(`/events/${eventId}/register`, {
         method: 'POST'
       })
       
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Successfully registered for event!"
-        })
-        fetchEvents() // Refresh to update registration status
-      } else {
-        const error = await response.json()
-        toast({
-          title: "Registration Failed",
-          description: error.error || "Failed to register for event",
-          variant: "destructive"
-        })
-      }
+      toast({
+        title: "Success",
+        description: "Successfully registered for event!"
+      })
+      fetchEvents() // Refresh to update registration status
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to register for event",
+        title: "Registration Failed",
+        description: error.message || "Failed to register for event",
         variant: "destructive"
       })
     } finally {

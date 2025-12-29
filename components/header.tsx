@@ -24,11 +24,13 @@ import {
 } from "@/components/ui/sheet";
 import { useMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuthStore } from "@/stores/auth-store";
 import { AuthNav } from "@/components/auth/auth-nav";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMobile();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,13 +52,11 @@ export default function Header() {
     >
       <div className="container flex items-center justify-between h-16 px-4 mx-auto">
         <Link href="/" className="flex items-center space-x-2">
-          {/* <div className="h-10 w-10 rounded-full bg-brand-500 flex items-center justify-center">
-            <span className="font-serif text-white text-lg font-bold">CB</span>
-          </div> */}
-          <Radio className="h-8 w-8 text-primary" />
+          <Radio className={cn("text-primary", isMobile ? "h-6 w-6" : "h-8 w-8")} />
           <span
             className={cn(
-              "font-serif font-bold text-lg",
+              "font-serif font-bold",
+              isMobile ? "text-base" : "text-lg",
               isScrolled ? "text-foreground" : "text-primary dark:text-white"
             )}
           >
@@ -163,7 +163,6 @@ export default function Header() {
           </>
         ) : (
           <div className="flex items-center gap-2">
-            <AuthNav />
             <ThemeToggle />
             <Sheet>
               <SheetTrigger asChild>
@@ -194,7 +193,7 @@ export default function Header() {
                       </Link>
                     </SheetClose>
                   </div>
-                  <nav className="flex flex-col gap-4 py-4">
+                  <nav className="flex flex-col gap-4 py-4 flex-1">
                     <SheetClose asChild>
                       <Link
                         href="/"
@@ -260,8 +259,23 @@ export default function Header() {
                       </Link>
                     </SheetClose>
                   </nav>
-                  <div className="mt-auto">
-                    <AuthNav />
+                  <div className="border-t border-border pt-4">
+                    {user ? (
+                      <AuthNav />
+                    ) : (
+                      <div className="flex flex-col gap-2 w-full">
+                        <SheetClose asChild>
+                          <Link href="/signin" className="w-full">
+                            <Button variant="ghost" className="w-full justify-start">Sign In</Button>
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link href="/register" className="w-full">
+                            <Button className="w-full justify-start">Sign Up</Button>
+                          </Link>
+                        </SheetClose>
+                      </div>
+                    )}
                   </div>
                 </div>
               </SheetContent>

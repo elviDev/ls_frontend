@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { RoomProvider } from "@/providers/global-livekit-provider";
 import { StudioInterface } from "./studio-interface";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface BroadcastStudioInterfaceProps {
   broadcastId: string;
@@ -14,7 +14,7 @@ export function BroadcastStudioInterface({
   broadcastId,
   stationName,
 }: BroadcastStudioInterfaceProps) {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [hostUserId, setHostUserId] = useState<string>("");
 
   useEffect(() => {

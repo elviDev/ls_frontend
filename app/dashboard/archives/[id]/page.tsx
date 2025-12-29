@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client"
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -120,7 +121,7 @@ export default function ArchiveDetailPage() {
 
     try {
       const data = await fetchWithErrorHandling(
-        `/api/admin/archives/${params.id}`,
+        `/archives/${params.id}`,
         {
           timeout: 30000,
           retries: isRetry ? 0 : 2,
@@ -151,7 +152,7 @@ export default function ArchiveDetailPage() {
     setDeleting(true);
     try {
       await fetchWithErrorHandling(
-        `/api/admin/archives/${params.id}`,
+        `/archives/${params.id}`,
         {
           method: "DELETE",
           timeout: 15000,

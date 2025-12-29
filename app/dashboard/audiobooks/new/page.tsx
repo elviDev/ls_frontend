@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -91,7 +92,7 @@ export default function NewAudiobookPage() {
 
   const fetchAssets = async () => {
     try {
-      const response = await fetch('/api/admin/assets?type=IMAGE&perPage=50')
+      const response = await apiClient.request('/assets?type=IMAGE&perPage=50')
       if (response.ok) {
         const data = await response.json()
         setAssets(data.assets || [])
@@ -122,7 +123,7 @@ export default function NewAudiobookPage() {
     uploadFormData.append('tags', 'audiobook,cover')
 
     try {
-      const response = await fetch('/api/admin/assets/upload', {
+      const response = await apiClient.request('/assets/upload', {
         method: 'POST',
         body: uploadFormData,
       })
@@ -174,7 +175,7 @@ export default function NewAudiobookPage() {
     uploadFormData.append('description', `Audiobook cover for ${formData.title || 'untitled'}`)
     uploadFormData.append('tags', 'audiobook,cover')
 
-    const response = await fetch('/api/admin/assets/upload', {
+    const response = await apiClient.request('/assets/upload', {
       method: 'POST',
       body: uploadFormData
     })
@@ -229,7 +230,7 @@ export default function NewAudiobookPage() {
       }
 
       setUploadProgress(80)
-      const response = await fetch('/api/admin/audiobooks', {
+      const response = await apiClient.request('/audiobooks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

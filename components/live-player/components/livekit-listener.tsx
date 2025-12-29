@@ -19,7 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { EnhancedLiveKitChat } from "@/components/studio/enhanced-livekit-chat";
+import { UnifiedBroadcastChat } from "@/components/chat/unified-broadcast-chat";
 import { Settings, MessageCircle } from "lucide-react";
 import "@livekit/components-styles";
 
@@ -115,16 +115,8 @@ function ListenerControls({
               <SheetTitle>Live Chat</SheetTitle>
             </SheetHeader>
             <div className="mt-4 h-full">
-              <EnhancedLiveKitChat
+              <UnifiedBroadcastChat
                 broadcastId={roomName}
-                currentUser={{
-                  id: userId,
-                  username: userName,
-                  role: "user",
-                }}
-                isLive={true}
-                showModerationFeatures={false}
-                showAnnouncements={false}
                 className="h-full"
               />
             </div>

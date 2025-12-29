@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,8 @@ import {
   Users
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useGenres, usePodcast } from "@/hooks/use-podcasts"
+import { usePodcastStore } from "@/stores/podcast-store"
 import { DatePicker } from "@/components/ui/date-picker"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -87,11 +90,12 @@ export default function EditPodcastPage() {
   const router = useRouter()
   const params = useParams()
   const { toast } = useToast()
+  const { setCurrentPodcast } = usePodcastStore()
+  const { data: genres } = useGenres()
+  const { data: podcast, isLoading } = usePodcast(params.id as string)
+  
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [genres, setGenres] = useState<Genre[]>([])
   const [staff, setStaff] = useState<Staff[]>([])
-  const [podcast, setPodcast] = useState<Podcast | null>(null)
   const [newAudioFile, setNewAudioFile] = useState<File | null>(null)
   const [newCoverImage, setNewCoverImage] = useState<File | null>(null)
   const [selectedAssetId, setSelectedAssetId] = useState<string>("")
@@ -119,63 +123,32 @@ export default function EditPodcastPage() {
   })
 
   useEffect(() => {
-    if (params.id) {
-      fetchPodcast()
-      fetchGenres()
-      fetchStaff()
-      fetchAssets()
-    }
-  }, [params.id])
-
-  const fetchPodcast = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/admin/podcasts/${params.id}`)
-      if (!response.ok) throw new Error('Failed to fetch podcast')
-      
-      const data = await response.json()
-      setPodcast(data)
-      
+    if (podcast) {
+      setCurrentPodcast(podcast)
       // Populate form with existing data
       form.reset({
-        title: data.title,
-        description: data.description,
-        host: data.host,
-        guests: data.guests || "",
-        genreId: data.genre.id,
-        releaseDate: new Date(data.releaseDate).toISOString().split('T')[0],
+        title: podcast.title,
+        description: podcast.description,
+        host: podcast.author?.firstName + " " + podcast.author?.lastName || "",
+        guests: "",
+        genreId: podcast.genre?.id || "",
+        releaseDate: new Date(podcast.releaseDate).toISOString().split('T')[0],
         tags: "",
-        status: data.status || "draft"
+        status: (podcast.status?.toLowerCase() as "draft" | "published") || "draft"
       })
       
-      setAudioDuration(data.duration)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch podcast details",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
+      setAudioDuration(0)
     }
-  }
+  }, [podcast, setCurrentPodcast, form])
 
-  const fetchGenres = async () => {
-    try {
-      const response = await fetch('/api/genres')
-      if (response.ok) {
-        const data = await response.json()
-        setGenres(Array.isArray(data) ? data : [])
-      }
-    } catch (error) {
-      console.error('Failed to fetch genres:', error)
-      setGenres([])
-    }
-  }
+  useEffect(() => {
+    fetchStaff()
+    fetchAssets()
+  }, [])
 
   const fetchStaff = async () => {
     try {
-      const response = await fetch('/api/admin/staff?role=HOST,CO_HOST,PRODUCER')
+      const response = await apiClient.request('/staff?role=HOST,CO_HOST,PRODUCER') as Response
       if (response.ok) {
         const data = await response.json()
         setStaff(data.staff || [])
@@ -187,7 +160,7 @@ export default function EditPodcastPage() {
 
   const fetchAssets = async () => {
     try {
-      const response = await fetch('/api/admin/assets?type=IMAGE&perPage=50')
+      const response = await apiClient.request('/assets?type=IMAGE&perPage=50') as Response
       if (response.ok) {
         const data = await response.json()
         setAssets(data.assets || [])
@@ -202,10 +175,10 @@ export default function EditPodcastPage() {
     uploadFormData.append('file', file)
     uploadFormData.append('description', `Cover image for podcast: ${form.getValues('title')}`)
 
-    const response = await fetch('/api/admin/assets/upload', {
+    const response = await apiClient.request('/assets/upload', {
       method: 'POST',
       body: uploadFormData,
-    })
+    }) as Response
 
     if (!response.ok) {
       throw new Error('Failed to upload cover image')
@@ -325,16 +298,15 @@ export default function EditPodcastPage() {
         formDataToSend.append('coverImageId', coverImageId)
       }
 
-      const response = await fetch(`/api/admin/podcasts/${params.id}`, {
+      const response = await apiClient.request(`/podcasts/${params.id}`, {
         method: 'PATCH',
         body: formDataToSend
-      })
+      }) as Response
 
       if (!response.ok) {
         const error = await response.json()
         throw new Error(error.error || 'Failed to update podcast')
       }
-
       setUploadProgress(100)
       toast({
         title: "Success",
@@ -355,7 +327,7 @@ export default function EditPodcastPage() {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -509,76 +481,35 @@ export default function EditPodcastPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Current Audio */}
+                  {/* Current Audio - Note: Audio files are in episodes */}
                   <div className="space-y-4">
-                    <Label>Current Audio File</Label>
+                    <Label>Audio Files</Label>
                     <div className="border rounded-lg p-4 bg-muted/50">
                       <div className="flex items-center gap-3">
                         <FileAudio className="h-8 w-8 text-blue-500" />
                         <div className="flex-1">
-                          <p className="font-medium">Current audio file</p>
+                          <p className="font-medium">Audio files are stored in episodes</p>
                           <p className="text-sm text-muted-foreground">
-                            Duration: {formatDuration(podcast.duration)}
+                            This is a podcast series. Audio content is added as individual episodes.
                           </p>
                         </div>
                       </div>
-                      <audio controls className="w-full mt-3">
-                        <source src={podcast.audioFile} />
-                      </audio>
                     </div>
                   </div>
 
-                  {/* New Audio Upload */}
+                  {/* Note about audio files */}
                   <div className="space-y-4">
-                    <Label>Replace Audio File (Optional)</Label>
+                    <Label>Audio Content</Label>
                     <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                      {newAudioFile ? (
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <FileAudio className="h-8 w-8 text-blue-500" />
-                            <div className="flex-1">
-                              <p className="font-medium">{newAudioFile.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {(newAudioFile.size / (1024 * 1024)).toFixed(2)} MB
-                                {audioDuration > 0 && ` • ${formatDuration(audioDuration)}`}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setNewAudioFile(null)
-                                setAudioPreview(null)
-                                setAudioDuration(podcast.duration)
-                              }}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          {audioPreview && (
-                            <audio controls className="w-full">
-                              <source src={audioPreview} type={newAudioFile.type} />
-                            </audio>
-                          )}
+                      <div className="text-center">
+                        <FileAudio className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium">Audio files are managed per episode</p>
+                          <p className="text-xs text-muted-foreground">
+                            This podcast series doesn't have a single audio file. Audio content is added when creating individual episodes.
+                          </p>
                         </div>
-                      ) : (
-                        <div className="text-center">
-                          <FileAudio className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium">Upload new audio file</p>
-                            <p className="text-xs text-muted-foreground">
-                              Leave empty to keep current file
-                            </p>
-                          </div>
-                          <Input
-                            type="file"
-                            accept="audio/*"
-                            onChange={handleAudioUpload}
-                            className="mt-4"
-                          />
-                        </div>
-                      )}
+                      </div>
                     </div>
                   </div>
 
@@ -786,7 +717,7 @@ export default function EditPodcastPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {genres && Array.isArray(genres) && genres.map((genre) => (
+                            {genres && genres.map((genre) => (
                               <SelectItem key={genre.id} value={genre.id}>
                                 {genre.name}
                               </SelectItem>
@@ -931,7 +862,7 @@ export default function EditPodcastPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Genre:</span>
-                    <span className="font-medium">{podcast.genre.name}</span>
+                    <span className="font-medium">{podcast.genre?.name || 'N/A'}</span>
                   </div>
                 </CardContent>
               </Card>

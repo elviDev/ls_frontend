@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/lib/api-client"
 
 type Settings = {
   theme: "light" | "dark" | "system"
@@ -50,13 +51,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings')
-      if (response.ok) {
-        const data = await response.json()
-        setSettings(data.settings)
-      }
+      const data = await apiClient.admin.settings.get()
+      setSettings(data.settings || defaultSettings)
     } catch (error) {
       console.error('Failed to fetch settings:', error)
+      setSettings(defaultSettings)
     } finally {
       setIsLoading(false)
     }
@@ -66,19 +65,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const updatedSettings = { ...settings, ...newSettings }
     
     try {
-      const response = await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSettings)
+      await apiClient.admin.settings.update(newSettings)
+      setSettings(updatedSettings)
+      toast({
+        title: "Settings updated",
+        description: "Your preferences have been saved"
       })
-
-      if (response.ok) {
-        setSettings(updatedSettings)
-        toast({
-          title: "Settings updated",
-          description: "Your preferences have been saved"
-        })
-      }
     } catch (error) {
       toast({
         title: "Error",

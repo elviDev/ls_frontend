@@ -34,14 +34,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Users,
-  UserPlus,
   Search,
   MoreHorizontal,
   Eye,
@@ -52,68 +50,21 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
-  Shield,
   ShieldAlert,
   Calendar,
   Mail,
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/stores/auth-store";
 import Link from "next/link";
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  username?: string;
-  profileImage?: string;
-  isActive: boolean;
-  isSuspended: boolean;
-  suspendedAt?: string;
-  suspendedReason?: string;
-  emailVerified: boolean;
-  lastLoginAt?: string;
-  activityCount: number;
-  joinedAt: string;
-  lastActive: string;
-}
-
-interface UserStats {
-  total: number;
-  active: number;
-  suspended: number;
-  verified: number;
-  newUsers: number;
-  activeLastMonth: number;
-  unverified: number;
-}
-
-interface Pagination {
-  page: number;
-  perPage: number;
-  total: number;
-  totalPages: number;
-}
+import { useUsers, useSuspendUser, useDeleteUser, type User } from "@/hooks/use-users";
+import { useUserStore } from "@/stores/user-store";
 
 export default function UsersManagePage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [pagination, setPagination] = useState<Pagination>({
-    page: 1,
-    perPage: 10,
-    total: 0,
-    totalPages: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    search: "",
-    isActive: "all",
-    isSuspended: "all",
-    emailVerified: "all",
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
+  const { user } = useAuthStore();
+  const { filters, setFilter, setPage } = useUserStore();
+  const [searchInput, setSearchInput] = useState(filters.search);
   const [suspendDialog, setSuspendDialog] = useState<{
     isOpen: boolean;
     user: User | null;
@@ -123,126 +74,40 @@ export default function UsersManagePage() {
     user: null,
     reason: "",
   });
-  const { toast } = useToast();
+  
+  const isAdmin = user?.userType === 'staff' && user?.role === 'ADMIN';
+  const { data, isLoading, error } = useUsers(filters);
+  const suspendMutation = useSuspendUser();
+  const deleteMutation = useDeleteUser();
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        perPage: pagination.perPage.toString(),
-        search: filters.search,
-        isActive: filters.isActive,
-        isSuspended: filters.isSuspended,
-        emailVerified: filters.emailVerified,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-      });
-
-      const response = await fetch(`/api/admin/users?${params}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setUsers(data.users);
-        setStats(data.stats);
-        setPagination(data.pagination);
-      } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to fetch users",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch users",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Debounce search input
   useEffect(() => {
-    fetchUsers();
-  }, [pagination.page, filters]);
-
-  const handlePageChange = (newPage: number) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
-  };
+    const timer = setTimeout(() => {
+      setFilter("search", searchInput);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput, setFilter]);
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+    if (key === "sortBy" || key === "sortOrder") {
+      const [sortBy, sortOrder] = value.split("-");
+      setFilter("sortBy", sortBy);
+      setFilter("sortOrder", sortOrder);
+    } else {
+      setFilter(key as any, value);
+    }
   };
 
   const handleSuspendUser = async (userId: string, suspend: boolean, reason?: string) => {
-    try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          isSuspended: suspend,
-          suspendedReason: reason,
-        }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `User ${suspend ? "suspended" : "unsuspended"} successfully`,
-        });
-        fetchUsers();
-        setSuspendDialog({ isOpen: false, user: null, reason: "" });
-      } else {
-        const data = await response.json();
-        toast({
-          title: "Error",
-          description: data.error || "Failed to update user",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update user",
-        variant: "destructive",
-      });
-    }
+    suspendMutation.mutate({ userId, suspend, reason });
+    setSuspendDialog({ isOpen: false, user: null, reason: "" });
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
       return;
     }
-
-    try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "User deleted successfully",
-        });
-        fetchUsers();
-      } else {
-        const data = await response.json();
-        toast({
-          title: "Error",
-          description: data.error || "Failed to delete user",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-      });
-    }
+    deleteMutation.mutate(userId);
   };
 
   const getInitials = (name?: string, email?: string) => {
@@ -277,7 +142,7 @@ export default function UsersManagePage() {
     );
   };
 
-  if (loading && users.length === 0) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -287,6 +152,18 @@ export default function UsersManagePage() {
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <p className="text-red-600">Error loading users</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { users = [], stats, pagination } = data || {};
 
   return (
     <div className="space-y-6">
@@ -363,8 +240,8 @@ export default function UsersManagePage() {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange("search", e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -410,11 +287,7 @@ export default function UsersManagePage() {
             </Select>
             <Select
               value={`${filters.sortBy}-${filters.sortOrder}`}
-              onValueChange={(value) => {
-                const [sortBy, sortOrder] = value.split("-");
-                handleFilterChange("sortBy", sortBy);
-                handleFilterChange("sortOrder", sortOrder);
-              }}
+              onValueChange={(value) => handleFilterChange("sortBy", value)}
             >
               <SelectTrigger className="w-full md:w-48">
                 <SelectValue placeholder="Sort by" />
@@ -527,6 +400,7 @@ export default function UsersManagePage() {
                         {user.isSuspended ? (
                           <DropdownMenuItem
                             onClick={() => handleSuspendUser(user.id, false)}
+                            disabled={!isAdmin}
                           >
                             <UserCheck className="h-4 w-4 mr-2" />
                             Unsuspend
@@ -540,6 +414,7 @@ export default function UsersManagePage() {
                                 reason: "",
                               })
                             }
+                            disabled={!isAdmin}
                           >
                             <UserX className="h-4 w-4 mr-2" />
                             Suspend
@@ -549,6 +424,7 @@ export default function UsersManagePage() {
                         <DropdownMenuItem
                           onClick={() => handleDeleteUser(user.id)}
                           className="text-red-600 focus:text-red-600"
+                          disabled={!isAdmin}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
@@ -564,7 +440,7 @@ export default function UsersManagePage() {
       </Card>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
+      {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
             Showing {(pagination.page - 1) * pagination.perPage + 1} to{" "}
@@ -575,7 +451,7 @@ export default function UsersManagePage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePageChange(pagination.page - 1)}
+              onClick={() => setPage(pagination.page - 1)}
               disabled={pagination.page === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -587,7 +463,7 @@ export default function UsersManagePage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePageChange(pagination.page + 1)}
+              onClick={() => setPage(pagination.page + 1)}
               disabled={pagination.page === pagination.totalPages}
             >
               Next

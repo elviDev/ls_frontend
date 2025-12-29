@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -34,6 +35,8 @@ import {
   FileText,
   Search
 } from "lucide-react"
+import { usePodcast, useCreateEpisode } from "@/hooks/use-podcasts"
+import { usePodcastStore, Podcast } from "@/stores/podcast-store"
 import { useToast } from "@/hooks/use-toast"
 
 const episodeSchema = z.object({
@@ -64,19 +67,18 @@ type Asset = {
   updatedAt: string
 }
 
-type Podcast = {
-  id: string
-  title: string
-  host: string
-}
+
 
 export default function NewEpisodePage() {
   const router = useRouter()
   const params = useParams()
   const { toast } = useToast()
+  const { setCurrentPodcast } = usePodcastStore()
+  const { data: podcast, isLoading: podcastLoading } = usePodcast(params.id as string)
+  const createEpisode = useCreateEpisode()
+  
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [podcast, setPodcast] = useState<Podcast | null>(null)
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [audioPreview, setAudioPreview] = useState<string | null>(null)
   const [audioDuration, setAudioDuration] = useState<number>(0)
@@ -101,37 +103,19 @@ export default function NewEpisodePage() {
   })
 
   useEffect(() => {
-    if (params.id) {
-      fetchPodcast()
-      fetchAssets()
+    if (podcast) {
+      setCurrentPodcast(podcast)
     }
-  }, [params.id])
+  }, [podcast, setCurrentPodcast])
 
-  const fetchPodcast = async () => {
-    try {
-      const response = await fetch(`/api/admin/podcasts/${params.id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setPodcast(data)
-      }
-    } catch (error) {
-      console.error('Failed to fetch podcast:', error)
-      toast({
-        title: "Error",
-        description: "Failed to fetch podcast details",
-        variant: "destructive"
-      })
-    }
-  }
+  useEffect(() => {
+    fetchAssets()
+  }, [])
 
   const fetchAssets = async () => {
     try {
-      const audioResponse = await fetch('/api/admin/assets?type=AUDIO&perPage=50')
-      
-      if (audioResponse.ok) {
-        const audioData = await audioResponse.json()
-        setAudioAssets(audioData.assets || [])
-      }
+      const audioData = await apiClient.request('/assets?type=AUDIO&perPage=50') as { assets?: Asset[] }
+      setAudioAssets(audioData.assets || [])
     } catch (error) {
       console.error('Error fetching assets:', error)
     }
@@ -213,28 +197,22 @@ export default function NewEpisodePage() {
     formData.append('tags', `podcast,episode,audio`)
 
     try {
-      const response = await fetch('/api/admin/assets/upload', {
+      const newAsset = await apiClient.request('/assets/upload', {
         method: 'POST',
         body: formData,
-      })
+      }) as Asset
 
-      if (response.ok) {
-        const newAsset = await response.json()
-        setAudioAssets([newAsset, ...audioAssets])
-        handleAudioAssetSelect(newAsset.id)
-        toast({
-          title: "Success",
-          description: "Audio asset uploaded successfully"
-        })
-      } else {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to upload asset')
-      }
-    } catch (error) {
+      setAudioAssets([newAsset, ...audioAssets])
+      handleAudioAssetSelect(newAsset.id)
+      toast({
+        title: "Success",
+        description: "Audio asset uploaded successfully"
+      })
+    } catch (error: any) {
       console.error('Error uploading asset:', error)
       toast({
         title: "Error",
-        description: "Failed to upload audio asset",
+        description: error.message || "Failed to upload audio asset",
         variant: "destructive"
       })
     } finally {
@@ -309,20 +287,11 @@ export default function NewEpisodePage() {
         })
       }, 200)
 
-      const response = await fetch(`/api/admin/podcasts/${params.id}/episodes`, {
-        method: 'POST',
-        body: formData
+      const response = await createEpisode.mutateAsync({ 
+        podcastId: params.id as string, 
+        formData 
       })
-
-      clearInterval(progressInterval)
-      setUploadProgress(100)
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create episode')
-      }
-
-      const episode = await response.json()
+      const episode = response
       
       toast({
         title: "Success",
@@ -342,7 +311,7 @@ export default function NewEpisodePage() {
     }
   }
 
-  if (!podcast) {
+  if (podcastLoading || !podcast) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -855,7 +824,7 @@ export default function NewEpisodePage() {
                   <div className="flex items-center gap-2 text-sm">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Host:</span>
-                    <span className="font-medium">{podcast.host}</span>
+                    <span className="font-medium">{podcast.author ? `${podcast.author.firstName} ${podcast.author.lastName}` : 'Unknown'}</span>
                   </div>
                   {audioDuration > 0 && (
                     <div className="flex items-center gap-2 text-sm">

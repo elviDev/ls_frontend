@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/stores/auth-store"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Camera, Trash2, Loader2 } from "lucide-react"
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export function ProfilePicture() {
-  const { user, uploadProfilePicture, deleteProfilePicture } = useAuth()
+  const { user } = useAuthStore()
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)

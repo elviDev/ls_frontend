@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { apiClient } from "@/lib/api-client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -32,7 +33,7 @@ export default function TranscriptPage() {
   useEffect(() => {
     const fetchTranscript = async () => {
       try {
-        const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters`)
+        const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters`)
         if (response.ok) {
           const chapters = await response.json()
           const chapter = chapters.find((c: any) => c.id === chapterId)
@@ -70,7 +71,7 @@ export default function TranscriptPage() {
   const handleSaveTranscript = async (publish = false) => {
     setIsSaving(true)
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters/${chapterId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'

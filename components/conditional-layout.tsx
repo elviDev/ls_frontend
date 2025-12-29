@@ -12,7 +12,7 @@ export default function ConditionalLayout({
 }) {
   const pathname = usePathname();
   const isDashboardPage = pathname?.startsWith("/dashboard");
-  
+
   // Listen for broadcast events via SSE globally
   useBroadcastSSE();
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -77,7 +78,7 @@ export default function EditProgramPage() {
 
   const fetchProgram = async () => {
     try {
-      const response = await fetch(`/api/admin/programs/${params.id}`)
+      const response = await apiClient.request(`/programs/${params.id}`)
       if (response.ok) {
         const program: Program = await response.json()
         setFormData({
@@ -107,7 +108,7 @@ export default function EditProgramPage() {
 
   const fetchStaff = async () => {
     try {
-      const response = await fetch("/api/admin/staff")
+      const response = await apiClient.request("/staff")
       if (response.ok) {
         const data = await response.json()
         setStaff(data.staff)
@@ -131,7 +132,7 @@ export default function EditProgramPage() {
 
   const fetchAssets = async () => {
     try {
-      const response = await fetch("/api/admin/assets?type=IMAGE")
+      const response = await apiClient.request("/assets?type=IMAGE")
       if (response.ok) {
         const data = await response.json()
         setAssets(data.assets)
@@ -165,7 +166,7 @@ export default function EditProgramPage() {
         uploadFormData.append("type", "IMAGE")
         uploadFormData.append("description", `Cover image for ${formData.title}`)
 
-        const uploadResponse = await fetch("/api/admin/assets/upload", {
+        const uploadResponse = await apiClient.request("/assets/upload", {
           method: "POST",
           body: uploadFormData
         })
@@ -176,7 +177,7 @@ export default function EditProgramPage() {
         }
       }
 
-      const response = await fetch(`/api/admin/programs/${params.id}`, {
+      const response = await apiClient.request(`/programs/${params.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

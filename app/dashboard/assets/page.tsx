@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
@@ -33,73 +32,40 @@ import {
   Download,
   Tag,
   Calendar,
-  User
+  User,
+  Loader2
 } from "lucide-react"
+import { useAssetStore } from "@/stores/asset-store"
+import { useAssets, useUploadAssets, useDeleteAsset } from "@/hooks/use-assets"
 import { toast } from "sonner"
 
-type Asset = {
-  id: string
-  filename: string
-  originalName: string
-  mimeType: string
-  size: number
-  type: "IMAGE" | "AUDIO" | "VIDEO" | "DOCUMENT"
-  url: string
-  description?: string
-  tags?: string
-  uploadedBy: {
-    id: string
-    firstName: string
-    lastName: string
-    email: string
-  }
-  _count: {
-    broadcasts: number
-  }
-  createdAt: string
-  updatedAt: string
-}
-
-async function fetchAssets(params: URLSearchParams) {
-  try {
-    const response = await fetch(`/api/admin/assets?${params.toString()}`)
-    if (!response.ok) {
-      throw new Error('Failed to fetch assets')
-    }
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching assets:', error)
-    return { assets: [], pagination: { page: 1, perPage: 20, total: 0, totalPages: 0 } }
-  }
-}
-
 export default function AssetsPage() {
-  const [assets, setAssets] = useState<Asset[]>([])
-  const [pagination, setPagination] = useState({ page: 1, perPage: 20, total: 0, totalPages: 0 })
-  const [filter, setFilter] = useState<"all" | "IMAGE" | "AUDIO" | "VIDEO" | "DOCUMENT">("all")
-  const [searchQuery, setSearchQuery] = useState("")
+  const { filters, pagination, selectedAssets, setFilters, clearSelection } = useAssetStore()
+  const { data, isLoading, error } = useAssets(filters)
+  const uploadAssets = useUploadAssets()
+  const deleteAsset = useDeleteAsset()
+  
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [uploadForm, setUploadForm] = useState({
     files: [] as File[],
     description: "",
     tags: ""
   })
-  const [isUploading, setIsUploading] = useState(false)
 
-  useEffect(() => {
-    loadAssets()
-  }, [filter, searchQuery, pagination.page])
+  const assets = data?.assets || []
+  const paginationData = data?.pagination || pagination
 
-  const loadAssets = async () => {
-    const params = new URLSearchParams({
-      page: pagination.page.toString(),
-      perPage: pagination.perPage.toString(),
-      type: filter,
-      search: searchQuery,
-    })
-    const data = await fetchAssets(params)
-    setAssets(data.assets || [])
-    setPagination(data.pagination || { page: 1, perPage: 20, total: 0, totalPages: 0 })
+  const handleFilterChange = (value: string) => {
+    const type = value as typeof filters.type
+    setFilters({ type, page: 1 })
+  }
+
+  const handleSearchChange = (search: string) => {
+    setFilters({ search, page: 1 })
+  }
+
+  const handlePageChange = (page: number) => {
+    setFilters({ page })
   }
 
   const handleUpload = async () => {
@@ -108,72 +74,17 @@ export default function AssetsPage() {
       return
     }
 
-    setIsUploading(true)
-    const formData = new FormData()
-    
-    // Add all files to the form data
-    uploadForm.files.forEach((file) => {
-      formData.append("files", file)
-    })
-    
-    formData.append("description", uploadForm.description)
-    formData.append("tags", uploadForm.tags)
-
     try {
-      const response = await fetch('/api/admin/assets/upload', {
-        method: 'POST',
-        body: formData,
+      await uploadAssets.mutateAsync({
+        files: uploadForm.files,
+        description: uploadForm.description,
+        tags: uploadForm.tags,
       })
-
-      if (response.ok) {
-        const result = await response.json()
-        
-        if (uploadForm.files.length === 1) {
-          // Single file upload - result is a single asset
-          setAssets([result, ...assets])
-          toast.success("Asset uploaded successfully")
-        } else {
-          // Multiple file upload - result contains assets array and summary
-          if (result.assets) {
-            setAssets([...result.assets, ...assets])
-          }
-          
-          if (result.summary) {
-            const { successful, failed, total } = result.summary
-            if (failed === 0) {
-              toast.success(`All ${total} files uploaded successfully`)
-            } else if (successful === 0) {
-              toast.error(`All ${total} file uploads failed`)
-            } else {
-              toast.success(`${successful} of ${total} files uploaded successfully`)
-              if (result.errors) {
-                // Show details about failed uploads
-                result.errors.forEach((error: any) => {
-                  toast.error(`${error.filename}: ${error.error}`)
-                })
-              }
-            }
-          }
-        }
-        
-        setIsUploadDialogOpen(false)
-        setUploadForm({ files: [], description: "", tags: "" })
-      } else {
-        const error = await response.json()
-        if (error.errors && Array.isArray(error.errors)) {
-          // Multiple file upload with all failures
-          error.errors.forEach((err: any) => {
-            toast.error(`${err.filename}: ${err.error}`)
-          })
-        } else {
-          toast.error(error.error || "Failed to upload assets")
-        }
-      }
+      
+      setIsUploadDialogOpen(false)
+      setUploadForm({ files: [], description: "", tags: "" })
     } catch (error) {
-      console.error('Error uploading assets:', error)
-      toast.error("Failed to upload assets")
-    } finally {
-      setIsUploading(false)
+      // Error handling is done in the mutation
     }
   }
 
@@ -187,27 +98,16 @@ export default function AssetsPage() {
     setUploadForm({ ...uploadForm, files: newFiles })
   }
 
-  const handleDelete = async (asset: Asset) => {
-    if (asset._count.broadcasts > 0) {
+  const handleDelete = async (asset: typeof assets[0]) => {
+    if ((asset._count?.broadcasts || 0) > 0) {
       toast.error("Cannot delete asset that is being used by broadcasts")
       return
     }
 
     try {
-      const response = await fetch(`/api/admin/assets/${asset.id}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        setAssets(assets.filter(a => a.id !== asset.id))
-        toast.success("Asset deleted successfully")
-      } else {
-        const error = await response.json()
-        toast.error(error.error || "Failed to delete asset")
-      }
+      await deleteAsset.mutateAsync(asset.id)
     } catch (error) {
-      console.error('Error deleting asset:', error)
-      toast.error("Failed to delete asset")
+      // Error handling is done in the mutation
     }
   }
 
@@ -246,6 +146,19 @@ export default function AssetsPage() {
     }
   }
 
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-12">
+          <p className="text-red-600">Failed to load assets</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -277,33 +190,19 @@ export default function AssetsPage() {
                   onChange={handleFileSelect}
                 />
                 {uploadForm.files.length > 0 && (
-                  <div className="space-y-2 mt-3">
-                    <p className="text-sm text-slate-600 font-medium">
-                      Selected {uploadForm.files.length} file{uploadForm.files.length !== 1 ? 's' : ''}:
-                    </p>
-                    <div className="max-h-40 overflow-y-auto space-y-1">
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">{uploadForm.files.length} file(s) selected:</p>
+                    <div className="max-h-32 overflow-y-auto space-y-1">
                       {uploadForm.files.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between bg-slate-50 rounded-lg p-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="flex-shrink-0">
-                              {file.type.startsWith('image/') && <ImageIcon className="h-4 w-4 text-green-600" />}
-                              {file.type.startsWith('audio/') && <Music className="h-4 w-4 text-blue-600" />}
-                              {file.type.startsWith('video/') && <Video className="h-4 w-4 text-purple-600" />}
-                              {!file.type.startsWith('image/') && !file.type.startsWith('audio/') && !file.type.startsWith('video/') && <File className="h-4 w-4 text-gray-600" />}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium truncate">{file.name}</p>
-                              <p className="text-xs text-slate-500">{formatFileSize(file.size)}</p>
-                            </div>
-                          </div>
+                        <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                          <span className="text-sm truncate">{file.name}</span>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => removeFile(index)}
-                            className="flex-shrink-0 h-8 w-8 p-0"
                           >
-                            ×
+                            <Trash className="h-3 w-3" />
                           </Button>
                         </div>
                       ))}
@@ -315,19 +214,18 @@ export default function AssetsPage() {
                 <Label htmlFor="description">Description (Optional)</Label>
                 <Textarea
                   id="description"
+                  placeholder="Describe these assets..."
                   value={uploadForm.description}
                   onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
-                  placeholder="Describe these assets..."
-                  rows={3}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tags">Tags (Optional)</Label>
                 <Input
                   id="tags"
+                  placeholder="music, intro, background (comma-separated)"
                   value={uploadForm.tags}
                   onChange={(e) => setUploadForm({ ...uploadForm, tags: e.target.value })}
-                  placeholder="music, intro, jingle, etc. (comma-separated)"
                 />
               </div>
             </div>
@@ -335,17 +233,14 @@ export default function AssetsPage() {
               <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpload} disabled={uploadForm.files.length === 0 || isUploading}>
-                {isUploading ? (
+              <Button onClick={handleUpload} disabled={uploadAssets.isPending}>
+                {uploadAssets.isPending ? (
                   <>
-                    <Upload className="h-4 w-4 mr-2 animate-spin" />
-                    Uploading {uploadForm.files.length} file{uploadForm.files.length !== 1 ? 's' : ''}...
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
                   </>
                 ) : (
-                  <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload {uploadForm.files.length > 0 ? `${uploadForm.files.length} file${uploadForm.files.length !== 1 ? 's' : ''}` : 'Files'}
-                  </>
+                  'Upload Assets'
                 )}
               </Button>
             </DialogFooter>
@@ -353,182 +248,219 @@ export default function AssetsPage() {
         </Dialog>
       </div>
 
-      {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Search assets..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <Tabs value={filters.type} onValueChange={handleFilterChange} className="w-auto">
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="IMAGE">Images</TabsTrigger>
+                <TabsTrigger value="AUDIO">Audio</TabsTrigger>
+                <TabsTrigger value="VIDEO">Video</TabsTrigger>
+                <TabsTrigger value="DOCUMENT">Documents</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="flex items-center gap-2">
+              <Search className="h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search assets..."
+                value={filters.search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading assets...</span>
         </div>
-        <Tabs value={filter} onValueChange={(value: any) => setFilter(value)}>
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="IMAGE">Images</TabsTrigger>
-            <TabsTrigger value="AUDIO">Audio</TabsTrigger>
-            <TabsTrigger value="VIDEO">Video</TabsTrigger>
-            <TabsTrigger value="DOCUMENT">Documents</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      )}
 
       {/* Assets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {assets.map((asset) => {
-          const Icon = getAssetIcon(asset.type)
-          const tags = getTags(asset.tags)
-          
-          return (
-            <Card key={asset.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-5 w-5 text-slate-600" />
-                    <Badge variant="outline" className={getAssetTypeColor(asset.type)}>
-                      {asset.type}
-                    </Badge>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => window.open(asset.url, '_blank')}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => window.open(asset.url, '_blank')}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-red-600"
-                        onClick={() => handleDelete(asset)}
-                        disabled={asset._count.broadcasts > 0}
-                      >
-                        <Trash className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Preview */}
-                {asset.type === "IMAGE" && (
-                  <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden">
-                    <img 
-                      src={asset.url} 
-                      alt={asset.originalName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                
-                {asset.type === "AUDIO" && (
-                  <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center">
-                    <Music className="h-12 w-12 text-slate-400" />
-                  </div>
-                )}
-
-                {asset.type === "VIDEO" && (
-                  <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center">
-                    <Video className="h-12 w-12 text-slate-400" />
-                  </div>
-                )}
-
-                {asset.type === "DOCUMENT" && (
-                  <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center">
-                    <File className="h-12 w-12 text-slate-400" />
-                  </div>
-                )}
-
-                {/* File Info */}
-                <div className="space-y-2">
-                  <h3 className="font-medium text-sm leading-tight">{asset.originalName}</h3>
-                  <p className="text-xs text-slate-500">{formatFileSize(asset.size)}</p>
-                  
-                  {asset.description && (
-                    <p className="text-xs text-slate-600 line-clamp-2">{asset.description}</p>
-                  )}
-
-                  {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {tags.slice(0, 3).map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{tags.length - 3}
-                        </Badge>
-                      )}
+      {!isLoading && assets.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {assets.map((asset) => {
+            const Icon = getAssetIcon(asset.type)
+            const tags = getTags(asset.tags)
+            
+            return (
+              <Card key={asset.id} className="group hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-5 w-5 text-gray-600" />
+                      <Badge className={`text-xs ${getAssetTypeColor(asset.type)}`}>
+                        {asset.type}
+                      </Badge>
                     </div>
-                  )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => window.open(asset.url, '_blank')}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.open(asset.url, '_blank')}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDelete(asset)}
+                          className="text-red-600"
+                          disabled={(asset._count?.broadcasts || 0) > 0}
+                        >
+                          <Trash className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <CardTitle className="text-sm font-medium truncate" title={asset.originalName}>
+                    {asset.originalName}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {/* Preview */}
+                    {asset.type === "IMAGE" && (
+                      <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                        <img 
+                          src={asset.url} 
+                          alt={asset.originalName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    
+                    {asset.type === "AUDIO" && (
+                      <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Music className="h-12 w-12 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    {asset.type === "VIDEO" && (
+                      <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Video className="h-12 w-12 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    {asset.type === "DOCUMENT" && (
+                      <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                        <File className="h-12 w-12 text-gray-400" />
+                      </div>
+                    )}
 
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <div className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      <span>{`${asset.uploadedBy.firstName} ${asset.uploadedBy.lastName}`}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
+                    {/* Description */}
+                    {asset.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {asset.description}
+                      </p>
+                    )}
+
+                    {/* Tags */}
+                    {tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {tags.slice(0, 3).map((tag: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Metadata */}
+                    <div className="space-y-1 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        <span>{asset.uploadedBy.firstName} {asset.uploadedBy.lastName}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>{formatFileSize(asset.size)}</span>
+                        {(asset._count?.broadcasts || 0) > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            Used in {asset._count?.broadcasts || 0} broadcast{(asset._count?.broadcasts || 0) !== 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
-                  {asset._count.broadcasts > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-blue-600">
-                      <Tag className="h-3 w-3" />
-                      <span>Used in {asset._count.broadcasts} broadcast{asset._count.broadcasts !== 1 ? 's' : ''}</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            disabled={pagination.page === 1}
-            onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-slate-600">
-            Page {pagination.page} of {pagination.totalPages}
-          </span>
-          <Button
-            variant="outline"
-            disabled={pagination.page === pagination.totalPages}
-            onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-          >
-            Next
+      {/* Empty State */}
+      {!isLoading && assets.length === 0 && (
+        <div className="text-center py-12">
+          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No assets found</h3>
+          <p className="text-gray-500 mb-4">
+            {filters.search || filters.type !== 'all' 
+              ? 'Try adjusting your filters or search terms'
+              : 'Upload your first asset to get started'
+            }
+          </p>
+          <Button onClick={() => setIsUploadDialogOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Asset
           </Button>
         </div>
       )}
 
-      {assets.length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Upload className="h-12 w-12 text-slate-300 mb-4" />
-            <p className="text-slate-500 text-center">No assets found</p>
-            <Button variant="outline" className="mt-4" onClick={() => setIsUploadDialogOpen(true)}>
-              Upload Your First Asset
+      {/* Pagination */}
+      {!isLoading && assets.length > 0 && paginationData.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-700">
+            Showing {((paginationData.page - 1) * paginationData.perPage) + 1} to{' '}
+            {Math.min(paginationData.page * paginationData.perPage, paginationData.total)} of{' '}
+            {paginationData.total} results
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(paginationData.page - 1)}
+              disabled={paginationData.page <= 1}
+            >
+              Previous
             </Button>
-          </CardContent>
-        </Card>
+            <span className="text-sm">
+              Page {paginationData.page} of {paginationData.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(paginationData.page + 1)}
+              disabled={paginationData.page >= paginationData.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )

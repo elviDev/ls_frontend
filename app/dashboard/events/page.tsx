@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -166,58 +167,20 @@ export default function EventsManagePage() {
   const fetchEvents = async () => {
     try {
       setLoading(true)
-      const params = new URLSearchParams({
-        type: "EVENT",
+      const params = {
         page: page.toString(),
         perPage: "10"
-      })
+      }
       if (statusFilter !== "all") {
-        params.append("status", statusFilter.toUpperCase())
+        params.status = statusFilter.toUpperCase()
       }
       if (searchTerm.trim()) {
-        params.append("search", searchTerm.trim())
+        params.search = searchTerm.trim()
       }
       
-      const response = await fetch(`/api/admin/schedules?${params}`)
-      if (response.ok) {
-        const data = await response.json()
-        // Transform schedule data to event format
-        const events = data.schedules.map((schedule: any) => ({
-          id: schedule.id,
-          title: schedule.title,
-          description: schedule.description,
-          startTime: schedule.startTime,
-          endTime: schedule.endTime,
-          eventType: schedule.event?.eventType || "MEETUP",
-          location: schedule.event?.location,
-          venue: schedule.event?.venue,
-          address: schedule.event?.address,
-          city: schedule.event?.city,
-          state: schedule.event?.state,
-          country: schedule.event?.country,
-          isVirtual: schedule.event?.isVirtual || false,
-          virtualLink: schedule.event?.virtualLink,
-          isPaid: schedule.event?.isPaid || false,
-          ticketPrice: schedule.event?.ticketPrice,
-          currency: schedule.event?.currency || "USD",
-          maxAttendees: schedule.event?.maxAttendees,
-          currentAttendees: schedule.event?.currentAttendees || 0,
-          requiresRSVP: schedule.event?.requiresRSVP || false,
-          status: schedule.status,
-          organizer: {
-            id: schedule.creator.id,
-            name: `${schedule.creator.firstName} ${schedule.creator.lastName}`,
-            email: schedule.creator.email
-          },
-          createdAt: schedule.createdAt,
-          scheduleId: schedule.id
-        }))
-        setEvents(events)
-        setTotalPages(data.pagination.totalPages)
-      } else {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error occurred" }))
-        throw new Error(errorData.error || "Failed to fetch events")
-      }
+      const data = await apiClient.events.getAll(params)
+      setEvents(data.events || [])
+      setTotalPages(data.pagination?.totalPages || 1)
     } catch (error: any) {
       setError(error.message)
       toast({
@@ -254,24 +217,14 @@ export default function EventsManagePage() {
         maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : undefined
       }
 
-      const response = await fetch('/api/admin/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      await apiClient.events.create(payload)
+      toast({
+        title: "Success",
+        description: "Event created successfully"
       })
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Event created successfully"
-        })
-        setShowCreateDialog(false)
-        resetForm()
-        fetchEvents()
-      } else {
-        const errorData = await response.json().catch(() => ({ error: "Failed to create event" }))
-        throw new Error(errorData.error)
-      }
+      setShowCreateDialog(false)
+      resetForm()
+      fetchEvents()
     } catch (error: any) {
       toast({
         title: "Creation Failed",
@@ -340,7 +293,7 @@ export default function EventsManagePage() {
         maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : undefined
       }
 
-      const response = await fetch(`/api/admin/events/${editingEvent.id}`, {
+      const response = await apiClient.request(`/events/${editingEvent.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -373,7 +326,7 @@ export default function EventsManagePage() {
   const handleQuickPublish = async (event: Event) => {
     setSubmitting(true)
     try {
-      const response = await fetch(`/api/admin/events/${event.id}`, {
+      const response = await apiClient.request(`/events/${event.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'SCHEDULED' })
@@ -404,7 +357,7 @@ export default function EventsManagePage() {
 
     setDeletingId(id)
     try {
-      const response = await fetch(`/api/admin/events/${id}`, {
+      const response = await apiClient.request(`/events/${id}`, {
         method: 'DELETE'
       })
 

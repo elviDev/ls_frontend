@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
+import { useLogout } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -110,13 +111,14 @@ function getNotificationIcon(type: string) {
 }
 
 export default function DashboardHeader() {
-  const { user, logout } = useAuth();
+  const { user } = useAuthStore();
+  const logoutMutation = useLogout();
   const pathname = usePathname();
   const [notifications, setNotifications] = useState(mockNotifications);
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleLogout = async () => {
-    await logout();
+    logoutMutation.mutate();
   };
 
   const markAsRead = (notificationId: string) => {
@@ -391,7 +393,7 @@ export default function DashboardHeader() {
                     {user?.name || "User"}
                   </p>
                   <p className="text-xs text-muted-foreground capitalize">
-                    {user?.role || "user"}
+                    {user?.userType === 'staff' ? user?.role?.toLowerCase() : 'user'}
                   </p>
                 </div>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />

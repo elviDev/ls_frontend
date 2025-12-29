@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -102,7 +103,7 @@ export default function ScheduleDetailPage() {
   const fetchSchedule = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/schedules/${params.id}`)
+      const response = await apiClient.request(`/schedules/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setSchedule(data)
@@ -125,7 +126,7 @@ export default function ScheduleDetailPage() {
     if (!confirm("Are you sure you want to delete this schedule?")) return
 
     try {
-      const response = await fetch(`/api/admin/schedules/${params.id}`, {
+      const response = await apiClient.request(`/schedules/${params.id}`, {
         method: "DELETE"
       })
 
@@ -149,7 +150,7 @@ export default function ScheduleDetailPage() {
 
   const handleStatusToggle = async (newStatus: string) => {
     try {
-      const response = await fetch(`/api/admin/schedules/${params.id}`, {
+      const response = await apiClient.request(`/schedules/${params.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"

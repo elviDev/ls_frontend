@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,7 +114,7 @@ export default function AddStaffPage() {
         salary: formData.salary ? parseFloat(formData.salary) : undefined,
       };
 
-      const response = await fetch("/api/admin/staff", {
+      const response = await apiClient.request("/staff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),

@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { apiClient } from "@/lib/api-client"
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -43,7 +44,7 @@ export default function NewChapterPage() {
     const fetchNextTrackNumber = async () => {
       try {
         setIsLoadingNextTrackNumber(true)
-        const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters`)
+        const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters`)
         if (response.ok) {
           const chapters = await response.json()
           const maxTrackNumber = chapters.length > 0 
@@ -124,7 +125,7 @@ export default function NewChapterPage() {
         formData.append('transcript', transcriptText.trim())
       }
 
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters`, {
         method: 'POST',
         body: formData
       })

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -68,7 +69,7 @@ export default function ChaptersPage() {
     if (!audiobookId || audiobookId === 'undefined') return
     
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}`)
+      const response = await apiClient.request(`/audiobooks/${audiobookId}`)
       if (response.ok) {
         const data = await response.json()
         setAudiobook(data)
@@ -86,7 +87,7 @@ export default function ChaptersPage() {
     
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters`)
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters`)
       if (response.ok) {
         const data = await response.json()
         setChapters(data)
@@ -106,7 +107,7 @@ export default function ChaptersPage() {
 
   const handleStatusChange = async (chapterId: string, status: string) => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters/${chapterId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -137,7 +138,7 @@ export default function ChaptersPage() {
 
   const handleDeleteChapter = async (chapterId: string) => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}/chapters/${chapterId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
         method: 'DELETE'
       })
 

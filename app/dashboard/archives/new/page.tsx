@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -214,7 +215,7 @@ export default function NewArchivePage() {
       setUploadProgress(80);
       
       const result = await fetchWithErrorHandling(
-        "/api/admin/archives",
+        "/archives",
         {
           method: "POST",
           headers: {

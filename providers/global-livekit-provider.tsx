@@ -270,7 +270,7 @@ export function GlobalLiveKitProvider({
             tokenAbort = new AbortController();
             // keep a reference visible to the timeout handler
             outerTokenAbort = tokenAbort;
-            const response = await fetch("/api/livekit/token", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/livekit/token`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

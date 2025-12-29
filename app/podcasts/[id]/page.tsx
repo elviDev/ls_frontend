@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,37 +12,26 @@ import { EpisodeList } from "@/components/podcast/episode-list";
 import { CommentSection } from "@/components/audiobook/comment-section";
 import { PodcastTranscript } from "@/components/podcast/podcast-transcript";
 import { ReviewSection } from "@/components/audiobook/review-section";
-import {
-  fetchPodcastEpisodes,
-  toggleFavoritePodcast,
-  checkIsFavorite,
-  addComment,
-  getEpisodeComments,
-  getEpisodeTranscript,
-} from "@/app/podcasts/actions";
-import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePodcast, usePodcastEpisodes, useTogglePodcastFavorite } from "@/hooks/use-podcasts";
+import { usePodcastStore } from "@/stores/podcast-store";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PodcastDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const [podcastData, setPodcastData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentEpisode, setCurrentEpisode] = useState<any>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [currentEpisodeComments, setCurrentEpisodeComments] = useState<any[]>(
-    []
-  );
-  const [currentEpisodeTranscript, setCurrentEpisodeTranscript] = useState<
-    any[]
-  >([]);
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [loadingTranscript, setLoadingTranscript] = useState(false);
   const [podcastId, setPodcastId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { currentPodcast, currentEpisode, setCurrentPodcast, setCurrentEpisode, favorites } = usePodcastStore();
+  
+  const { data: podcast, isLoading: loadingPodcast, error: podcastError } = usePodcast(podcastId || '');
+  const { data: episodes = [], isLoading: loadingEpisodes } = usePodcastEpisodes(podcastId || '');
+  const toggleFavoriteMutation = useTogglePodcastFavorite();
+
+  const isFavorite = podcastId ? favorites.includes(podcastId) : false;
+  const isLoading = loadingPodcast || loadingEpisodes;
 
   useEffect(() => {
     const getParams = async () => {
@@ -50,145 +39,36 @@ export default function PodcastDetailPage({
       setPodcastId(resolvedParams.id);
     };
     getParams();
-  }, []);
+  }, [params]);
 
   useEffect(() => {
-    if (podcastId) {
-      const fetchData = async () => {
-        try {
-          setLoading(true);
-
-          // Fetch podcast details and episodes
-          const result = await fetchPodcastEpisodes(podcastId);
-
-          if (result.success) {
-            setPodcastData(result.data);
-
-            // Set the first episode as current if available
-            if (result.data?.episodes && result.data.episodes.length > 0) {
-              setCurrentEpisode(result.data.episodes[0]);
-            }
-          } else {
-            setError(result.error || "Failed to load podcast");
-          }
-
-          // Check if this podcast is in favorites
-          const favoriteResult = await checkIsFavorite(podcastId);
-          if (favoriteResult.success) {
-            setIsFavorite(favoriteResult.isFavorite!);
-          }
-        } catch (err) {
-          setError("An unexpected error occurred");
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchData();
+    if (podcast) {
+      setCurrentPodcast(podcast);
+      if (episodes.length > 0 && !currentEpisode) {
+        setCurrentEpisode(episodes[0]);
+      }
     }
-  }, [podcastId]);
+  }, [podcast, episodes, setCurrentPodcast, setCurrentEpisode, currentEpisode]);
 
-  const handlePlayEpisode = async (episode: any) => {
+  const handlePlayEpisode = (episode: any) => {
     setCurrentEpisode(episode);
-
-    // Load comments and transcript for the current episode
-    await loadEpisodeData(episode.trackId);
-
-    // Scroll to player
     const playerElement = document.getElementById("podcast-player");
     if (playerElement) {
       playerElement.scrollIntoView({ behavior: "smooth" });
     }
   };
 
-  const loadEpisodeData = async (episodeId: string) => {
-    // Load comments
-    setLoadingComments(true);
-    try {
-      const commentsResult = await getEpisodeComments(episodeId);
-      if (commentsResult.success) {
-        setCurrentEpisodeComments(commentsResult.data || []);
-      }
-    } catch (error) {
-      console.error("Failed to load comments:", error);
-    } finally {
-      setLoadingComments(false);
-    }
-
-    // Load transcript
-    setLoadingTranscript(true);
-    try {
-      const transcriptResult = await getEpisodeTranscript(episodeId);
-      if (transcriptResult.success) {
-        setCurrentEpisodeTranscript(transcriptResult.data);
-      }
-    } catch (error) {
-      console.error("Failed to load transcript:", error);
-    } finally {
-      setLoadingTranscript(false);
-    }
-  };
-
-  const handleAddComment = async (content: string) => {
-    if (!currentEpisode) return;
-
-    try {
-      const result = await addComment(currentEpisode.trackId, content);
-      if (result.success) {
-        setCurrentEpisodeComments((prev) => [result.data, ...prev]);
-        toast({
-          title: "Comment added",
-          description: "Your comment has been added successfully",
-        });
-        return { success: true };
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add comment",
-        variant: "destructive",
-      });
-      return { success: false };
-    }
-  };
-
   const handleFavoriteToggle = async () => {
-    if (!podcastData?.podcast || !podcastId) return;
-
+    if (!podcastId) return;
+    
     try {
-      const result = await toggleFavoritePodcast({
-        id: podcastId,
-        title: podcastData.podcast.collectionName,
-        image: podcastData.podcast.artworkUrl100 || "",
-        artist: podcastData.podcast.artistName,
-      });
-
-      if (result.success) {
-        setIsFavorite(result.isFavorite!);
-        toast({
-          title: result.isFavorite
-            ? "Added to favorites"
-            : "Removed from favorites",
-          description: result.isFavorite
-            ? `${podcastData.podcast.collectionName} has been added to your favorites`
-            : `${podcastData.podcast.collectionName} has been removed from your favorites`,
-          duration: 3000,
-        });
-      }
+      await toggleFavoriteMutation.mutateAsync(podcastId);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update favorites",
-        variant: "destructive",
-        duration: 3000,
-      });
+      // Error handled by mutation
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -207,12 +87,12 @@ export default function PodcastDetailPage({
     );
   }
 
-  if (error) {
+  if (podcastError || !podcast) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-6 rounded-xl">
           <h2 className="text-2xl font-bold mb-2">Error Loading Podcast</h2>
-          <p className="mb-4">{error}</p>
+          <p className="mb-4">The podcast you're looking for could not be found.</p>
           <Button asChild>
             <Link href="/podcasts">Back to Podcasts</Link>
           </Button>
@@ -221,25 +101,6 @@ export default function PodcastDetailPage({
     );
   }
 
-  if (!podcastData || !podcastData.podcast) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 p-6 rounded-xl">
-          <h2 className="text-2xl font-bold mb-2">Podcast Not Found</h2>
-          <p className="mb-4">
-            The podcast you're looking for could not be found.
-          </p>
-          <Button asChild>
-            <Link href="/podcasts">Browse Podcasts</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const { podcast, episodes } = podcastData;
-
-  // Get related podcasts (in a real app, this would come from an API)
   const relatedPodcasts = [
     {
       id: "1",
@@ -270,22 +131,22 @@ export default function PodcastDetailPage({
         <div className="lg:col-span-2">
           <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-6">
             <Image
-              src={
-                podcast.artworkUrl100 || "/placeholder.svg?height=600&width=600"
-              }
-              alt={podcast.collectionName}
+              src={podcast.coverImage || "/placeholder.svg?height=600&width=600"}
+              alt={podcast.title}
               fill
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
               <div>
                 <div className="text-sm font-medium text-brand-300 mb-2">
-                  {podcast.primaryGenreName}
+                  {podcast.genre?.name}
                 </div>
                 <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                  {podcast.collectionName}
+                  {podcast.title}
                 </h1>
-                <p className="text-white/80">with {podcast.artistName}</p>
+                <p className="text-white/80">
+                  with {podcast.author.firstName} {podcast.author.lastName}
+                </p>
               </div>
             </div>
           </div>
@@ -296,17 +157,16 @@ export default function PodcastDetailPage({
                 <Avatar className="h-12 w-12">
                   <AvatarImage
                     src="/placeholder.svg?height=100&width=100"
-                    alt={podcast.artistName}
+                    alt={`${podcast.author.firstName} ${podcast.author.lastName}`}
                   />
                   <AvatarFallback>
-                    {podcast.artistName
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")}
+                    {podcast.author.firstName.charAt(0)}{podcast.author.lastName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{podcast.artistName}</p>
+                  <p className="font-medium">
+                    {podcast.author.firstName} {podcast.author.lastName}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     Host & Producer
                   </p>
@@ -316,10 +176,8 @@ export default function PodcastDetailPage({
                 variant="outline"
                 className="gap-2"
                 onClick={handleFavoriteToggle}
+                disabled={toggleFavoriteMutation.isPending}
               >
-                <Avatar
-                  className={isFavorite ? "text-red-500 fill-current" : ""}
-                />
                 {isFavorite ? "Following" : "Follow"}
               </Button>
             </div>
@@ -327,8 +185,7 @@ export default function PodcastDetailPage({
             <div className="space-y-4 mb-6">
               <h2 className="text-xl font-semibold">About This Podcast</h2>
               <p className="text-muted-foreground">
-                {podcast.description ||
-                  "No description available for this podcast."}
+                {podcast.description || "No description available for this podcast."}
               </p>
             </div>
           </div>
@@ -336,10 +193,10 @@ export default function PodcastDetailPage({
           <div id="podcast-player" className="mb-8">
             {currentEpisode && (
               <PodcastPlayer
-                title={currentEpisode.trackName || "Unknown Episode"}
-                artist={podcast.artistName}
-                audioUrl={currentEpisode.previewUrl || ""}
-                image={podcast.artworkUrl100}
+                title={currentEpisode.title || "Unknown Episode"}
+                artist={`${podcast.author.firstName} ${podcast.author.lastName}`}
+                audioUrl={currentEpisode.audioUrl || ""}
+                image={podcast.coverImage}
                 onFavoriteToggle={handleFavoriteToggle}
                 isFavorite={isFavorite}
               />
@@ -357,8 +214,21 @@ export default function PodcastDetailPage({
 
               <TabsContent value="episodes">
                 <EpisodeList
-                  episodes={episodes || []}
-                  onPlay={handlePlayEpisode}
+                  episodes={episodes.map(episode => ({
+                    trackId: episode.id,
+                    trackName: episode.title,
+                    description: episode.description || '',
+                    releaseDate: episode.publishedAt || episode.createdAt,
+                    trackTimeMillis: episode.duration ? episode.duration * 1000 : undefined,
+                    previewUrl: episode.audioUrl,
+                  }))}
+                  onPlay={(episode) => {
+                    // Find the original episode by id
+                    const originalEpisode = episodes.find(e => e.id === episode.trackId);
+                    if (originalEpisode) {
+                      handlePlayEpisode(originalEpisode);
+                    }
+                  }}
                 />
               </TabsContent>
 
@@ -372,10 +242,9 @@ export default function PodcastDetailPage({
 
               <TabsContent value="transcript">
                 <PodcastTranscript
-                  segments={currentEpisodeTranscript}
-                  isLoading={loadingTranscript}
+                  segments={[]}
+                  isLoading={false}
                   onJumpToTimestamp={(timestamp) => {
-                    // In a real app, this would seek to the timestamp in the audio player
                     toast({
                       title: "Seeking to timestamp",
                       description: `Seeking to ${timestamp}`,
@@ -454,19 +323,17 @@ export default function PodcastDetailPage({
                   variant="outline"
                   size="icon"
                   onClick={() => {
-                    const text = `Check out ${podcast.collectionName} by ${podcast.artistName}`;
+                    const text = `Check out ${podcast.title} by ${podcast.author.firstName} ${podcast.author.lastName}`;
                     const url = window.location.href;
 
                     if (navigator.share && window.isSecureContext) {
                       navigator
                         .share({
-                          title: podcast.collectionName,
+                          title: podcast.title,
                           text: text,
                           url: url,
                         })
-                        .catch((err) => {
-                          console.error("Error sharing:", err);
-                          // Fallback to clipboard
+                        .catch(() => {
                           navigator.clipboard
                             .writeText(url)
                             .then(() =>
@@ -479,15 +346,13 @@ export default function PodcastDetailPage({
                             .catch(() =>
                               toast({
                                 title: "Sharing failed",
-                                description:
-                                  "Please manually copy the URL from your browser's address bar",
+                                description: "Please manually copy the URL",
                                 variant: "destructive",
                                 duration: 3000,
                               })
                             );
                         });
                     } else {
-                      // Fallback for browsers without Web Share API
                       navigator.clipboard
                         .writeText(url)
                         .then(() =>
@@ -500,8 +365,7 @@ export default function PodcastDetailPage({
                         .catch(() =>
                           toast({
                             title: "Sharing failed",
-                            description:
-                              "Please manually copy the URL from your browser's address bar",
+                            description: "Please manually copy the URL",
                             variant: "destructive",
                             duration: 3000,
                           })

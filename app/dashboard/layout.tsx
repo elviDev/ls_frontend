@@ -6,17 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import {
   LayoutDashboard,
   Radio,
@@ -25,27 +15,20 @@ import {
   Calendar,
   Users,
   Settings,
-  Menu,
-  Bell,
-  LogOut,
   User,
-  ChevronDown,
   Mic,
-  BarChart3,
-  FileText,
   FolderOpen,
   ChevronLeft,
   ChevronRight,
   Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/auth-context";
 import DashboardAuthWrapper from "@/components/auth/dashboard-auth-wrapper";
 import DashboardHeader from "@/components/dashboard-header";
 import { DashboardSettingsProvider } from "@/contexts/dashboard-settings-context";
 
 const mainNavigation = [
-  {name:"Dashboard", href:"/dashboard",icon: LayoutDashboard},
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Broadcasts", href: "/dashboard/broadcasts", icon: Radio },
   { name: "Assets", href: "/dashboard/assets", icon: FolderOpen },
   { name: "Archives", href: "/dashboard/archives", icon: Archive },
@@ -208,42 +191,27 @@ export default function AdminLayout({
                     </h3>
                     <ul className="space-y-2">
                       <li>
-                        <Link
-                          href="/about"
-                          className=" text-white"
-                        >
+                        <Link href="/about" className=" text-white">
                           About Us
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/programs"
-                          className=""
-                        >
+                        <Link href="/programs" className="">
                           Programs
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/podcasts"
-                          className=""
-                        >
+                        <Link href="/podcasts" className="">
                           Podcasts
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/events"
-                          className=""
-                        >
+                        <Link href="/events" className="">
                           Events
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/contact"
-                          className=""
-                        >
+                        <Link href="/contact" className="">
                           Contact
                         </Link>
                       </li>
@@ -256,42 +224,27 @@ export default function AdminLayout({
                     </h3>
                     <ul className="space-y-2">
                       <li>
-                        <Link
-                          href="/help"
-                          className=""
-                        >
+                        <Link href="/help" className="">
                           Help Center
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/advertise"
-                          className=""
-                        >
+                        <Link href="/advertise" className="">
                           Advertise With Us
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/careers"
-                          className=""
-                        >
+                        <Link href="/careers" className="">
                           Careers
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/privacy"
-                          className=""
-                        >
+                        <Link href="/privacy" className="">
                           Privacy Policy
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/terms"
-                          className=""
-                        >
+                        <Link href="/terms" className="">
                           Terms of Service
                         </Link>
                       </li>

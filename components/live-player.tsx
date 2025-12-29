@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { AlertCircle, Play, Pause } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuthStore } from "@/stores/auth-store";
 import { useBroadcastStore } from "@/stores/broadcast-store";
 import { useBroadcastDiscovery } from "@/hooks/use-broadcast-discovery";
 import { LiveKitListener } from "./live-player/components/livekit-listener";
 import { audioContextManager } from "@/utils/audio-context-manager";
 
 function LivePlayerInterface() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { currentBroadcast } = useBroadcastStore();
   const { liveBroadcasts, hasLiveBroadcasts } = useBroadcastDiscovery();
   const [isPlaying, setIsPlaying] = useState(false);

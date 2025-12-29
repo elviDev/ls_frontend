@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useParams } from "next/navigation"
 import { BroadcastPage } from "@/components/public/broadcast-page"
 import { toast } from "sonner"
@@ -48,7 +49,7 @@ export default function PublicBroadcastPage() {
 
   const fetchBroadcast = async () => {
     try {
-      const response = await fetch(`/api/admin/broadcasts/${slug}`)
+      const response = await apiClient.request(`/broadcasts/${slug}`)
       if (response.ok) {
         const data = await response.json()
         setBroadcast(data)

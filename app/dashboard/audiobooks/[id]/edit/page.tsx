@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -89,7 +90,7 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
 
   const fetchAudiobook = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/audiobooks/${id}`)
+      const response = await apiClient.request(`/audiobooks/${id}`)
       if (response.ok) {
         const audiobook = await response.json()
         setFormData({
@@ -136,7 +137,7 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
 
   const fetchAssets = async () => {
     try {
-      const response = await fetch('/api/admin/assets?type=IMAGE&perPage=50')
+      const response = await apiClient.request('/assets?type=IMAGE&perPage=50')
       if (response.ok) {
         const data = await response.json()
         setAssets(data.assets || [])
@@ -167,7 +168,7 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
     formDataUpload.append('tags', 'audiobook,cover')
 
     try {
-      const response = await fetch('/api/admin/assets/upload', {
+      const response = await apiClient.request('/assets/upload', {
         method: 'POST',
         body: formDataUpload,
       })
@@ -219,7 +220,7 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
     formDataUpload.append('description', `Audiobook cover for ${formData.title || 'untitled'}`)
     formDataUpload.append('tags', 'audiobook,cover')
 
-    const response = await fetch('/api/admin/assets/upload', {
+    const response = await apiClient.request('/assets/upload', {
       method: 'POST',
       body: formDataUpload
     })
@@ -266,7 +267,7 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
         tags: formData.tags
       }
 
-      const response = await fetch(`/api/admin/audiobooks/${audiobookId}`, {
+      const response = await apiClient.request(`/audiobooks/${audiobookId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'

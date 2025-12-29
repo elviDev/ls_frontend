@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { apiClient } from '@/lib/api-client'
 
 type DashboardSettings = {
   id?: string
@@ -140,17 +141,11 @@ export function DashboardSettingsProvider({ children }: { children: React.ReactN
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/admin/settings')
-      if (response.ok) {
-        const data = await response.json()
-        setSettings({ ...defaultSettings, ...data })
-      } else {
-        throw new Error('Failed to fetch settings')
-      }
+      const data = await apiClient.admin.settings.get()
+      setSettings({ ...defaultSettings, ...data })
     } catch (err) {
       console.error('Error fetching settings:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch settings')
-      // Use default settings on error
       setSettings(defaultSettings)
     } finally {
       setLoading(false)
@@ -160,18 +155,8 @@ export function DashboardSettingsProvider({ children }: { children: React.ReactN
   const updateSettings = async (newSettings: Partial<DashboardSettings>) => {
     try {
       setError(null)
-      const response = await fetch('/api/admin/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSettings),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setSettings(data)
-      } else {
-        throw new Error('Failed to update settings')
-      }
+      const data = await apiClient.admin.settings.update(newSettings)
+      setSettings(data)
     } catch (err) {
       console.error('Error updating settings:', err)
       setError(err instanceof Error ? err.message : 'Failed to update settings')

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client"
 import {
   Card,
   CardContent,
@@ -203,17 +204,10 @@ export default function SettingsPage() {
   const resetSettings = async () => {
     try {
       setSaving(true);
-      const response = await fetch("/api/admin/settings/reset", {
-        method: "POST",
-      });
-
-      if (response.ok) {
-        await refreshSettings();
-        setUnsavedChanges(false);
-        toast.success("Settings reset to defaults");
-      } else {
-        throw new Error("Failed to reset settings");
-      }
+      await apiClient.admin.settings.reset();
+      await refreshSettings();
+      setUnsavedChanges(false);
+      toast.success("Settings reset to defaults");
     } catch (error) {
       console.error("Error resetting settings:", error);
       toast.error("Failed to reset settings");
