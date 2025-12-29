@@ -65,8 +65,8 @@ export function UnifiedBroadcastChat({
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const CHAT_SERVER_URL =
-      process.env.NEXT_PUBLIC_API_URL ||
+    const SOCKET_SERVER_URL =
+      process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ||
       "https://lsbackend-production-46d9.up.railway.app";
     const token = getAuthToken();
 
@@ -74,7 +74,7 @@ export function UnifiedBroadcastChat({
     console.log("[Chat] Auth token present:", !!token);
     console.log("[Chat] User from useAuth():", user);
 
-    const socketConnection = io(CHAT_SERVER_URL, {
+    const socketConnection = io(SOCKET_SERVER_URL, {
       transports: ["polling", "websocket"],
       upgrade: true,
       rememberUpgrade: false,
@@ -208,11 +208,11 @@ export function UnifiedBroadcastChat({
 
   const loadMessages = async () => {
     try {
-      const CHAT_SERVER_URL =
+      const API_BASE_URL =
         process.env.NEXT_PUBLIC_API_URL ||
-        "https://lsbackend-production-46d9.up.railway.app";
+        "https://lsbackend-production-46d9.up.railway.app/api";
       const response = await fetch(
-        `${CHAT_SERVER_URL}/api/chat/${broadcastId}`
+        `${API_BASE_URL}/chat/${broadcastId}`
       );
       if (response.ok) {
         const data = await response.json();
