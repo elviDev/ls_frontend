@@ -14,7 +14,7 @@ export function useBroadcastSSE() {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const MAX_RECONNECT_ATTEMPTS = 5;
-  const RECONNECT_DELAY = 3000; // 3 seconds
+  const BASE_RECONNECT_DELAY = 3000; // 3 seconds base delay
 
   useEffect(() => {
     const connectSSE = () => {
@@ -22,7 +22,7 @@ export function useBroadcastSSE() {
         const backendUrl =
           process.env.NEXT_PUBLIC_SSE_URL ||
           (process.env.NEXT_PUBLIC_API_URL
-            ? `${process.env.NEXT_PUBLIC_API_URL}/api/sse`
+            ? `${process.env.NEXT_PUBLIC_API_URL}/sse`
             : null);
         const eventSource = new EventSource(`${backendUrl}/connect`, {
           withCredentials: true,
@@ -82,15 +82,16 @@ export function useBroadcastSSE() {
           eventSource.close();
           eventSourceRef.current = null;
 
-          // Attempt to reconnect
+          // Attempt to reconnect with exponential backoff
           if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
             reconnectAttemptsRef.current++;
+            const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttemptsRef.current - 1);
             console.log(
-              `[SSE] Reconnecting... (attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`
+              `[SSE] Reconnecting... (attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS}) in ${delay}ms`
             );
             reconnectTimeoutRef.current = setTimeout(
               connectSSE,
-              RECONNECT_DELAY
+              delay
             );
           } else {
             console.error(
