@@ -10,17 +10,11 @@ import { AudiobookPlayer } from "@/components/audiobook/audiobook-player";
 import { ChapterList } from "@/components/audiobook/chapter-list";
 import { ReviewSection } from "@/components/audiobook/review-section";
 import { CommentSection } from "@/components/audiobook/comment-section";
-import {
-  fetchAudiobookDetails,
-  toggleFavoriteAudiobook,
-  checkIsFavorite,
-  getAudiobookProgress,
-} from "@/app/audiobooks/actions";
-import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 import { generateSampleChapters, getSampleAudioUrl } from "@/lib/audiobook-api";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Calendar, User, BookOpen } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default async function AudiobookDetailPage({
   params,
@@ -103,20 +97,26 @@ export default async function AudiobookDetailPage({
         }
 
         // Check if this audiobook is in favorites
-        const favoriteResult = await checkIsFavorite(id);
-        if (favoriteResult.success && favoriteResult.isFavorite !== undefined) {
-          setIsFavorite(favoriteResult.isFavorite);
+        const favoriteResponse = await fetch(`/api/audiobooks/${id}/favorite`);
+        if (favoriteResponse.ok) {
+          const favoriteResult = await favoriteResponse.json();
+          if (favoriteResult.success && favoriteResult.isFavorite !== undefined) {
+            setIsFavorite(favoriteResult.isFavorite);
+          }
         }
 
         // Get saved progress
-        const progressResult = await getAudiobookProgress(id);
-        if (progressResult.success && progressResult.data) {
-          const data = progressResult.data as any;
-          setProgress({
-            position: data.position || 0,
-            chapter: data.chapter || data.chapterId || 0
-          });
-          setCurrentChapter(data.chapter || data.chapterId || 0);
+        const progressResponse = await fetch(`/api/audiobooks/${id}/progress`);
+        if (progressResponse.ok) {
+          const progressResult = await progressResponse.json();
+          if (progressResult.success && progressResult.data) {
+            const data = progressResult.data as any;
+            setProgress({
+              position: data.position || 0,
+              chapter: data.chapter || data.chapterId || 0
+            });
+            setCurrentChapter(data.chapter || data.chapterId || 0);
+          }
         }
       } catch (err) {
         setError("An unexpected error occurred");
@@ -146,14 +146,16 @@ export default async function AudiobookDetailPage({
     if (!audiobookData?.volumeInfo) return;
 
     try {
-      const result = await toggleFavoriteAudiobook({
-        id: id,
-        title: audiobookData.volumeInfo.title,
-        image:
-          audiobookData.volumeInfo.imageLinks?.thumbnail ||
-          "/placeholder.svg?height=600&width=400",
-        author: audiobookData.volumeInfo.authors?.[0] || "Unknown Author",
+      const response = await fetch(`/api/audiobooks/${id}/favorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: audiobookData.volumeInfo.title,
+          image: audiobookData.volumeInfo.imageLinks?.thumbnail || "/placeholder.svg?height=600&width=400",
+          author: audiobookData.volumeInfo.authors?.[0] || "Unknown Author",
+        })
       });
+      const result = await response.json();
 
       if (result.success && result.isFavorite !== undefined) {
         setIsFavorite(result.isFavorite);

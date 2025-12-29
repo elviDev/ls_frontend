@@ -12,9 +12,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Filter, Search } from "lucide-react";
-import { searchArchives } from "@/app/archives/actions";
 import { useToast } from "@/hooks/use-toast";
-import type { ArchiveData } from "@/app/archives/actions";
+
+interface ArchiveData {
+  id: string;
+  title: string;
+  description: string;
+  host: string;
+  guests?: string;
+  date: string;
+  duration: string;
+  image?: string;
+  category: string;
+  type: string;
+  downloadUrl?: string;
+  isDownloadable?: boolean;
+  playCount?: number;
+}
 
 interface ArchivesListProps {
   initialArchives: ArchiveData[];
@@ -47,7 +61,9 @@ export function ArchivesList({
 
     setIsSearching(true);
     try {
-      const result = await searchArchives(searchTerm);
+      const response = await fetch(`/api/archives/search?q=${encodeURIComponent(searchTerm)}`);
+      const result = await response.json();
+      
       if (result.success) {
         setArchives(result.data || []);
       } else {

@@ -8,12 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Clock, Calendar, Download, Heart, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  toggleArchiveFavorite,
-  trackArchivePlay,
-} from "@/app/archives/actions";
 import { useToast } from "@/hooks/use-toast";
-import type { ArchiveData } from "@/app/archives/actions";
+
+interface ArchiveData {
+  id: string;
+  title: string;
+  description: string;
+  host: string;
+  guests?: string;
+  date: string;
+  duration: string;
+  image?: string;
+  category: string;
+  type: string;
+  downloadUrl?: string;
+  isDownloadable?: boolean;
+  playCount?: number;
+}
 
 interface ArchiveCardProps {
   archive: ArchiveData;
@@ -35,8 +46,7 @@ export function ArchiveCard({
     e.stopPropagation();
 
     try {
-      await trackArchivePlay(archive.id);
-      // Here you would typically trigger the actual audio player
+      await fetch(`/api/archives/${archive.id}/play`, { method: 'POST' });
       toast({
         title: "Playing",
         description: `Now playing: ${archive.title}`,
@@ -56,7 +66,12 @@ export function ArchiveCard({
 
     setIsLoading(true);
     try {
-      const result = await toggleArchiveFavorite(archive.id);
+      const response = await fetch(`/api/archives/${archive.id}/favorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const result = await response.json();
+      
       if (result.success) {
         setIsFavorite(result.isFavorite ?? false);
         toast({
@@ -67,7 +82,7 @@ export function ArchiveCard({
             ? `${archive.title} has been added to your favorites`
             : `${archive.title} has been removed from your favorites`,
         });
-      } else if (result.authRequired) {
+      } else if (response.status === 401) {
         toast({
           title: "Please sign in",
           description: "Sign in to add archives to your favorites",

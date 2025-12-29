@@ -8,7 +8,6 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toggleFavoriteAudiobook } from "@/app/audiobooks/actions";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -63,12 +62,12 @@ export function AudiobookCard({
 
     setIsLoading(true);
     try {
-      const result = await toggleFavoriteAudiobook({
-        id,
-        title,
-        image,
-        author,
+      const response = await fetch(`/api/audiobooks/${id}/favorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, image, author })
       });
+      const result = await response.json();
 
       if (result.success) {
         setIsFavorite(result.isFavorite ?? false);

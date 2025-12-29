@@ -11,12 +11,21 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import {
-  saveArchiveProgress,
-  getArchiveProgress,
-} from "@/app/archives/actions";
-import type { ArchiveData } from "@/app/archives/actions";
 import { set } from "date-fns";
+
+interface ArchiveData {
+  id: string;
+  title: string;
+  description: string;
+  host: string;
+  guests?: string;
+  date: string;
+  duration: string;
+  image?: string;
+  category: string;
+  type: string;
+  audioFile?: string;
+}
 
 interface ArchivePlayerProps {
   archive: ArchiveData;
@@ -44,7 +53,9 @@ export function ArchivePlayer({ archive }: ArchivePlayerProps) {
   useEffect(() => {
     const loadProgress = async () => {
       try {
-        const result = await getArchiveProgress(archive.id);
+        const response = await fetch(`/api/archives/${archive.id}/progress`);
+        const result = await response.json();
+        
         if (result.success && result.data?.position) {
           setCurrentTime(result.data.position);
           if (audioRef.current) {
@@ -64,7 +75,11 @@ export function ArchivePlayer({ archive }: ArchivePlayerProps) {
     const saveProgress = async () => {
       if (currentTime > 0) {
         try {
-          await saveArchiveProgress(archive.id, currentTime);
+          await fetch(`/api/archives/${archive.id}/progress`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ position: currentTime })
+          });
         } catch (error) {
           console.error("Failed to save progress:", error);
         }
