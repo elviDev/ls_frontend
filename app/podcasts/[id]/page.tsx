@@ -72,8 +72,15 @@ export default function PodcastDetailPage({
 
   const handleFavoriteToggle = async () => {
     if (!podcastId) return;
-    await toggleFavoriteMutation.mutateAsync(podcastId);
+    try {
+      await toggleFavoriteMutation.mutateAsync(podcastId);
+      // The mutation will automatically invalidate and refetch the podcast data
+    } catch (error) {
+      // Error is handled by the mutation
+    }
   };
+
+  console.log("podcast", podcast);
 
   const { data: relatedPodcasts = [] } = usePodcasts({
     genreId: podcast?.genre?.id,
@@ -174,11 +181,25 @@ export default function PodcastDetailPage({
                 </div>
               </div>
               <Button
-                variant="outline"
+                variant={podcast?.isFavorited ? "default" : "outline"}
                 className="gap-2"
                 onClick={handleFavoriteToggle}
                 disabled={toggleFavoriteMutation.isPending}
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill={podcast?.isFavorited ? "#ef4444" : "none"}
+                  stroke={podcast?.isFavorited ? "#ef4444" : "currentColor"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={podcast?.isFavorited ? "text-red-500" : ""}
+                >
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l11 11z" />
+                </svg>
                 {podcast?.isFavorited ? "Following" : "Follow"}
               </Button>
             </div>

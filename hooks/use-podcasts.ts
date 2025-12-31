@@ -247,8 +247,11 @@ export function useTogglePodcastFavorite() {
   return useMutation<FavoriteResponse, Error, string>({
     mutationFn: (podcastId: string): Promise<FavoriteResponse> => 
       apiClient.request(`/podcasts/${podcastId}/favorite`, { method: 'POST' }) as Promise<FavoriteResponse>,
-    onSuccess: (result: FavoriteResponse) => {
-      queryClient.invalidateQueries({ queryKey: podcastKeys.all });
+    onSuccess: (result: FavoriteResponse, podcastId: string) => {
+      // Invalidate specific podcast detail to refetch with updated favorite status
+      queryClient.invalidateQueries({ queryKey: podcastKeys.detail(podcastId) });
+      // Also invalidate all podcast lists to update favorite status everywhere
+      queryClient.invalidateQueries({ queryKey: podcastKeys.lists() });
       toast.success(result.message);
     },
     onError: (error: any) => {
@@ -334,6 +337,25 @@ export function useCreateEpisodeComment() {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to add comment');
+    },
+  });
+}
+
+export function useCreateEpisodeReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ podcastId, episodeId, rating, comment }: { podcastId: string; episodeId: string; rating: number; comment?: string }) =>
+      apiClient.request(`/podcasts/${podcastId}/episodes/${episodeId}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating, comment }),
+      }),
+    onSuccess: (_, { podcastId, episodeId }) => {
+      queryClient.invalidateQueries({ queryKey: [...podcastKeys.episode(podcastId, episodeId), 'reviews'] });
+      toast.success('Review added successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to add review');
     },
   });
 }
