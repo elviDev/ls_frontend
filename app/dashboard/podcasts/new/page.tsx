@@ -68,7 +68,12 @@ import {
   Music,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useGenres, useCreatePodcast } from "@/hooks/use-podcasts";
+import {
+  useGenres,
+  useCreatePodcast,
+  usePodcast,
+  useUpdatePodcast,
+} from "@/hooks/use-podcasts";
 import { usePodcastStore } from "@/stores/podcast-store";
 import { useUsers, useSearchUser } from "@/hooks/use-users";
 import { useStaff } from "@/hooks/use-staff";
@@ -84,6 +89,7 @@ const podcastSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters")
     .max(2000, "Description must be less than 2000 characters"),
+  category: z.string().optional(),
   hostId: z.string().min(1, "Host is required"),
   genreId: z.string().min(1, "Genre is required"),
   releaseDate: z.string().min(1, "Release date is required"),
@@ -151,6 +157,21 @@ export default function NewPodcastPage() {
   const { data: assetsData } = useAssets();
   const assets = assetsData?.assets || [];
   const createPodcast = useCreatePodcast();
+  const updatePodcast = useUpdatePodcast();
+
+  // Check if we're in edit mode
+  const [editId, setEditId] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const id = searchParams.get("edit");
+    setEditId(id);
+    setIsEditMode(!!id);
+  }, []);
+
+  // Fetch podcast data if in edit mode
+  const { data: existingPodcast } = usePodcast(editId || "");
 
   const { data: staffData } = useStaff();
   const staff = staffData?.staff || [];
@@ -179,6 +200,7 @@ export default function NewPodcastPage() {
     defaultValues: {
       title: "",
       description: "",
+      category: "",
       hostId: "",
       genreId: "",
       releaseDate: new Date().toISOString().split("T")[0],
@@ -186,6 +208,72 @@ export default function NewPodcastPage() {
       status: "draft",
     },
   });
+
+  // Populate form with existing data in edit mode
+  useEffect(() => {
+    if (
+      isEditMode &&
+      existingPodcast &&
+      staff.length > 0 &&
+      genres &&
+      genres.length > 0
+    ) {
+      console.log("=== EDIT MODE DATA POPULATION ===");
+      console.log("Existing podcast data:", existingPodcast);
+      console.log("Available staff:", staff);
+      console.log("Available genres:", genres);
+
+      const formData = {
+        title: existingPodcast.title || "",
+        description: existingPodcast.description || "",
+        category: existingPodcast.category || "",
+        hostId: existingPodcast.hostId || existingPodcast.authorId || "", // Use the hostId field returned by backend
+        genreId: existingPodcast.genreId || "",
+        releaseDate: existingPodcast.releaseDate
+          ? new Date(existingPodcast.releaseDate).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        tags: existingPodcast.tags || "",
+        status: (existingPodcast.status?.toLowerCase() === "published"
+          ? "published"
+          : "draft") as "draft" | "published",
+      };
+
+      console.log("Form data being set:", formData);
+      console.log(
+        "Host mapping - authorId:",
+        existingPodcast.authorId,
+        "staff member found:",
+        staff.find((s) => s.id === existingPodcast.authorId)
+      );
+      console.log(
+        "Genre mapping - genreId:",
+        existingPodcast.genreId,
+        "genre found:",
+        genres?.find((g) => g.id === existingPodcast.genreId)
+      );
+
+      // Use setValue for each field to ensure Select components update
+      Object.entries(formData).forEach(([key, value]) => {
+        form.setValue(key as keyof PodcastFormData, value);
+      });
+
+      // Set existing image
+      if (existingPodcast.coverImage || existingPodcast.image) {
+        setImagePreview(
+          existingPodcast.coverImage || existingPodcast.image || null
+        );
+      }
+
+      // Set existing tags
+      if (existingPodcast.tags) {
+        const tagArray = existingPodcast.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+        setTags(tagArray);
+      }
+    }
+  }, [isEditMode, existingPodcast, staff, genres, form]);
 
   const addGuest = async () => {
     if (!guestName.trim() || !guestEmail.trim()) {
@@ -407,9 +495,17 @@ export default function NewPodcastPage() {
 
       // Add cover image
       if (selectedCoverAssetId) {
-        formData.append("coverAssetId", selectedCoverAssetId);
+        console.log("Adding imageAssetId:", selectedCoverAssetId);
+        formData.append("imageAssetId", selectedCoverAssetId);
       } else if (coverImage) {
+        console.log("Adding coverImage file:", coverImage.name);
         formData.append("coverImage", coverImage);
+      }
+
+      // Log all form data
+      console.log("Form data being sent:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
       }
 
       // Add guests data
@@ -426,25 +522,40 @@ export default function NewPodcastPage() {
         });
       }, 200);
 
-      const response = await createPodcast.mutateAsync(formData);
+      let response;
+      if (isEditMode && editId) {
+        response = await updatePodcast.mutateAsync({
+          id: editId,
+          data: formData,
+        });
+      } else {
+        response = await createPodcast.mutateAsync(formData);
+      }
+
       const podcast = response as any;
 
-      // Send invitations and notifications
-      await Promise.all([
-        sendGuestInvitations(podcast.id, data.title),
-        notifyExistingUsers(podcast.id, data.title),
-      ]);
+      // Send invitations and notifications only for new podcasts
+      if (!isEditMode) {
+        await Promise.all([
+          sendGuestInvitations(podcast.id, data.title),
+          notifyExistingUsers(podcast.id, data.title),
+        ]);
+      }
 
       toast({
         title: "Success",
-        description: `Podcast series "${data.title}" created successfully! Now you can add episodes with audio content.`,
+        description: isEditMode
+          ? `Podcast "${data.title}" updated successfully!`
+          : `Podcast series "${data.title}" created successfully! Now you can add episodes with audio content.`,
       });
 
       router.push(`/dashboard/podcasts/${podcast.id}`);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to create podcast",
+        description:
+          error.message ||
+          `Failed to ${isEditMode ? "update" : "create"} podcast`,
         variant: "destructive",
       });
     } finally {
@@ -462,11 +573,12 @@ export default function NewPodcastPage() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Create New Podcast
+            {isEditMode ? "Edit Podcast" : "Create New Podcast"}
           </h1>
           <p className="text-muted-foreground">
-            Create a podcast series. You'll add episodes with audio content
-            separately.
+            {isEditMode
+              ? "Update your podcast series details"
+              : "Create a podcast series. You'll add episodes with audio content separately."}
           </p>
         </div>
       </div>
@@ -528,13 +640,69 @@ export default function NewPodcastPage() {
 
                   <FormField
                     control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="technology">
+                              Technology
+                            </SelectItem>
+                            <SelectItem value="business">Business</SelectItem>
+                            <SelectItem value="entertainment">
+                              Entertainment
+                            </SelectItem>
+                            <SelectItem value="education">Education</SelectItem>
+                            <SelectItem value="health">
+                              Health & Wellness
+                            </SelectItem>
+                            <SelectItem value="sports">Sports</SelectItem>
+                            <SelectItem value="news">
+                              News & Politics
+                            </SelectItem>
+                            <SelectItem value="comedy">Comedy</SelectItem>
+                            <SelectItem value="music">Music</SelectItem>
+                            <SelectItem value="arts">Arts & Culture</SelectItem>
+                            <SelectItem value="science">Science</SelectItem>
+                            <SelectItem value="history">History</SelectItem>
+                            <SelectItem value="true-crime">
+                              True Crime
+                            </SelectItem>
+                            <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                            <SelectItem value="religion">
+                              Religion & Spirituality
+                            </SelectItem>
+                            <SelectItem value="society">
+                              Society & Culture
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Choose a category that best describes your podcast
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="hostId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Host *</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -546,7 +714,8 @@ export default function NewPodcastPage() {
                               <SelectItem key={member.id} value={member.id}>
                                 <div className="flex items-center gap-2">
                                   <User className="h-4 w-4" />
-                                  {member.name || `${member.firstName || ''} ${member.lastName || ''}`.trim()}
+                                  {member.name ||
+                                    `${member.firstName || ""} ${member.lastName || ""}`.trim()}
                                   <Badge variant="outline" className="text-xs">
                                     {member.role}
                                   </Badge>
@@ -708,7 +877,11 @@ export default function NewPodcastPage() {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
-                              {(selectedCoverAssetId && assets.find((asset) => asset.id === selectedCoverAssetId)?.url) || imagePreview ? (
+                              {(selectedCoverAssetId &&
+                                assets.find(
+                                  (asset) => asset.id === selectedCoverAssetId
+                                )?.url) ||
+                              imagePreview ? (
                                 <img
                                   src={
                                     selectedCoverAssetId
@@ -991,7 +1164,7 @@ export default function NewPodcastPage() {
                         <FormLabel>Genre *</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -1093,7 +1266,7 @@ export default function NewPodcastPage() {
                         <FormLabel>Status</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -1132,7 +1305,13 @@ export default function NewPodcastPage() {
                       disabled={isSubmitting}
                     >
                       <Save className="h-4 w-4 mr-2" />
-                      {isSubmitting ? "Creating..." : "Create Podcast"}
+                      {isSubmitting
+                        ? isEditMode
+                          ? "Updating..."
+                          : "Creating..."
+                        : isEditMode
+                          ? "Update Podcast"
+                          : "Create Podcast"}
                     </Button>
                     <Button
                       type="button"

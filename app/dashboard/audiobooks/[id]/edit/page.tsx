@@ -16,6 +16,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Upload, BookOpen, X, Plus, DollarSign, Image as ImageIcon, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { DatePicker } from "@/components/ui/date-picker"
+import { useAudiobookStore } from "@/stores/audiobook-store"
+import { useUpdateAudiobook } from "@/hooks/use-audiobooks"
+import { useAssetStore } from "@/stores/asset-store"
 
 type Genre = {
   id: string
@@ -46,9 +49,11 @@ type Asset = {
 export default function EditAudiobookPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
+  const { setCurrentAudiobook } = useAudiobookStore()
+  const { assets, setAssets, addAsset } = useAssetStore()
+  const updateAudiobook = useUpdateAudiobook()
   const [audiobookId, setAudiobookId] = useState<string>('')
   const [genres, setGenres] = useState<Genre[]>([])
-  const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState({
     title: "",
@@ -69,7 +74,6 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
     currentCoverImage: ""
   })
   const [newTag, setNewTag] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isAssetDialogOpen, setIsAssetDialogOpen] = useState(false)
   const [assetSearchQuery, setAssetSearchQuery] = useState("")
   const [uploadingNewAsset, setUploadingNewAsset] = useState(false)
@@ -90,28 +94,26 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
 
   const fetchAudiobook = async (id: string) => {
     try {
-      const response = await apiClient.request(`/audiobooks/${id}`)
-      if (response.ok) {
-        const audiobook = await response.json()
-        setFormData({
-          title: audiobook.title || "",
-          author: audiobook.author || "",
-          narrator: audiobook.narrator || "",
-          description: audiobook.description || "",
-          genreId: audiobook.genreId || "",
-          isbn: audiobook.isbn || "",
-          publisher: audiobook.publisher || "",
-          language: audiobook.language || "en",
-          price: audiobook.price ? audiobook.price.toString() : "",
-          currency: audiobook.currency || "USD",
-          isExclusive: audiobook.isExclusive || false,
-          releaseDate: audiobook.releaseDate ? new Date(audiobook.releaseDate) : new Date(),
-          coverImage: null,
-          selectedAssetId: "",
-          tags: audiobook.tags ? JSON.parse(audiobook.tags) : [],
-          currentCoverImage: audiobook.coverImage || ""
-        })
-      }
+      const audiobook = await apiClient.request(`/audiobooks/${id}`) as any
+      setFormData({
+        title: audiobook.title || "",
+        author: audiobook.author || "",
+        narrator: audiobook.narrator || "",
+        description: audiobook.description || "",
+        genreId: audiobook.genreId || "",
+        isbn: audiobook.isbn || "",
+        publisher: audiobook.publisher || "",
+        language: audiobook.language || "en",
+        price: audiobook.price ? audiobook.price.toString() : "",
+        currency: audiobook.currency || "USD",
+        isExclusive: audiobook.isExclusive || false,
+        releaseDate: audiobook.releaseDate ? new Date(audiobook.releaseDate) : new Date(),
+        coverImage: null,
+        selectedAssetId: "",
+        tags: audiobook.tags ? JSON.parse(audiobook.tags) : [],
+        currentCoverImage: audiobook.coverImage || ""
+      })
+      setCurrentAudiobook(audiobook)
     } catch (error) {
       console.error('Error fetching audiobook:', error)
       toast({
@@ -124,11 +126,8 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
 
   const fetchGenres = async () => {
     try {
-      const response = await fetch('/api/genres')
-      if (response.ok) {
-        const data = await response.json()
-        setGenres(Array.isArray(data) ? data : [])
-      }
+      const data = await fetch('/api/genres').then(res => res.json())
+      setGenres(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching genres:', error)
       setGenres([])
@@ -137,11 +136,8 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
 
   const fetchAssets = async () => {
     try {
-      const response = await apiClient.request('/assets?type=IMAGE&perPage=50')
-      if (response.ok) {
-        const data = await response.json()
-        setAssets(data.assets || [])
-      }
+      const data = await apiClient.request('/assets?type=IMAGE&perPage=50') as { assets: Asset[] }
+      setAssets(data.assets || [])
     } catch (error) {
       console.error('Error fetching assets:', error)
     }
@@ -168,23 +164,16 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
     formDataUpload.append('tags', 'audiobook,cover')
 
     try {
-      const response = await apiClient.request('/assets/upload', {
+      const newAsset = await apiClient.request('/assets/upload', {
         method: 'POST',
         body: formDataUpload,
+      }) as Asset
+      addAsset(newAsset)
+      handleAssetSelect(newAsset.id)
+      toast({
+        title: "Success",
+        description: "Asset uploaded successfully"
       })
-
-      if (response.ok) {
-        const newAsset = await response.json()
-        setAssets([newAsset, ...assets])
-        handleAssetSelect(newAsset.id)
-        toast({
-          title: "Success",
-          description: "Asset uploaded successfully"
-        })
-      } else {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to upload asset')
-      }
     } catch (error) {
       console.error('Error uploading asset:', error)
       toast({
@@ -220,23 +209,17 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
     formDataUpload.append('description', `Audiobook cover for ${formData.title || 'untitled'}`)
     formDataUpload.append('tags', 'audiobook,cover')
 
-    const response = await apiClient.request('/assets/upload', {
+    const data = await apiClient.request('/assets/upload', {
       method: 'POST',
       body: formDataUpload
-    })
+    }) as Asset
 
-    if (!response.ok) {
-      throw new Error('Failed to upload cover image')
-    }
-
-    const data = await response.json()
-    setAssets([data, ...assets])
+    addAsset(data)
     return data.url
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
 
     try {
       let coverImageUrl = formData.currentCoverImage
@@ -267,33 +250,10 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
         tags: formData.tags
       }
 
-      const response = await apiClient.request(`/audiobooks/${audiobookId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(audiobookData)
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update audiobook')
-      }
-      
-      toast({
-        title: "Success",
-        description: "Audiobook updated successfully"
-      })
-      
+      await updateAudiobook.mutateAsync({ id: audiobookId, data: audiobookData })
       router.push(`/dashboard/audiobooks/${audiobookId}`)
     } catch (error) {
       console.error('Error updating audiobook:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update audiobook",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -672,19 +632,19 @@ export default function EditAudiobookPage({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="flex items-center justify-end gap-4 pt-6 border-t">
-          <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
+          <Button type="button" variant="outline" onClick={() => router.back()} disabled={updateAudiobook.isPending}>
             Cancel
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)}
-            disabled={isSubmitting}
+            disabled={updateAudiobook.isPending}
           >
             Manage Chapters
           </Button>
-          <Button type="submit" disabled={isSubmitting || !formData.title || !formData.narrator || !formData.genreId}>
-            {isSubmitting ? (
+          <Button type="submit" disabled={updateAudiobook.isPending || !formData.title || !formData.narrator || !formData.genreId}>
+            {updateAudiobook.isPending ? (
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 Updating...

@@ -1,14 +1,25 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { apiClient } from "@/lib/api-client"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { 
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
   Plus,
   Search,
   Eye,
@@ -16,37 +27,15 @@ import {
   Trash2,
   Radio,
   User,
-  Calendar,
   Clock,
   Tv,
-  ExternalLink
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-
-type Program = {
-  id: string
-  title: string
-  slug: string
-  description: string
-  category: string
-  schedule: string
-  image?: string
-  status: string
-  host: {
-    firstName: string
-    lastName: string
-    email: string
-  }
-  genre?: {
-    name: string
-  }
-  _count: {
-    episodes: number
-    broadcasts: number
-  }
-  createdAt: string
-  updatedAt: string
-}
+} from "lucide-react";
+import { usePrograms, useDeleteProgram } from "@/hooks/use-programs";
+import {
+  useProgramStore,
+  ProgramCategory,
+  ProgramStatus,
+} from "@/stores/program-store";
 
 const categoryColors = {
   TALK_SHOW: "bg-emerald-100 text-emerald-800",
@@ -57,100 +46,76 @@ const categoryColors = {
   SPORTS: "bg-lime-100 text-lime-800",
   NEWS: "bg-gray-100 text-gray-800",
   ENTERTAINMENT: "bg-amber-100 text-amber-800",
-  EDUCATION: "bg-emerald-100 text-emerald-800"
-}
+  EDUCATION: "bg-emerald-100 text-emerald-800",
+};
 
 const statusColors = {
   ACTIVE: "bg-emerald-100 text-emerald-800",
   INACTIVE: "bg-amber-100 text-amber-800",
-  ARCHIVED: "bg-gray-100 text-gray-800"
-}
+  ARCHIVED: "bg-gray-100 text-gray-800",
+};
 
 export default function ProgramsPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [programs, setPrograms] = useState<Program[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  const { programs, setPrograms } = useProgramStore();
+  const { data: allPrograms, isLoading } = usePrograms(); // Load all programs
+  const deleteProgram = useDeleteProgram();
+
+  // Update store when data loads
   useEffect(() => {
-    fetchPrograms()
-  }, [currentPage, search, categoryFilter, statusFilter])
-
-  const fetchPrograms = async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        perPage: "12",
-        search,
-        category: categoryFilter,
-        status: statusFilter
-      })
-
-      const response = await apiClient.request(`/programs?${params}`)
-      if (response.ok) {
-        const data = await response.json()
-        setPrograms(data.programs)
-        setTotalPages(data.pagination.totalPages)
-      }
-    } catch (error) {
-      console.error("Failed to fetch programs:", error)
-      toast({
-        title: "Error",
-        description: "Failed to fetch programs",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
+    if (allPrograms && allPrograms.length > 0) {
+      setPrograms(allPrograms);
     }
-  }
+  }, [allPrograms, setPrograms]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this program?")) return
+  // Client-side filtering
+  const filteredPrograms = useMemo(() => {
+    if (!programs) return [];
 
-    try {
-      const response = await apiClient.request(`/programs/${id}`, {
-        method: "DELETE"
-      })
+    return programs.filter((program) => {
+      const matchesSearch =
+        !search ||
+        program.title.toLowerCase().includes(search.toLowerCase()) ||
+        program.description.toLowerCase().includes(search.toLowerCase());
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Program deleted successfully"
-        })
-        fetchPrograms()
-      } else {
-        throw new Error("Failed to delete")
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete program",
-        variant: "destructive"
-      })
-    }
-  }
+      const matchesCategory =
+        categoryFilter === "all" || program.category === categoryFilter;
+      const matchesStatus =
+        statusFilter === "all" || program.status === statusFilter;
+
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+  }, [programs, search, categoryFilter, statusFilter]);
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Are you sure you want to delete this program?")) return;
+    deleteProgram.mutate(id);
+  };
 
   const formatCategory = (category: string) => {
-    return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-  }
+    return category.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-emerald-900">Programs</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-emerald-900">
+            Programs
+          </h1>
           <p className="text-emerald-600">
             Manage your radio programs and shows
           </p>
         </div>
-        <Button onClick={() => router.push("/dashboard/programs/new")} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button
+          onClick={() => router.push("/dashboard/programs/new")}
+          className="bg-emerald-600 hover:bg-emerald-700"
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Program
         </Button>
@@ -172,7 +137,7 @@ export default function ProgramsPage() {
                 className="pl-9"
               />
             </div>
-            
+
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="All Categories" />
@@ -207,8 +172,8 @@ export default function ProgramsPage() {
       </Card>
 
       {/* Programs Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader>
@@ -224,100 +189,149 @@ export default function ProgramsPage() {
             </Card>
           ))}
         </div>
-      ) : programs.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {programs.map((program) => (
-              <Card key={program.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg line-clamp-1">{program.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2 mt-1">
-                        <Badge className={categoryColors[program.category as keyof typeof categoryColors]}>
-                          {formatCategory(program.category)}
-                        </Badge>
-                        <Badge className={statusColors[program.status as keyof typeof statusColors]}>
-                          {program.status}
-                        </Badge>
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => router.push(`/programs/${program.slug}`)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/programs/${program.id}`)} title="Manage Episodes">
-                        <Radio className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/broadcasts?programId=${program.id}`)} title="View Broadcasts">
-                        <Tv className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/programs/${program.id}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(program.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+      ) : filteredPrograms && filteredPrograms.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {filteredPrograms.map((program) => (
+            <Card
+              key={program.id}
+              className="group overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm"
+            >
+              {/* Image Section */}
+              <div className="relative">
+                {program.image ? (
+                  <div className="relative w-full h-48 overflow-hidden">
+                    <img
+                      src={program.image.replace(
+                        "/raw/upload/",
+                        "/image/upload/"
+                      )}
+                      alt={program.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {program.description}
-                  </p>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span>{program.host.firstName} {program.host.lastName}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{program.schedule}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Radio className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
+                    <Radio className="h-12 w-12 text-emerald-600" />
+                  </div>
+                )}
+
+                {/* Status Badge Overlay */}
+                <div className="absolute top-3 right-3">
+                  <Badge
+                    className={`${statusColors[program.status as keyof typeof statusColors]} shadow-sm`}
+                  >
+                    {program.status}
+                  </Badge>
+                </div>
+
+                {/* Action Buttons Overlay */}
+                <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="flex gap-1">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
+                      onClick={() =>
+                        router.push(`/dashboard/programs/${program.slug}`)
+                      }
+                      title="View Program"
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
+                      onClick={() =>
+                        router.push(`/dashboard/programs/${program.id}/edit`)
+                      }
+                      title="Edit Program"
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <CardContent className="p-4 space-y-3">
+                {/* Title and Category */}
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-lg leading-tight line-clamp-2 text-gray-900">
+                      {program.title}
+                    </h3>
+                  </div>
+
+                  <Badge
+                    variant="secondary"
+                    className={`${categoryColors[program.category as keyof typeof categoryColors]} text-xs`}
+                  >
+                    {formatCategory(program.category)}
+                  </Badge>
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                  {program.description}
+                </p>
+
+                {/* Host and Schedule Info */}
+                <div className="space-y-2 pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <User className="h-4 w-4 text-emerald-600" />
+                    <span className="font-medium">
+                      {program.host.firstName} {program.host.lastName}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Clock className="h-4 w-4 text-emerald-600" />
+                    <span>{program.schedule}</span>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <Radio className="h-3 w-3" />
                       <span>{program._count.episodes} episodes</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Tv className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center gap-1">
+                      <Tv className="h-3 w-3" />
                       <span>{program._count.broadcasts} broadcasts</span>
                     </div>
-                    {program.genre && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">Genre:</span>
-                        <span>{program.genre.name}</span>
-                      </div>
-                    )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </>
+
+                  {/* Quick Actions */}
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs hover:bg-emerald-50 hover:text-emerald-700"
+                      onClick={() =>
+                        router.push(`/dashboard/programs/${program.id}`)
+                      }
+                    >
+                      <Radio className="h-3 w-3 mr-1" />
+                      Episodes
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs hover:bg-red-50 hover:text-red-700"
+                      onClick={() => handleDelete(program.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -326,7 +340,10 @@ export default function ProgramsPage() {
             <p className="text-muted-foreground text-center mb-4">
               Get started by creating your first program
             </p>
-            <Button onClick={() => router.push("/dashboard/programs/new")} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button
+              onClick={() => router.push("/dashboard/programs/new")}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Create Program
             </Button>
@@ -334,5 +351,5 @@ export default function ProgramsPage() {
         </Card>
       )}
     </div>
-  )
+  );
 }

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,27 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Save, FileText, Clock, Eye, Download, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-
-type Chapter = {
-  id: string
-  title: string
-  duration: number
-  trackNumber: number
-  transcript?: string
-}
-
-type Audiobook = {
-  id: string
-  title: string
-  transcription?: {
-    id: string
-    content: string
-    language: string
-    format: string
-    isEditable: boolean
-    lastEditedAt?: string
-  }
-}
+import { useAudiobookStore, Chapter } from "@/stores/audiobook-store"
+import { useUpdateChapter } from "@/hooks/use-audiobooks"
 
 export default function TranscriptEditPage() {
   const router = useRouter()
@@ -42,69 +22,26 @@ export default function TranscriptEditPage() {
   const audiobookId = params.id as string
   const chapterId = params.chapterId as string
   
-  const [audiobook, setAudiobook] = useState<Audiobook | null>(null)
-  const [chapter, setChapter] = useState<Chapter | null>(null)
+  const { currentAudiobook, currentChapter, setCurrentChapter } = useAudiobookStore()
+  const updateChapterMutation = useUpdateChapter()
+  
   const [transcript, setTranscript] = useState("")
   const [language, setLanguage] = useState("en")
   const [format, setFormat] = useState("plain_text")
   const [isEditable, setIsEditable] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [wordCount, setWordCount] = useState(0)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchData()
-  }, [audiobookId, chapterId])
+    if (currentChapter) {
+      setTranscript(currentChapter.transcript || "")
+    }
+  }, [currentChapter])
 
   useEffect(() => {
     const words = transcript.trim().split(/\s+/).filter(word => word.length > 0)
     setWordCount(words.length)
   }, [transcript])
-
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      
-      // Fetch audiobook details
-      const audiobookResponse = await apiClient.request(`/audiobooks/${audiobookId}`)
-      if (audiobookResponse.ok) {
-        const audiobookData = await audiobookResponse.json()
-        setAudiobook(audiobookData)
-      }
-
-      // Fetch chapter details
-      const chaptersResponse = await apiClient.request(`/audiobooks/${audiobookId}/chapters`)
-      if (chaptersResponse.ok) {
-        const chaptersData = await chaptersResponse.json()
-        const currentChapter = chaptersData.find((c: Chapter) => c.id === chapterId)
-        if (currentChapter) {
-          setChapter(currentChapter)
-          setTranscript(currentChapter.transcript || "")
-        }
-      }
-
-      // Fetch existing transcription if available
-      const transcriptionResponse = await apiClient.request(`/audiobooks/${audiobookId}/transcription`)
-      if (transcriptionResponse.ok) {
-        const transcriptionData = await transcriptionResponse.json()
-        if (transcriptionData) {
-          setLanguage(transcriptionData.language || "en")
-          setFormat(transcriptionData.format || "plain_text")
-          setIsEditable(transcriptionData.isEditable !== false)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load transcript data",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleTranscriptChange = (value: string) => {
     setTranscript(value)
@@ -112,57 +49,37 @@ export default function TranscriptEditPage() {
   }
 
   const handleSave = async () => {
-    try {
-      setIsSaving(true)
+    if (!currentChapter) return
 
-      // Update chapter transcript
-      const chapterResponse = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
+    updateChapterMutation.mutate(
+      {
+        audiobookId,
+        chapterId,
+        data: { transcript }
+      },
+      {
+        onSuccess: (updatedChapter) => {
+          const chapter = updatedChapter as Chapter
+          setCurrentChapter({
+            ...chapter,
+            description: chapter.description || undefined,
+            transcript: chapter.transcript || undefined
+          })
+          setHasChanges(false)
+          toast({
+            title: "Success",
+            description: "Transcript saved successfully"
+          })
         },
-        body: JSON.stringify({
-          transcript
-        })
-      })
-
-      if (!chapterResponse.ok) {
-        throw new Error('Failed to update chapter transcript')
+        onError: () => {
+          toast({
+            title: "Error",
+            description: "Failed to save transcript",
+            variant: "destructive"
+          })
+        }
       }
-
-      // Update audiobook transcription settings
-      const transcriptionResponse = await apiClient.request(`/audiobooks/${audiobookId}/transcription`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          content: transcript,
-          language,
-          format,
-          isEditable
-        })
-      })
-
-      if (!transcriptionResponse.ok) {
-        throw new Error('Failed to update transcription settings')
-      }
-
-      setHasChanges(false)
-      toast({
-        title: "Success",
-        description: "Transcript saved successfully"
-      })
-    } catch (error) {
-      console.error('Error saving transcript:', error)
-      toast({
-        title: "Error",
-        description: "Failed to save transcript",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSaving(false)
-    }
+    )
   }
 
   const handleAutoGenerate = async () => {
@@ -182,8 +99,7 @@ export default function TranscriptEditPage() {
         const reader = new FileReader()
         reader.onload = (e) => {
           const content = e.target?.result as string
-          setTranscript(content)
-          setHasChanges(true)
+          handleTranscriptChange(content)
           toast({
             title: "Success",
             description: "Transcript imported successfully"
@@ -200,7 +116,7 @@ export default function TranscriptEditPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${chapter?.title || 'chapter'}-transcript.txt`
+    a.download = `${currentChapter?.title || 'chapter'}-transcript.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -215,7 +131,7 @@ export default function TranscriptEditPage() {
                      : `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
-  if (loading) {
+  if (!currentAudiobook || !currentChapter) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -236,7 +152,7 @@ export default function TranscriptEditPage() {
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">Edit Transcript</h1>
           <p className="text-muted-foreground">
-            {audiobook?.title} • Chapter {chapter?.trackNumber}: {chapter?.title}
+            {currentAudiobook.title} • Chapter {currentChapter.trackNumber}: {currentChapter.title}
           </p>
         </div>
         <div className="flex gap-2">
@@ -248,9 +164,9 @@ export default function TranscriptEditPage() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
+          <Button onClick={handleSave} disabled={!hasChanges || updateChapterMutation.isPending}>
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? "Saving..." : "Save Changes"}
+            {updateChapterMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>
@@ -317,17 +233,17 @@ export default function TranscriptEditPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label className="text-sm font-medium">Title</Label>
-                <p className="text-sm text-muted-foreground">{chapter?.title}</p>
+                <p className="text-sm text-muted-foreground">{currentChapter.title}</p>
               </div>
               <div>
                 <Label className="text-sm font-medium">Track Number</Label>
-                <p className="text-sm text-muted-foreground">Chapter {chapter?.trackNumber}</p>
+                <p className="text-sm text-muted-foreground">Chapter {currentChapter.trackNumber}</p>
               </div>
               <div>
                 <Label className="text-sm font-medium">Duration</Label>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  <span>{chapter ? formatDuration(chapter.duration) : "0:00"}</span>
+                  <span>{formatDuration(currentChapter.duration)}</span>
                 </div>
               </div>
             </CardContent>

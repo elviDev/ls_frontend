@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Edit, Trash2, User, MessageCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useAuth } from "@/contexts/auth-context"
 
 interface Comment {
   id: string
@@ -36,33 +37,23 @@ export function CommentSection({ audiobookId, podcastId, currentUserId }: Commen
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
   const [showCommentForm, setShowCommentForm] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
   const { toast } = useToast()
+  const { user: currentUser } = useAuth()
 
   const contentId = audiobookId || podcastId
   const contentType = audiobookId ? 'audiobooks' : 'podcasts'
 
   useEffect(() => {
     fetchComments()
-    fetchCurrentUser()
+    // Remove separate auth call since we'll get user info from localStorage
   }, [contentId])
 
-  const fetchCurrentUser = async () => {
-    try {
-      const response = await fetch('/api/auth/me')
-      if (response.ok) {
-        const data = await response.json()
-        setCurrentUser(data.user)
-      }
-    } catch (error) {
-      console.error('Error fetching current user:', error)
-    }
-  }
+
 
   const fetchComments = async () => {
     if (!contentId) return
     try {
-      const response = await fetch(`/api/${contentType}/${contentId}/comments`)
+      const response = await fetch(`http://localhost:3001/api/${contentType}/${contentId}/comments`)
       if (response.ok) {
         const data = await response.json()
         setComments(data.comments)
@@ -84,11 +75,24 @@ export function CommentSection({ audiobookId, podcastId, currentUserId }: Commen
       return
     }
 
+    if (!currentUser) {
+      toast({
+        title: "Error",
+        description: "Please log in to submit a comment",
+        variant: "destructive"
+      })
+      return
+    }
+
     setSubmitting(true)
     try {
-      const response = await fetch(`/api/${contentType}/${contentId}/comments`, {
+      const response = await fetch(`http://localhost:3001/api/${contentType}/${contentId}/comments`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-token') || ''}`,
+        },
+        credentials: 'include',
         body: JSON.stringify({ content })
       })
 
@@ -125,9 +129,13 @@ export function CommentSection({ audiobookId, podcastId, currentUserId }: Commen
 
     setSubmitting(true)
     try {
-      const response = await fetch(`/api/comments/${editingComment.id}`, {
+      const response = await fetch(`http://localhost:3001/api/comments/${editingComment.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-token') || ''}`,
+        },
+        credentials: 'include',
         body: JSON.stringify({ content })
       })
 
@@ -155,8 +163,12 @@ export function CommentSection({ audiobookId, podcastId, currentUserId }: Commen
 
   const deleteComment = async (commentId: string) => {
     try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'DELETE'
+      const response = await fetch(`http://localhost:3001/api/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth-token') || ''}`,
+        },
+        credentials: 'include'
       })
 
       if (response.ok) {
@@ -189,7 +201,7 @@ export function CommentSection({ audiobookId, podcastId, currentUserId }: Commen
           <MessageCircle className="h-5 w-5" />
           Comments ({comments.length})
         </h3>
-        {(currentUser || currentUserId) && (
+        {(currentUser || currentUserId) && currentUser?.userType !== 'staff' && (
           <Dialog open={showCommentForm} onOpenChange={setShowCommentForm}>
             <DialogTrigger asChild>
               <Button>Add Comment</Button>
@@ -216,6 +228,9 @@ export function CommentSection({ audiobookId, podcastId, currentUserId }: Commen
               </div>
             </DialogContent>
           </Dialog>
+        )}
+        {currentUser?.userType === 'staff' && (
+          <p className="text-sm text-muted-foreground">Staff members cannot create comments</p>
         )}
       </div>
 

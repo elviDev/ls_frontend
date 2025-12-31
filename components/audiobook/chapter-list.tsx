@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button"
 import { formatDuration } from "@/lib/audiobook-api"
 import { Play, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-interface Chapter {
-  id: string
-  title: string
-  duration: number
-  startPosition: number
-}
+import { Chapter } from "@/stores/audiobook-store"
 
 interface ChapterListProps {
   chapters: Chapter[]
@@ -68,7 +62,13 @@ export function ChapterList({ chapters, onPlay, currentChapter, className }: Cha
                       <Clock className="h-3 w-3 mr-1" />
                       {formatDuration(chapter.duration)}
                     </div>
+                    <span>Chapter {chapter.trackNumber}</span>
                   </div>
+                  {chapter.description && (
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                      {chapter.description}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,53 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { apiClient } from "@/lib/api-client";
-
-interface Program {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  category: string;
-  schedule: string;
-  image?: string;
-  host?: {
-    id: string;
-    name: string;
-    profileImage?: string;
-  };
-  genre?: {
-    id: string;
-    name: string;
-  };
-  stats: {
-    episodes: number;
-    broadcasts: number;
-  };
-}
+import { usePrograms } from "@/hooks/use-programs";
 
 export default function FeaturedPrograms() {
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const data = await apiClient.programs.getAll({ featured: true, limit: 3 });
-        setPrograms(data.programs || []);
-      } catch (error) {
-        console.error('Error fetching programs:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPrograms();
-  }, []);
+  const { data: programs = [], isLoading } = usePrograms({ featured: true, limit: 3 });
 
   if (isLoading) {
     return (
@@ -79,21 +39,24 @@ export default function FeaturedPrograms() {
               />
               <div className="absolute top-3 left-3">
                 <Badge className="bg-brand-600 hover:bg-brand-700">
-                  {program.category.replace('_', ' ')}
+                  {program.category.replace("_", " ")}
                 </Badge>
               </div>
             </div>
             <CardContent className="p-5">
               <h3 className="font-semibold text-lg mb-1">{program.title}</h3>
               <p className="text-sm text-muted-foreground mb-3">
-                {program.host ? `with ${program.host.name}` : 'No host assigned'}
+                {program.host
+                  ? `with ${program.host.firstName} ${program.host.lastName}`
+                  : "No host assigned"}
               </p>
               <div className="text-xs font-medium bg-purple-100 text-brand-800 px-3 py-1 rounded-full inline-block">
                 {program.schedule}
               </div>
-              {program.stats.broadcasts > 0 && (
+              {program._count && (program._count.broadcasts > 0 || program._count.episodes > 0) && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  {program.stats.broadcasts} broadcasts • {program.stats.episodes} episodes
+                  {program._count.broadcasts || 0} broadcasts •{" "}
+                  {program._count.episodes || 0} episodes
                 </p>
               )}
             </CardContent>
@@ -102,7 +65,9 @@ export default function FeaturedPrograms() {
       ))}
       {programs.length === 0 && !isLoading && (
         <div className="col-span-3 text-center py-8">
-          <p className="text-muted-foreground">No programs available at the moment.</p>
+          <p className="text-muted-foreground">
+            No programs available at the moment.
+          </p>
         </div>
       )}
     </div>

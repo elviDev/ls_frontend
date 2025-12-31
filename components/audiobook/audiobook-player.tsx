@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -27,6 +27,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { apiClient } from "@/lib/api-client";
 
+import { Chapter } from "@/stores/audiobook-store";
+
 interface AudiobookPlayerProps {
   title: string;
   author: string;
@@ -35,12 +37,7 @@ interface AudiobookPlayerProps {
   onFavoriteToggle?: () => void;
   isFavorite?: boolean;
   className?: string;
-  chapters: Array<{
-    id: string;
-    title: string;
-    duration: number;
-    startPosition: number;
-  }>;
+  chapters: Chapter[];
   currentChapter: number;
   onChapterChange: (chapterIndex: number) => void;
   audiobookId: string;
@@ -76,23 +73,39 @@ export function AudiobookPlayer({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const animationRef = useRef<number>(0);
   const progressSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastAudioUrlRef = useRef<string>("");
+  const isPlayingRef = useRef<boolean>(false);
+
+  // Memoize stable values to prevent unnecessary re-renders
+  const stableChapters = useMemo(() => chapters, [JSON.stringify(chapters)]);
+  const stableAudioUrl = useMemo(() => audioUrl, [audioUrl]);
+
+  // Update refs to track state
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  const handleFavoriteToggle = useCallback(() => {
+    if (onFavoriteToggle) {
+      onFavoriteToggle();
+    }
+  }, [onFavoriteToggle]);
 
   // Get the current chapter based on playback position
-  const getCurrentChapterFromPosition = (position: number) => {
-    if (!chapters || chapters.length === 0) return 0;
+  const getCurrentChapterFromPosition = useCallback((position: number) => {
+    if (!stableChapters || stableChapters.length === 0) return 0;
 
-    for (let i = chapters.length - 1; i >= 0; i--) {
-      if (position >= chapters[i].startPosition) {
-        return i;
-      }
-    }
-
-    return 0;
-  };
+    // Since we don't have startPosition, we'll use chapter index based approach
+    // This is a simplified approach - in a real app you'd calculate based on cumulative duration
+    const chapterDuration = duration / stableChapters.length;
+    const chapterIndex = Math.floor(position / chapterDuration);
+    return Math.min(chapterIndex, stableChapters.length - 1);
+  }, [stableChapters, duration]);
 
   useEffect(() => {
-    const audio = new Audio(audioUrl);
+    const audio = new Audio(stableAudioUrl);
     audioRef.current = audio;
+    lastAudioUrlRef.current = stableAudioUrl;
 
     const setAudioData = () => {
       setDuration(audio.duration);
@@ -107,23 +120,14 @@ export function AudiobookPlayer({
 
     const setAudioTime = () => {
       setCurrentTime(audio.currentTime);
-
-      // Check if we've moved to a new chapter
-      const newChapterIndex = getCurrentChapterFromPosition(audio.currentTime);
-      if (newChapterIndex !== currentChapter) {
-        onChapterChange(newChapterIndex);
-      }
     };
 
     const handleEnded = () => {
       setIsPlaying(false);
 
       // If there's a next chapter, move to it
-      if (currentChapter < chapters.length - 1) {
+      if (currentChapter < stableChapters.length - 1) {
         onChapterChange(currentChapter + 1);
-        audio.currentTime = chapters[currentChapter + 1].startPosition;
-        audio.play();
-        setIsPlaying(true);
       } else {
         setCurrentTime(0);
         if (animationRef.current) {
@@ -152,24 +156,26 @@ export function AudiobookPlayer({
       audio.removeEventListener("timeupdate", setAudioTime);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
-      cancelAnimationFrame(animationRef.current!);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
 
       // Clear progress save timer
       if (progressSaveTimerRef.current) {
         clearInterval(progressSaveTimerRef.current);
       }
     };
-  }, [audioUrl, initialPosition, chapters, currentChapter, onChapterChange]);
+  }, [stableAudioUrl, initialPosition, volume]);
 
   // Update audio source when audioUrl changes (chapter change)
   useEffect(() => {
-    if (audioRef.current && audioRef.current.src !== audioUrl) {
+    if (audioRef.current && audioRef.current.src !== stableAudioUrl) {
       const wasPlaying = isPlaying;
       if (wasPlaying) {
         audioRef.current.pause();
       }
 
-      audioRef.current.src = audioUrl;
+      audioRef.current.src = stableAudioUrl;
       audioRef.current.load();
 
       if (wasPlaying) {
@@ -183,7 +189,7 @@ export function AudiobookPlayer({
           });
       }
     }
-  }, [audioUrl, isPlaying]);
+  }, [stableAudioUrl, isPlaying]);
 
   // Set up progress saving
   useEffect(() => {
@@ -264,12 +270,6 @@ export function AudiobookPlayer({
 
     audioRef.current.currentTime = values[0];
     setCurrentTime(values[0]);
-
-    // Check if we've moved to a new chapter
-    const newChapterIndex = getCurrentChapterFromPosition(values[0]);
-    if (newChapterIndex !== currentChapter) {
-      onChapterChange(newChapterIndex);
-    }
   };
 
   const changeVolume = (values: number[]) => {
@@ -299,52 +299,38 @@ export function AudiobookPlayer({
     );
   };
 
-  const goToNextChapter = () => {
-    if (currentChapter >= chapters.length - 1) return;
+  const goToNextChapter = useCallback(() => {
+    if (currentChapter >= stableChapters.length - 1) return;
+    onChapterChange(currentChapter + 1);
+  }, [currentChapter, stableChapters.length, onChapterChange]);
 
-    if (audioRef.current) {
-      audioRef.current.currentTime = chapters[currentChapter + 1].startPosition;
-      onChapterChange(currentChapter + 1);
-    }
-  };
-
-  const goToPreviousChapter = () => {
+  const goToPreviousChapter = useCallback(() => {
     if (currentChapter <= 0) return;
+    onChapterChange(currentChapter - 1);
+  }, [currentChapter, onChapterChange]);
 
-    if (audioRef.current) {
-      audioRef.current.currentTime = chapters[currentChapter - 1].startPosition;
-      onChapterChange(currentChapter - 1);
-    }
-  };
-
-  const addBookmark = () => {
+  const addBookmark = useCallback(() => {
     if (!audioRef.current) return;
 
     const position = audioRef.current.currentTime;
     const chapterTitle =
-      chapters[currentChapter]?.title || `Chapter ${currentChapter + 1}`;
+      stableChapters[currentChapter]?.title || `Chapter ${currentChapter + 1}`;
     const label = `${chapterTitle} - ${formatDuration(position)}`;
 
-    setBookmarks([...bookmarks, { position, label }]);
+    setBookmarks(prev => [...prev, { position, label }]);
 
     toast({
       title: "Bookmark added",
       description: `Bookmark added at ${label}`,
       duration: 3000,
     });
-  };
+  }, [stableChapters, currentChapter]);
 
   const goToBookmark = (position: number) => {
     if (!audioRef.current) return;
 
     audioRef.current.currentTime = position;
     setCurrentTime(position);
-
-    // Check if we've moved to a new chapter
-    const newChapterIndex = getCurrentChapterFromPosition(position);
-    if (newChapterIndex !== currentChapter) {
-      onChapterChange(newChapterIndex);
-    }
   };
 
   return (
@@ -368,7 +354,7 @@ export function AudiobookPlayer({
             <h3 className="font-medium line-clamp-1">{title}</h3>
             <p className="text-sm text-muted-foreground">{author}</p>
             <p className="text-sm font-medium text-purple-600 mt-1">
-              {chapters[currentChapter]?.title ||
+              {stableChapters[currentChapter]?.title ||
                 `Chapter ${(currentChapter || 0) + 1}`}
             </p>
           </div>
@@ -393,7 +379,7 @@ export function AudiobookPlayer({
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={onFavoriteToggle}
+                    onClick={handleFavoriteToggle}
                     className={cn(isFavorite && "text-red-500")}
                   >
                     <Heart
@@ -556,7 +542,7 @@ export function AudiobookPlayer({
                     disabled={
                       isLoading ||
                       !!error ||
-                      currentChapter >= chapters.length - 1
+                      currentChapter >= stableChapters.length - 1
                     }
                   >
                     <SkipForward className="h-4 w-4" />

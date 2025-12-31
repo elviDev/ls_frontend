@@ -1,16 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -22,8 +17,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -38,132 +33,78 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus,
+  Search,
+  Play,
   MoreVertical,
+  Eye,
   Edit,
   Trash,
-  Search,
-  Calendar,
-  Play,
-  Eye,
   Clock,
+  Calendar,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { usePodcasts } from "@/hooks/use-podcasts";
-import { usePodcastStore } from "@/stores/podcast-store";
-import { apiClient } from "@/lib/api-client";
+import { usePodcasts, useDeletePodcast } from "@/hooks/use-podcasts";
+import { type PodcastQuery } from "@/stores/podcast-store";
 
-type Podcast = {
-  id: string;
-  title: string;
-  description: string;
-  host: string;
-  guests?: string;
-  coverImage: string;
-  duration?: number;
-  releaseDate: string;
-  createdAt: string;
-  updatedAt: string;
-  author: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  genre: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-  _count: {
-    comments: number;
-    reviews: number;
-    favorites: number;
-    playbackProgress: number;
-  };
-  averageRating?: number;
-  totalPlays?: number;
-  status: "draft" | "published" | "archived";
-};
+interface PodcastFilters {
+  search: string;
+  status: "all" | "PUBLISHED" | "DRAFT" | "ARCHIVED";
+  sortBy: "recent" | "popular" | "alphabetical";
+}
 
 export default function PodcastsPage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const { filters, setFilters } = usePodcastStore();
-  const { data, isLoading, error } = usePodcasts(filters);
+  const [filters, setFilters] = useState<PodcastFilters>({
+    search: "",
+    status: "all",
+    sortBy: "recent",
+  });
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  const podcasts = data?.podcasts || [];
+  const deletePodcastMutation = useDeletePodcast();
+
+  // Build query params for the hook
+  const queryParams: PodcastQuery = {
+    ...(filters.search && { search: filters.search }),
+    status: "DRAFT",
+  };
+
+  const { data: podcasts = [], isLoading, error } = usePodcasts(queryParams);
 
   const handleDelete = async (podcastId: string) => {
-    if (isDeleting) return;
-    
-    setIsDeleting(podcastId);
     try {
-      await apiClient.podcasts.delete(podcastId);
-      toast({
-        title: "Success",
-        description: "Podcast deleted successfully",
-      });
-      setFilters({ ...filters });
+      setIsDeleting(podcastId);
+      await deletePodcastMutation.mutateAsync(podcastId);
     } catch (error) {
       console.error("Failed to delete podcast:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete podcast",
-        variant: "destructive",
-      });
     } finally {
       setIsDeleting(null);
     }
   };
 
-  const handleStatusChange = async (podcastId: string, status: string) => {
-    if (isUpdating) return;
-    
-    setIsUpdating(podcastId);
-    try {
-      await apiClient.podcasts.update(podcastId, { status });
-      toast({
-        title: "Success",
-        description: `Podcast ${status} successfully`,
-      });
-      setFilters({ ...filters });
-    } catch (error) {
-      console.error("Failed to update podcast status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update podcast status",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(null);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "PUBLISHED":
+        return "bg-green-100 text-green-800";
+      case "DRAFT":
+        return "bg-yellow-100 text-yellow-800";
+      case "ARCHIVED":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const formatDuration = (seconds: number) => {
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return "N/A";
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "draft":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "archived":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-12">
           <div className="h-8 w-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Loading podcasts...</p>
         </div>
@@ -207,21 +148,25 @@ export default function PodcastsPage() {
           </div>
           <Select
             value={filters.status || "all"}
-            onValueChange={(value: string) => setFilters({ ...filters, status: value as any })}
+            onValueChange={(value: string) =>
+              setFilters({ ...filters, status: value as any })
+            }
           >
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="PUBLISHED">Published</SelectItem>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+              <SelectItem value="ARCHIVED">Archived</SelectItem>
             </SelectContent>
           </Select>
           <Select
             value={filters.sortBy || "recent"}
-            onValueChange={(value: string) => setFilters({ ...filters, sortBy: value as any })}
+            onValueChange={(value: string) =>
+              setFilters({ ...filters, sortBy: value as any })
+            }
           >
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Sort by" />
@@ -240,9 +185,9 @@ export default function PodcastsPage() {
         {podcasts.map((podcast) => (
           <Card key={podcast.id} className="overflow-hidden">
             <div className="aspect-video bg-muted relative">
-              {podcast.coverImage ? (
+              {podcast.coverImage || podcast.image ? (
                 <img
-                  src={podcast.coverImage}
+                  src={podcast.coverImage || podcast.image}
                   alt={podcast.title}
                   className="w-full h-full object-cover"
                 />
@@ -275,23 +220,20 @@ export default function PodcastsPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={() => router.push(`/dashboard/podcasts/${podcast.id}`)}
+                      onClick={() =>
+                        router.push(`/dashboard/podcasts/${podcast.id}`)
+                      }
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       View
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => router.push(`/dashboard/podcasts/${podcast.id}/edit`)}
+                      onClick={() =>
+                        router.push(`/dashboard/podcasts/new?edit=${podcast.id}`)
+                      }
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => handleStatusChange(podcast.id, podcast.status === 'published' ? 'draft' : 'published')}
-                      disabled={isUpdating === podcast.id}
-                    >
-                      {podcast.status === 'published' ? 'Unpublish' : 'Publish'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <AlertDialog>
@@ -308,7 +250,8 @@ export default function PodcastsPage() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete Podcast</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete "{podcast.title}"? This action cannot be undone.
+                            Are you sure you want to delete "{podcast.title}"?
+                            This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -318,7 +261,9 @@ export default function PodcastsPage() {
                             disabled={isDeleting === podcast.id}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
-                            {isDeleting === podcast.id ? "Deleting..." : "Delete"}
+                            {isDeleting === podcast.id
+                              ? "Deleting..."
+                              : "Delete"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -335,7 +280,9 @@ export default function PodcastsPage() {
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {(podcast as any).duration ? formatDuration((podcast as any).duration) : "N/A"}
+                    {podcast.latestEpisode?.duration
+                      ? formatDuration(podcast.latestEpisode.duration)
+                      : "N/A"}
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
@@ -354,7 +301,9 @@ export default function PodcastsPage() {
           <Play className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">No podcasts found</h3>
           <p className="text-muted-foreground mb-4">
-            {filters.search ? "Try adjusting your search criteria" : "Get started by creating your first podcast"}
+            {filters.search
+              ? "Try adjusting your search criteria"
+              : "Get started by creating your first podcast"}
           </p>
           <Button onClick={() => router.push("/dashboard/podcasts/new")}>
             <Plus className="h-4 w-4 mr-2" />
@@ -366,13 +315,8 @@ export default function PodcastsPage() {
       {/* Error State */}
       {error && (
         <div className="text-center py-12">
-          <div className="text-destructive mb-4">
-            Failed to load podcasts
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setFilters({ ...filters })}
-          >
+          <div className="text-destructive mb-4">Failed to load podcasts</div>
+          <Button variant="outline" onClick={() => setFilters({ ...filters })}>
             Try Again
           </Button>
         </div>

@@ -1,58 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Play } from "lucide-react"
-import { apiClient } from "@/lib/api-client";
-
-interface Podcast {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  category: string;
-  image?: string;
-  host?: {
-    id: string;
-    name: string;
-    profileImage?: string;
-  };
-  genre?: {
-    id: string;
-    name: string;
-  };
-  stats: {
-    episodes: number;
-    favorites: number;
-  };
-  latestEpisode?: {
-    id: string;
-    title: string;
-    duration?: number;
-    publishedAt: string;
-  };
-}
+import { useFeaturedPodcasts } from "@/hooks/use-podcasts";
 
 export default function FeaturedPodcasts() {
-  const [podcasts, setPodcasts] = useState<Podcast[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPodcasts = async () => {
-      try {
-        const data = await apiClient.podcasts.getAll({ featured: true, limit: 4 });
-        setPodcasts(data.podcasts || []);
-      } catch (error) {
-        console.error('Error fetching podcasts:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPodcasts();
-  }, []);
+  const { data: podcasts = [], isLoading } = useFeaturedPodcasts();
 
   const formatDuration = (duration?: number) => {
     if (!duration) return "Unknown";
@@ -84,7 +39,7 @@ export default function FeaturedPodcasts() {
           <Card className="overflow-hidden transition-all hover:shadow-md">
             <div className="relative aspect-square">
               <Image 
-                src={podcast.image || "/placeholder.svg?height=400&width=400"} 
+                src={podcast.coverImage || podcast.image || "/placeholder.svg?height=400&width=400"} 
                 alt={podcast.title} 
                 fill 
                 className="object-cover" 
@@ -97,21 +52,21 @@ export default function FeaturedPodcasts() {
             </div>
             <CardContent className="p-4">
               <div className="text-xs font-medium text-brand-600 mb-1">
-                {podcast.category?.replace('_', ' ') || 'Uncategorized'}
+                {podcast.genre?.name || podcast.category?.replace('_', ' ') || 'Uncategorized'}
               </div>
               <h3 className="font-semibold text-lg mb-1 line-clamp-1">{podcast.title}</h3>
               <p className="text-sm text-muted-foreground mb-2">
-                {podcast.host ? `with ${podcast.host.name}` : 'No host assigned'}
+                with {podcast.author.firstName} {podcast.author.lastName}
               </p>
               <div className="text-xs text-muted-foreground">
                 {podcast.latestEpisode 
                   ? formatDuration(podcast.latestEpisode.duration)
-                  : `${podcast.stats.episodes} episodes`
+                  : `${podcast._count?.episodes || 0} episodes`
                 }
               </div>
-              {podcast.stats.favorites > 0 && (
+              {(podcast._count?.favorites || 0) > 0 && (
                 <div className="text-xs text-muted-foreground mt-1">
-                  {podcast.stats.favorites} favorites
+                  {podcast._count?.favorites} favorites
                 </div>
               )}
             </CardContent>

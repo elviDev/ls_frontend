@@ -16,24 +16,7 @@ import {
 import { Filter, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api-client";
-
-interface Audiobook {
-  id: string;
-  title: string;
-  author: string;
-  narrator?: string;
-  coverImage: string;
-  genre?: string;
-  description?: string;
-  chapterCount?: number;
-  totalDuration?: number;
-}
-
-interface Genre {
-  id: string;
-  name: string;
-  slug: string;
-}
+import { Audiobook } from "@/stores/audiobook-store";
 
 interface AudiobookListProps {
   initialAudiobooks: Audiobook[];
@@ -41,7 +24,6 @@ interface AudiobookListProps {
   showSearch?: boolean;
   showFilters?: boolean;
   showFavoritesOnly?: boolean;
-  availableGenres?: Genre[];
 }
 
 export function AudiobookList({
@@ -50,7 +32,6 @@ export function AudiobookList({
   showSearch = true,
   showFilters = true,
   showFavoritesOnly = false,
-  availableGenres = [],
 }: AudiobookListProps) {
   const [audiobooks, setAudiobooks] = useState<Audiobook[]>(initialAudiobooks);
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,8 +51,8 @@ export function AudiobookList({
   const loadFavorites = async () => {
     setIsLoading(true);
     try {
-      const result = await apiClient.request('/audiobooks/favorites');
-      setAudiobooks(result.data!);
+      const result = await apiClient.request('/audiobooks?favorites=true') as { audiobooks: Audiobook[] };
+      setAudiobooks(result.audiobooks || []);
     } catch (error: any) {
       if (error.message.includes('401')) {
         toast({
@@ -97,8 +78,8 @@ export function AudiobookList({
 
     setIsSearching(true);
     try {
-      const result = await apiClient.request(`/audiobooks/search?q=${encodeURIComponent(searchTerm)}`);
-      setAudiobooks(result.data!);
+      const result = await apiClient.request(`/audiobooks?search=${encodeURIComponent(searchTerm)}`) as { audiobooks: Audiobook[] };
+      setAudiobooks(result.audiobooks || []);
     } catch (error) {
       toast({
         title: "Search failed",
@@ -113,17 +94,17 @@ export function AudiobookList({
   const filteredAudiobooks = audiobooks
     .filter((audiobook) => {
       if (selectedGenre === "all") return true;
-      return audiobook.genre === selectedGenre;
+      return audiobook.genre?.name === selectedGenre;
     })
     .sort((a, b) => {
       if (sortBy === "title") {
-        return (a.title || "").localeCompare(b.title || "");
+        return a.title.localeCompare(b.title);
       } else if (sortBy === "author") {
-        return (a.author || "").localeCompare(b.author || "");
+        const authorA = `${a.createdBy.firstName} ${a.createdBy.lastName}`;
+        const authorB = `${b.createdBy.firstName} ${b.createdBy.lastName}`;
+        return authorA.localeCompare(authorB);
       } else if (sortBy === "duration") {
-        const durationA = a.totalDuration || 0;
-        const durationB = b.totalDuration || 0;
-        return durationB - durationA; // Longer duration first
+        return b.duration - a.duration; // Longer duration first
       }
       return 0;
     });
@@ -158,9 +139,10 @@ export function AudiobookList({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Genres</SelectItem>
-                  {availableGenres.map((genre) => (
-                    <SelectItem key={genre.id} value={genre.name}>
-                      {genre.name}
+                  {/* Get unique genres from audiobooks */}
+                  {Array.from(new Set(audiobooks.map(book => book.genre?.name).filter(Boolean))).map((genreName) => (
+                    <SelectItem key={genreName} value={genreName!}>
+                      {genreName}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -211,12 +193,12 @@ export function AudiobookList({
               key={audiobook.id}
               id={audiobook.id}
               title={audiobook.title}
-              author={audiobook.author}
+              author={`${audiobook.createdBy.firstName} ${audiobook.createdBy.lastName}`}
               narrator={audiobook.narrator}
               image={audiobook.coverImage}
-              category={audiobook.genre}
-              chapterCount={audiobook.chapterCount}
-              duration={audiobook.totalDuration}
+              category={audiobook.genre?.name}
+              chapterCount={audiobook._count.chapters}
+              duration={audiobook.duration}
             />
           ))}
         </div>

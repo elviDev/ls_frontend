@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const data = await apiClient.auth.me();
+      const data = await apiClient.auth.me() as { user?: User };
       if (data.user) {
         setUser(data.user);
         setIsAuthenticated(true);
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
-      const data = await apiClient.auth.login({ email, password, rememberMe });
+      const data = await apiClient.auth.login({ email, password, rememberMe }) as { user: User };
       setUser(data.user);
       setIsAuthenticated(true);
       toast({
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const data = await apiClient.auth.register({ name, email, password });
+      const data = await apiClient.auth.register({ name, email, password }) as { user?: User };
       if (data.user) {
         setUser(data.user);
         setIsAuthenticated(true);

@@ -18,12 +18,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Upload, FileText, Save, BookOpen, Clock, Music } from "lucide-react";
-import { getChapter, updateChapter } from "@/app/actions";
+import {
+  useAudiobook,
+  useUpdateChapter,
+  useChapter,
+} from "@/hooks/use-audiobooks";
+import { Chapter } from "@/stores/audiobook-store";
 
 export default function EditChapterPage() {
   const params = useParams();
   const router = useRouter();
-  const audiobookId = params.audiobookId as string;
+  const audiobookId = params.id as string;
   const chapterId = params.chapterId as string;
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -34,30 +39,26 @@ export default function EditChapterPage() {
   const [trackNumber, setTrackNumber] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraft, setIsDraft] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
   const [originalFileName, setOriginalFileName] = useState("");
 
+  const { data: chapter, isLoading } = useChapter(audiobookId, chapterId);
+  const typedChapter = chapter as Chapter | undefined;
+  const updateChapterMutation = useUpdateChapter();
+
   useEffect(() => {
-    const fetchChapter = async () => {
-      try {
-        // This would be implemented in a server action
-        const chapter = await getChapter(chapterId) as any;
-
-        setTitle(chapter.title || "");
-        setAudioUrl(chapter.audioFile || null);
-        setDuration(chapter.duration || null);
-        setTrackNumber(chapter.trackNumber || 1);
-        setIsDraft(chapter.isDraft || true);
-        setOriginalFileName(chapter.audioFile ? chapter.audioFile.split("/").pop() || "audio-file" : "audio-file");
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchChapter();
-  }, [chapterId]);
+    if (typedChapter) {
+      setTitle(typedChapter.title || "");
+      setAudioUrl(typedChapter.audioFile || null);
+      setDuration(typedChapter.duration || null);
+      setTrackNumber(typedChapter.trackNumber || 1);
+      setIsDraft(typedChapter.status === "DRAFT");
+      setOriginalFileName(
+        typedChapter.audioFile
+          ? typedChapter.audioFile.split("/").pop() || "audio-file"
+          : "audio-file"
+      );
+    }
+  }, [typedChapter]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,28 +83,50 @@ export default function EditChapterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || (!audioFile && !audioUrl) || !duration) {
+
+    // Validate required fields
+    if (
+      !title ||
+      (!audioFile && !audioUrl) ||
+      !duration ||
+      !audiobookId ||
+      !chapterId
+    ) {
+      console.error("Missing required fields:", {
+        title,
+        audioFile,
+        audioUrl,
+        duration,
+        audiobookId,
+        chapterId,
+      });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // This would be implemented in a server action
-      await updateChapter(chapterId, {
-        title,
-        audioFile,
-        duration,
-        trackNumber,
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("duration", duration.toString());
+      formData.append("trackNumber", trackNumber.toString());
+      formData.append("isDraft", isDraft.toString());
+
+      if (audioFile) {
+        formData.append("audioFile", audioFile);
+      }
+
+      console.log("Updating chapter with FormData");
+
+      await updateChapterMutation.mutateAsync({
         audiobookId,
-        isDraft,
-        // Only include the audioUrl if no new file was uploaded
-        currentAudioUrl: audioFile ? null : audioUrl,
+        chapterId,
+        data: formData,
       });
 
       router.push(`/dashboard/audiobooks/${audiobookId}/chapters`);
     } catch (error) {
-      console.error(error);
+      console.error("Error updating chapter:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -113,7 +136,7 @@ export default function EditChapterPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">
+          <h2 className="text-lg font-semibold mb-2">
             Loading chapter data...
           </h2>
           <p className="text-slate-500">
@@ -124,12 +147,32 @@ export default function EditChapterPage() {
     );
   }
 
+  if (!typedChapter) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-lg font-semibold mb-2">Chapter not found</h2>
+          <p className="text-slate-500 mb-4">
+            The chapter you're looking for doesn't exist or has been deleted.
+          </p>
+          <Button
+            onClick={() =>
+              router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)
+            }
+          >
+            Back to Chapters
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Edit Chapter</h1>
+            <h1 className="text-2xl font-bold text-slate-800">Edit Chapter</h1>
             <p className="text-slate-500 mt-1">
               Update chapter details and audio
             </p>

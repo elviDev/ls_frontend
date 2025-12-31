@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Star, Edit, Trash2, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useAuth } from "@/contexts/auth-context"
 
 interface Review {
   id: string
@@ -38,33 +39,23 @@ export function ReviewSection({ audiobookId, podcastId, currentUserId }: ReviewS
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
   const { toast } = useToast()
+  const { user: currentUser } = useAuth()
 
   const contentId = audiobookId || podcastId
   const contentType = audiobookId ? 'audiobooks' : 'podcasts'
 
   useEffect(() => {
     fetchReviews()
-    fetchCurrentUser()
+    // Remove separate auth call since we'll get user info from the audiobook data
   }, [contentId])
 
-  const fetchCurrentUser = async () => {
-    try {
-      const response = await fetch('/api/auth/me')
-      if (response.ok) {
-        const data = await response.json()
-        setCurrentUser(data.user)
-      }
-    } catch (error) {
-      console.error('Error fetching current user:', error)
-    }
-  }
+
 
   const fetchReviews = async () => {
     if (!contentId) return
     try {
-      const response = await fetch(`/api/${contentType}/${contentId}/reviews`)
+      const response = await fetch(`http://localhost:3001/api/${contentType}/${contentId}/reviews`)
       if (response.ok) {
         const data = await response.json()
         setReviews(data.reviews)
@@ -86,11 +77,24 @@ export function ReviewSection({ audiobookId, podcastId, currentUserId }: ReviewS
       return
     }
 
+    if (!currentUser) {
+      toast({
+        title: "Error",
+        description: "Please log in to submit a review",
+        variant: "destructive"
+      })
+      return
+    }
+
     setSubmitting(true)
     try {
-      const response = await fetch(`/api/${contentType}/${contentId}/reviews`, {
+      const response = await fetch(`http://localhost:3001/api/${contentType}/${contentId}/reviews`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-token') || ''}`,
+        },
+        credentials: 'include',
         body: JSON.stringify({ rating, comment })
       })
 
@@ -130,9 +134,13 @@ export function ReviewSection({ audiobookId, podcastId, currentUserId }: ReviewS
 
     setSubmitting(true)
     try {
-      const response = await fetch(`/api/reviews/${editingReview.id}`, {
+      const response = await fetch(`http://localhost:3001/api/reviews/${editingReview.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-token') || ''}`,
+        },
+        credentials: 'include',
         body: JSON.stringify({ rating, comment })
       })
 
@@ -161,8 +169,12 @@ export function ReviewSection({ audiobookId, podcastId, currentUserId }: ReviewS
 
   const deleteReview = async (reviewId: string) => {
     try {
-      const response = await fetch(`/api/reviews/${reviewId}`, {
-        method: 'DELETE'
+      const response = await fetch(`http://localhost:3001/api/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth-token') || ''}`,
+        },
+        credentials: 'include'
       })
 
       if (response.ok) {
@@ -217,7 +229,7 @@ export function ReviewSection({ audiobookId, podcastId, currentUserId }: ReviewS
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Reviews ({reviews.length})</h3>
-        {(currentUser || currentUserId) && !userReview && (
+        {(currentUser || currentUserId) && !userReview && currentUser?.userType !== 'staff' && (
           <Dialog open={showReviewForm} onOpenChange={setShowReviewForm}>
             <DialogTrigger asChild>
               <Button>Write a Review</Button>
@@ -251,6 +263,9 @@ export function ReviewSection({ audiobookId, podcastId, currentUserId }: ReviewS
               </div>
             </DialogContent>
           </Dialog>
+        )}
+        {currentUser?.userType === 'staff' && (
+          <p className="text-sm text-muted-foreground">Staff members cannot create reviews</p>
         )}
       </div>
 

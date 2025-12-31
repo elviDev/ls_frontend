@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,135 +11,54 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Upload, X } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
+import { useProgram, useUpdateProgram } from "@/hooks/use-programs"
+import { useStaff } from "@/hooks/use-staff"
+import { useGenres } from "@/hooks/use-genres"
+import { useAssets } from "@/hooks/use-assets"
+import { ProgramCategory, ProgramStatus } from "@/stores/program-store"
 
-type Staff = {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-}
 
-type Genre = {
-  id: string
-  name: string
-}
-
-type Asset = {
-  id: string
-  originalName: string
-  url: string
-  type: string
-}
-
-type Program = {
-  id: string
-  title: string
-  description: string
-  category: string
-  schedule: string
-  image?: string
-  status: string
-  hostId: string
-  genreId?: string
-}
 
 export default function EditProgramPage() {
   const router = useRouter()
   const params = useParams()
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [initialLoading, setInitialLoading] = useState(true)
-  const [staff, setStaff] = useState<Staff[]>([])
-  const [genres, setGenres] = useState<Genre[]>([])
-  const [assets, setAssets] = useState<Asset[]>([])
   const [selectedImage, setSelectedImage] = useState<string>("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>("")
 
+  const { data: program, isLoading: initialLoading } = useProgram(params.id as string)
+  const { data: staffData } = useStaff()
+  const { data: genres } = useGenres()
+  const { data: assetsData } = useAssets({ type: 'IMAGE', perPage: 50, page: 1, search: '' })
+  const updateProgram = useUpdateProgram()
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "",
+    category: "" as ProgramCategory | "",
     schedule: "",
     hostId: "",
     genreId: "",
-    status: "ACTIVE"
+    status: "ACTIVE" as ProgramStatus
   })
 
   useEffect(() => {
-    fetchProgram()
-    fetchStaff()
-    fetchGenres()
-    fetchAssets()
-  }, [])
-
-  const fetchProgram = async () => {
-    try {
-      const response = await apiClient.request(`/programs/${params.id}`)
-      if (response.ok) {
-        const program: Program = await response.json()
-        setFormData({
-          title: program.title,
-          description: program.description,
-          category: program.category,
-          schedule: program.schedule,
-          hostId: program.hostId,
-          genreId: program.genreId || "",
-          status: program.status
-        })
-        if (program.image) {
-          setSelectedImage(program.image)
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch program:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load program",
-        variant: "destructive"
+    if (program) {
+      setFormData({
+        title: program.title,
+        description: program.description,
+        category: program.category,
+        schedule: program.schedule,
+        hostId: program.hostId,
+        genreId: program.genreId || "",
+        status: program.status
       })
-    } finally {
-      setInitialLoading(false)
-    }
-  }
-
-  const fetchStaff = async () => {
-    try {
-      const response = await apiClient.request("/staff")
-      if (response.ok) {
-        const data = await response.json()
-        setStaff(data.staff)
+      if (program.image) {
+        setSelectedImage(program.image)
       }
-    } catch (error) {
-      console.error("Failed to fetch staff:", error)
     }
-  }
-
-  const fetchGenres = async () => {
-    try {
-      const response = await fetch("/api/genres")
-      if (response.ok) {
-        const data = await response.json()
-        setGenres(data.genres)
-      }
-    } catch (error) {
-      console.error("Failed to fetch genres:", error)
-    }
-  }
-
-  const fetchAssets = async () => {
-    try {
-      const response = await apiClient.request("/assets?type=IMAGE")
-      if (response.ok) {
-        const data = await response.json()
-        setAssets(data.assets)
-      }
-    } catch (error) {
-      console.error("Failed to fetch assets:", error)
-    }
-  }
+  }, [program])
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -154,56 +72,24 @@ export default function EditProgramPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-
-    try {
-      let imageUrl = selectedImage
-
-      // Upload new file if selected
-      if (uploadedFile) {
-        const uploadFormData = new FormData()
-        uploadFormData.append("file", uploadedFile)
-        uploadFormData.append("type", "IMAGE")
-        uploadFormData.append("description", `Cover image for ${formData.title}`)
-
-        const uploadResponse = await apiClient.request("/assets/upload", {
-          method: "POST",
-          body: uploadFormData
-        })
-
-        if (uploadResponse.ok) {
-          const uploadData = await uploadResponse.json()
-          imageUrl = uploadData.url
-        }
-      }
-
-      const response = await apiClient.request(`/programs/${params.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          image: imageUrl
-        })
-      })
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Program updated successfully"
-        })
-        router.push("/dashboard/programs")
-      } else {
-        throw new Error("Failed to update program")
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update program",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
+    
+    const submitData = new FormData()
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) submitData.append(key, value)
+    })
+    
+    if (uploadedFile) {
+      submitData.append('image', uploadedFile)
+    } else if (selectedImage) {
+      submitData.append('imageUrl', selectedImage)
     }
+    
+    updateProgram.mutate({
+      id: params.id as string,
+      data: submitData
+    }, {
+      onSuccess: () => router.push("/dashboard/programs")
+    })
   }
 
   if (initialLoading) {
@@ -280,34 +166,34 @@ export default function EditProgramPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="category">Category</Label>
-                    <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                    <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as ProgramCategory }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="TALK_SHOW">Talk Show</SelectItem>
-                        <SelectItem value="MUSIC">Music</SelectItem>
-                        <SelectItem value="TECHNOLOGY">Technology</SelectItem>
-                        <SelectItem value="BUSINESS">Business</SelectItem>
-                        <SelectItem value="INTERVIEW">Interview</SelectItem>
-                        <SelectItem value="SPORTS">Sports</SelectItem>
-                        <SelectItem value="NEWS">News</SelectItem>
-                        <SelectItem value="ENTERTAINMENT">Entertainment</SelectItem>
-                        <SelectItem value="EDUCATION">Education</SelectItem>
+                        <SelectItem value={ProgramCategory.TALK_SHOW}>Talk Show</SelectItem>
+                        <SelectItem value={ProgramCategory.MUSIC}>Music</SelectItem>
+                        <SelectItem value={ProgramCategory.TECHNOLOGY}>Technology</SelectItem>
+                        <SelectItem value={ProgramCategory.BUSINESS}>Business</SelectItem>
+                        <SelectItem value={ProgramCategory.INTERVIEW}>Interview</SelectItem>
+                        <SelectItem value={ProgramCategory.SPORTS}>Sports</SelectItem>
+                        <SelectItem value={ProgramCategory.NEWS}>News</SelectItem>
+                        <SelectItem value={ProgramCategory.ENTERTAINMENT}>Entertainment</SelectItem>
+                        <SelectItem value={ProgramCategory.EDUCATION}>Education</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
                     <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as ProgramStatus }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVE">Active</SelectItem>
-                        <SelectItem value="INACTIVE">Inactive</SelectItem>
-                        <SelectItem value="ARCHIVED">Archived</SelectItem>
+                        <SelectItem value={ProgramStatus.ACTIVE}>Active</SelectItem>
+                        <SelectItem value={ProgramStatus.INACTIVE}>Inactive</SelectItem>
+                        <SelectItem value={ProgramStatus.ARCHIVED}>Archived</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -332,7 +218,7 @@ export default function EditProgramPage() {
                         <SelectValue placeholder="Select host" />
                       </SelectTrigger>
                       <SelectContent>
-                        {staff?.map((member) => (
+                        {staffData?.staff?.map((member) => (
                           <SelectItem key={member.id} value={member.id}>
                             {member.firstName} {member.lastName}
                           </SelectItem>
@@ -397,7 +283,7 @@ export default function EditProgramPage() {
                       </div>
                     )}
                     <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                      {assets?.map((asset) => (
+                      {assetsData?.assets?.map((asset) => (
                         <div
                           key={asset.id}
                           className={`relative cursor-pointer border-2 rounded-lg overflow-hidden ${
@@ -474,8 +360,8 @@ export default function EditProgramPage() {
             </Card>
 
             <div className="flex gap-2">
-              <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? "Updating..." : "Update Program"}
+              <Button type="submit" disabled={updateProgram.isPending} className="flex-1">
+                {updateProgram.isPending ? "Updating..." : "Update Program"}
               </Button>
               <Button type="button" variant="outline" onClick={() => router.back()}>
                 Cancel

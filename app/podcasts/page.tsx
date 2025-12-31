@@ -1,27 +1,36 @@
 "use client";
 
-import { Suspense } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PodcastList } from "@/components/podcast/podcast-list";
-import { useFeaturedPodcasts, usePopularPodcasts, useRecentPodcasts, useFavoritePodcasts, useGenres } from "@/hooks/use-podcasts";
-import { usePodcastStore } from "@/stores/podcast-store";
+import { usePodcasts, useGenres } from "@/hooks/use-podcasts";
 
 function PodcastsContent() {
-  const { filters } = usePodcastStore();
-  const { data: featuredPodcasts = [], isLoading: loadingFeatured } = useFeaturedPodcasts();
-  const { data: popularPodcasts = [], isLoading: loadingPopular } = usePopularPodcasts();
-  const { data: recentPodcasts = [], isLoading: loadingRecent } = useRecentPodcasts();
-  const { data: favoritePodcasts = [], isLoading: loadingFavorites } = useFavoritePodcasts();
+  const [activeTab, setActiveTab] = useState("all");
+  
+  const { data: allPodcasts = [], isLoading } = usePodcasts();
   const { data: genres = [] } = useGenres();
 
-  const isLoading = loadingFeatured || loadingPopular || loadingRecent;
+  // Filter podcasts based on active tab
+  const getFilteredPodcasts = () => {
+    switch (activeTab) {
+      case "featured":
+        return allPodcasts.filter(p => p.status === 'PUBLISHED').slice(0, 8);
+      case "popular":
+        return allPodcasts.sort((a, b) => (b._count?.favorites || 0) - (a._count?.favorites || 0)).slice(0, 8);
+      case "recent":
+        return allPodcasts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 8);
+      default:
+        return allPodcasts;
+    }
+  };
 
   if (isLoading) {
     return <PodcastsLoading />;
   }
 
-  if (featuredPodcasts.length === 0 && popularPodcasts.length === 0 && recentPodcasts.length === 0) {
+  if (allPodcasts.length === 0) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto text-center mb-12">
@@ -41,6 +50,8 @@ function PodcastsContent() {
     );
   }
 
+  const filteredPodcasts = getFilteredPodcasts();
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto text-center mb-12">
@@ -51,59 +62,26 @@ function PodcastsContent() {
         </p>
       </div>
 
-      <Tabs defaultValue="featured" className="mb-12">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-12">
         <TabsList className="flex flex-wrap h-auto p-1 mb-8">
+          <TabsTrigger value="all">All Podcasts</TabsTrigger>
           <TabsTrigger value="featured">Featured</TabsTrigger>
           <TabsTrigger value="popular">Popular</TabsTrigger>
           <TabsTrigger value="recent">Recent</TabsTrigger>
-          <TabsTrigger value="favorites">My Favorites</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="featured" className="mt-0">
+        <TabsContent value={activeTab} className="mt-0">
           <PodcastList
-            initialPodcasts={featuredPodcasts.map(transformPodcast)}
-            title="Featured Podcasts"
+            initialPodcasts={filteredPodcasts.map(transformPodcast)}
+            title={activeTab === "all" ? "All Podcasts" : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Podcasts`}
             availableGenres={genres}
           />
-        </TabsContent>
-
-        <TabsContent value="popular" className="mt-0">
-          <PodcastList
-            initialPodcasts={popularPodcasts.map(transformPodcast)}
-            title="Popular Podcasts"
-            availableGenres={genres}
-          />
-        </TabsContent>
-
-        <TabsContent value="recent" className="mt-0">
-          <PodcastList
-            initialPodcasts={recentPodcasts.map(transformPodcast)}
-            title="Recently Added"
-            availableGenres={genres}
-          />
-        </TabsContent>
-
-        <TabsContent value="favorites" className="mt-0">
-          {loadingFavorites ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {Array(4).fill(0).map((_, i) => (
-                <Skeleton key={i} className="aspect-square w-full" />
-              ))}
-            </div>
-          ) : (
-            <PodcastList
-              initialPodcasts={favoritePodcasts.map(transformPodcast)}
-              title="My Favorites"
-              showFavoritesOnly={true}
-              availableGenres={genres}
-            />
-          )}
         </TabsContent>
       </Tabs>
 
       <div className="space-y-12">
         {genres.slice(0, 3).map((genre) => {
-          const genrePodcasts = featuredPodcasts
+          const genrePodcasts = allPodcasts
             .filter((podcast) => podcast.genre?.name === genre.name)
             .slice(0, 4);
 
@@ -165,9 +143,5 @@ function PodcastsLoading() {
 }
 
 export default function PodcastsPage() {
-  return (
-    <Suspense fallback={<PodcastsLoading />}>
-      <PodcastsContent />
-    </Suspense>
-  );
+  return <PodcastsContent />;
 }

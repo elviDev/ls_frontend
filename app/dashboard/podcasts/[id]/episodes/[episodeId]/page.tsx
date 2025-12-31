@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { apiClient } from "@/lib/api-client"
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { usePodcastEpisode, useEpisodeComments } from "@/hooks/use-podcasts";
 import {
   Card,
   CardContent,
@@ -143,9 +143,18 @@ export default function EpisodeDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const [episode, setEpisode] = useState<Episode | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Use hooks for data fetching
+  const { data: episode, isLoading: loading, error } = usePodcastEpisode(
+    params.id as string, 
+    params.episodeId as string
+  );
+  const { data: commentsData } = useEpisodeComments(
+    params.id as string, 
+    params.episodeId as string
+  );
+  const comments = commentsData?.comments || [];
+  
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -177,13 +186,6 @@ export default function EpisodeDetailPage() {
   });
 
   useEffect(() => {
-    if (params.id && params.episodeId) {
-      fetchEpisode();
-      fetchComments();
-    }
-  }, [params.id, params.episodeId]);
-
-  useEffect(() => {
     if (episode) {
       form.reset({
         title: episode.title,
@@ -192,44 +194,11 @@ export default function EpisodeDetailPage() {
       });
       setTranscriptContent(episode.transcript || "");
       setTranscriptOption(episode.transcript ? "manual" : "none");
-      setAudioDuration(episode.duration);
+      setAudioDuration(episode.duration || 0);
     }
   }, [episode, form]);
 
-  const fetchEpisode = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `/podcasts/${params.id}/episodes/${params.episodeId}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch episode");
 
-      const data = await response.json();
-      setEpisode(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch episode details",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchComments = async () => {
-    try {
-      const response = await fetch(
-        `/podcasts/${params.id}/episodes/${params.episodeId}/comments`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setComments(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch comments:", error);
-    }
-  };
 
   const handleDelete = async () => {
     try {
@@ -269,7 +238,6 @@ export default function EpisodeDetailPage() {
 
       if (!response.ok) throw new Error("Failed to update status");
 
-      setEpisode((prev) => (prev ? { ...prev, status: status as any } : null));
       toast({
         title: "Success",
         description: `Episode ${status.toLowerCase()} successfully`,
@@ -317,7 +285,6 @@ export default function EpisodeDetailPage() {
       }
 
       const updatedEpisode = await response.json();
-      setEpisode(updatedEpisode);
       setIsEditing(false);
 
       toast({
@@ -394,7 +361,6 @@ export default function EpisodeDetailPage() {
       if (!response.ok) throw new Error("Failed to save transcript");
 
       const updatedEpisode = await response.json();
-      setEpisode(updatedEpisode);
       setTranscriptDialog(false);
 
       toast({
@@ -432,7 +398,6 @@ export default function EpisodeDetailPage() {
 
         if (response.ok) {
           const updatedEpisode = await response.json();
-          setEpisode(updatedEpisode);
           setAudioDuration(newDuration);
           toast({
             title: "Success",
@@ -532,7 +497,7 @@ export default function EpisodeDetailPage() {
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            From "{episode.podcast.title}" • Hosted by {episode.podcast.host}
+            From "{episode.podcast?.title}" • Hosted by {episode.podcast?.host || `${episode.podcast?.author?.firstName} ${episode.podcast?.author?.lastName}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -696,7 +661,7 @@ export default function EpisodeDetailPage() {
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{formatDuration(currentTime)}</span>
-                      <span>{formatDuration(episode.duration)}</span>
+                      <span>{formatDuration(episode.duration || 0)}</span>
                     </div>
                   </div>
 
@@ -821,6 +786,29 @@ export default function EpisodeDetailPage() {
                       )}
                     />
 
+                    {/* Audio File - Only show for unpublished episodes */}
+                    {episode.status !== "PUBLISHED" && (
+                      <div className="space-y-2">
+                        <Label>Audio File</Label>
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
+                          <div className="flex items-center gap-3">
+                            <FileAudio className="h-8 w-8 text-muted-foreground" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">Current: {episode.audioFile === 'uploaded' ? 'Uploaded file' : episode.audioFile}</p>
+                              <p className="text-xs text-muted-foreground">Upload a new audio file to replace the current one</p>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <Input
+                              type="file"
+                              accept="audio/*"
+                              className="cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Upload Progress */}
                     {isSubmitting && uploadProgress > 0 && (
                       <div className="space-y-2">
@@ -894,9 +882,9 @@ export default function EpisodeDetailPage() {
                       <Label className="text-sm font-medium">Duration</Label>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm text-muted-foreground">
-                          {formatDuration(episode.duration)}
+                          {formatDuration(episode.duration || 0)}
                         </p>
-                        {episode.duration === 0 && (
+                        {(episode.duration || 0) === 0 && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -1262,7 +1250,7 @@ export default function EpisodeDetailPage() {
                   <span className="text-sm">Plays</span>
                 </div>
                 <span className="font-semibold">
-                  {formatNumber(episode._count.playbackProgress)}
+                  {formatNumber(episode._count?.playbackProgress || 0)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -1271,7 +1259,7 @@ export default function EpisodeDetailPage() {
                   <span className="text-sm">Favorites</span>
                 </div>
                 <span className="font-semibold">
-                  {episode._count.favorites}
+                  {episode._count?.favorites || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -1279,7 +1267,7 @@ export default function EpisodeDetailPage() {
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Comments</span>
                 </div>
-                <span className="font-semibold">{episode._count.comments}</span>
+                <span className="font-semibold">{episode._count?.comments || 0}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1308,9 +1296,9 @@ export default function EpisodeDetailPage() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Duration:</span>
                 <span className="font-medium">
-                  {formatDuration(episode.duration)}
+                  {formatDuration(episode.duration || 0)}
                 </span>
-                {episode.duration === 0 && (
+                {(episode.duration || 0) === 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1363,7 +1351,7 @@ export default function EpisodeDetailPage() {
                 <FileText className="h-4 w-4 mr-2" />
                 Edit Transcript
               </Button>
-              {episode.duration === 0 && (
+              {(episode.duration || 0) === 0 && (
                 <Button
                   variant="outline"
                   className="w-full"

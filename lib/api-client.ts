@@ -168,7 +168,7 @@ class ApiClient {
       }),
     delete: (id: string) =>
       this.request(`/audiobooks/${id}`, { method: "DELETE" }),
-    getStats: () => this.request("/analytics/audiobooks"),
+    getStats: () => this.request("/audiobooks/stats"),
   };
 
   // Broadcasts endpoints

@@ -1,184 +1,124 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { apiClient } from "@/lib/api-client"
-import { useRouter, useParams } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  ArrowLeft, 
-  Play, 
-  Pause, 
-  Edit, 
-  Trash, 
-  Download, 
-  Share, 
-  Eye,
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  Edit,
+  Trash,
   Clock,
   Calendar,
-  User,
-  Users,
-  MessageSquare,
-  Heart,
-  Star,
-  TrendingUp,
-  BarChart3,
   FileText,
-  Upload,
-  Save,
-  X,
-  Volume2,
-  VolumeX,
-  SkipBack,
-  SkipForward,
-  CheckCircle,
-  RefreshCw
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-
-type Chapter = {
-  id: string
-  title: string
-  description: string | null
-  audioFile: string
-  duration: number
-  trackNumber: number
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
-  playCount: number
-  transcript: string | null
-  createdAt: string
-  updatedAt: string
-  audiobook: {
-    id: string
-    title: string
-    narrator: string
-  }
-}
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAudiobookStore } from "@/stores/audiobook-store";
+import {
+  useDeleteChapter,
+  useUpdateChapter,
+  useChapter,
+  useAudiobook,
+} from "@/hooks/use-audiobooks";
+import { Chapter, Audiobook } from "@/stores/audiobook-store";
 
 export default function ChapterDetailPage() {
-  const router = useRouter()
-  const params = useParams()
-  const { toast } = useToast()
-  const [chapter, setChapter] = useState<Chapter | null>(null)
-  const [loading, setLoading] = useState(true)
-  
-  // Audio player state
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [audioDuration, setAudioDuration] = useState(0)
-  const [volume, setVolume] = useState(1)
-  const [isMuted, setIsMuted] = useState(false)
-  const audioRef = useRef<HTMLAudioElement>(null)
+  const router = useRouter();
+  const params = useParams();
+  const { toast } = useToast();
+  const { setCurrentChapter } = useAudiobookStore();
+  const deleteChapter = useDeleteChapter();
+  const updateChapter = useUpdateChapter();
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  const audiobookId = params.id as string
-  const chapterId = params.chapterId as string
+  const audiobookId = params.id as string;
+  const chapterId = params.chapterId as string;
+
+  const { data: audiobookData } = useAudiobook(audiobookId);
+  const audiobook = audiobookData as Audiobook | undefined;
+  const { data: chapterData, isLoading } = useChapter(audiobookId, chapterId);
+  const chapter = chapterData as Chapter | undefined;
 
   useEffect(() => {
-    if (audiobookId && chapterId) {
-      fetchChapter()
+    if (chapter) {
+      setCurrentChapter({
+        ...chapter,
+        audiobookId,
+      });
     }
-  }, [audiobookId, chapterId])
-
-  const fetchChapter = async () => {
-    try {
-      setLoading(true)
-      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`)
-      if (!response.ok) throw new Error('Failed to fetch chapter')
-      
-      const data = await response.json()
-      setChapter(data)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch chapter details",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [chapter, audiobookId, setCurrentChapter]);
 
   const handleDelete = async () => {
     try {
-      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
-        method: 'DELETE'
-      })
-      
-      if (!response.ok) throw new Error('Failed to delete chapter')
-      
-      toast({
-        title: "Success",
-        description: "Chapter deleted successfully"
-      })
-      router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)
+      await deleteChapter.mutateAsync({ audiobookId, chapterId });
+      router.push(`/dashboard/audiobooks/${audiobookId}/chapters`);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete chapter",
-        variant: "destructive"
-      })
+      console.error("Error deleting chapter:", error);
     }
-  }
+  };
 
   const handleStatusChange = async (status: string) => {
+    if (!chapter) return;
     try {
-      const response = await apiClient.request(`/audiobooks/${audiobookId}/chapters/${chapterId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      })
-      
-      if (!response.ok) throw new Error('Failed to update status')
-      
-      setChapter(prev => prev ? { ...prev, status: status as any } : null)
-      toast({
-        title: "Success",
-        description: `Chapter ${status.toLowerCase()} successfully`
-      })
+      await updateChapter.mutateAsync({
+        audiobookId,
+        chapterId,
+        data: { status },
+      });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update chapter status",
-        variant: "destructive"
-      })
+      console.error("Error updating chapter status:", error);
     }
-  }
+  };
 
   const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = Math.floor(seconds % 60)
-    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
     if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PUBLISHED': return 'bg-green-100 text-green-800 border-green-200'
-      case 'DRAFT': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'ARCHIVED': return 'bg-gray-100 text-gray-800 border-gray-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case "PUBLISHED":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "DRAFT":
+        return "bg-gray-100 text-gray-700 border-gray-200";
+      case "ARCHIVED":
+        return "bg-gray-100 text-gray-600 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-600 border-gray-200";
     }
-  }
+  };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="h-8 w-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Loading chapter...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!chapter) {
@@ -186,397 +126,311 @@ export default function ChapterDetailPage() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Chapter not found</h2>
-          <p className="text-muted-foreground mb-4">The chapter you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)}>
+          <p className="text-muted-foreground mb-4">
+            The chapter you're looking for doesn't exist.
+          </p>
+          <Button
+            onClick={() =>
+              router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)
+            }
+          >
             Back to Chapters
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">Chapter {chapter.trackNumber}: {chapter.title}</h1>
-            <Badge className={getStatusColor(chapter.status)}>
-              {chapter.status}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground">
-            From "{chapter.audiobook.title}" • Narrated by {chapter.audiobook.narrator}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/edit`)}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Chapter
-          </Button>
-          {chapter.status === 'DRAFT' && (
-            <Button onClick={() => handleStatusChange('PUBLISHED')}>
-              <Play className="h-4 w-4 mr-2" />
-              Publish
-            </Button>
-          )}
-          {chapter.status === 'PUBLISHED' && (
-            <Button variant="outline" onClick={() => handleStatusChange('ARCHIVED')}>
-              <Pause className="h-4 w-4 mr-2" />
-              Archive
-            </Button>
-          )}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash className="h-4 w-4 mr-2" />
-                Delete
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-6 py-8 space-y-8">
+        {/* Header Section */}
+        <div className="relative">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
+            <div className="flex items-start gap-6">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="mt-1 hover:bg-purple-100 transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Chapter</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete "Chapter {chapter.trackNumber}: {chapter.title}"? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Chapter Player */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">Chapter {chapter.trackNumber}: {chapter.title}</h2>
-                  {chapter.description && (
-                    <p className="text-muted-foreground">{chapter.description}</p>
-                  )}
-                </div>
-                
-                {/* Audio Player Controls */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-4">
-                    <Button 
-                      size="icon" 
-                      variant="outline"
-                      onClick={() => audioRef.current && (audioRef.current.currentTime -= 10)}
-                    >
-                      <SkipBack className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      className="h-12 w-12"
-                      onClick={() => {
-                        if (audioRef.current) {
-                          if (isPlaying) {
-                            audioRef.current.pause()
-                          } else {
-                            audioRef.current.play()
-                          }
-                        }
-                      }}
-                    >
-                      {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="outline"
-                      onClick={() => audioRef.current && (audioRef.current.currentTime += 10)}
-                    >
-                      <SkipForward className="h-4 w-4" />
-                    </Button>
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        size="icon" 
-                        variant="outline"
-                        onClick={() => {
-                          if (audioRef.current) {
-                            const newMuted = !isMuted
-                            audioRef.current.muted = newMuted
-                            setIsMuted(newMuted)
-                          }
-                        }}
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                      {chapter.trackNumber}
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+                        {chapter.title}
+                      </h1>
+                      <Badge
+                        className={`${getStatusColor(chapter.status)} mt-2`}
                       >
-                        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                      </Button>
+                        {chapter.status}
+                      </Badge>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-100"
-                        style={{ width: `${(currentTime / audioDuration) * 100}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{formatDuration(currentTime)}</span>
-                      <span>{formatDuration(chapter.duration)}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Hidden audio element for actual playback */}
-                  <audio
-                    ref={audioRef}
-                    className="hidden"
-                    onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                    onLoadedMetadata={(e) => setAudioDuration(e.currentTarget.duration)}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                  >
-                    <source src={chapter.audioFile} />
-                    Your browser does not support the audio element.
-                  </audio>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Share className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <div className="w-2 h-2 bg-primary rounded-full" />
+                  <span className="font-medium">
+                    {audiobook?.title || "Loading..."}
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span>Narrated by {audiobook?.narrator || "Loading..."}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Tabs */}
-          <Tabs defaultValue="details" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="transcript">Transcript</TabsTrigger>
-            </TabsList>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/edit`
+                    )
+                  }
+                  className="border-purple-200 hover:bg-purple-50"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
 
-            <TabsContent value="details" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Chapter Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                {chapter.status === "DRAFT" && (
+                  <Button
+                    onClick={() => handleStatusChange("PUBLISHED")}
+                    disabled={updateChapter.isPending}
+                    className="bg-primary "
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Publish
+                  </Button>
+                )}
+
+                {chapter.status === "PUBLISHED" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleStatusChange("ARCHIVED")}
+                    disabled={updateChapter.isPending}
+                    className="border-gray-200 hover:bg-gray-50"
+                  >
+                    <Pause className="h-4 w-4 mr-2" />
+                    Archive
+                  </Button>
+                )}
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="border-red-200 hover:bg-red-50 text-red-600"
+                    >
+                      <Trash className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Chapter</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "Chapter{" "}
+                        {chapter.trackNumber}: {chapter.title}"? This action
+                        cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Audio Player Section */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border border-gray-200 shadow-lg bg-white">
+              <CardContent className="p-8">
+                <div className="space-y-6">
                   <div>
-                    <Label className="text-sm font-medium">Title</Label>
-                    <p className="text-sm text-muted-foreground mt-1">{chapter.title}</p>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                      Chapter {chapter.trackNumber}: {chapter.title}
+                    </h2>
+                    {chapter.description && (
+                      <p className="text-gray-600 leading-relaxed">
+                        {chapter.description}
+                      </p>
+                    )}
                   </div>
-                  
-                  {chapter.description && (
-                    <div>
-                      <Label className="text-sm font-medium">Description</Label>
-                      <p className="text-sm text-muted-foreground mt-1">{chapter.description}</p>
-                    </div>
-                  )}
-                  
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <Label className="text-sm font-medium">Chapter Number</Label>
-                      <p className="text-sm text-muted-foreground mt-1">#{chapter.trackNumber}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Duration</Label>
-                      <p className="text-sm text-muted-foreground mt-1">{formatDuration(chapter.duration)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Status</Label>
-                      <div className="mt-1">
-                        <Badge className={getStatusColor(chapter.status)} variant="outline">
-                          {chapter.status}
-                        </Badge>
+
+                  {/* Enhanced Audio Player */}
+                  <div className="bg-purple-50 rounded-2xl p-6 border border-purple-100">
+                    <audio ref={audioRef} controls className="w-full h-12">
+                      <source src={chapter.audioFile} />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                          <Clock className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Duration</p>
+                          <p className="font-semibold text-gray-900">
+                            {formatDuration(chapter.duration)}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <Label className="text-sm font-medium">Play Count</Label>
-                      <p className="text-sm text-muted-foreground mt-1">{chapter.playCount} plays</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Created</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {new Date(chapter.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Last Updated</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {new Date(chapter.updatedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            <TabsContent value="transcript" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        Transcript
-                      </CardTitle>
-                      <CardDescription>
-                        Chapter transcript for accessibility and searchability
-                      </CardDescription>
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                          <Play className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Plays</p>
+                          <p className="font-semibold text-gray-900">
+                            {chapter.playCount}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <Button 
-                      variant="outline"
-                      onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/transcript/edit`)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit Transcript
-                    </Button>
+
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                          <Calendar className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Created</p>
+                          <p className="font-semibold text-gray-900">
+                            {new Date(chapter.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Transcript Section */}
+            {chapter.transcript && (
+              <Card className="border border-gray-200 shadow-lg bg-white">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                      <FileText className="h-4 w-4 text-white" />
+                    </div>
+                    Transcript
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {chapter.transcript ? (
-                    <div className="space-y-4">
-                      <div className="bg-muted/50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                        <pre className="text-sm whitespace-pre-wrap font-mono leading-relaxed">
-                          {chapter.transcript}
-                        </pre>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                        <span>Transcript available</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="font-semibold mb-2">No transcript available</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Add a transcript to improve accessibility and searchability
-                      </p>
-                      <Button 
-                        onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/transcript/edit`)}
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        Add Transcript
-                      </Button>
-                    </div>
-                  )}
+                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                    <pre className="whitespace-pre-wrap text-gray-700 leading-relaxed font-sans">
+                      {chapter.transcript}
+                    </pre>
+                  </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+            )}
+          </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Chapter Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Play className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Plays</span>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Chapter Info */}
+            <Card className="border border-gray-200 shadow-lg bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg">Chapter Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Track Number</span>
+                  <span className="font-semibold">{chapter.trackNumber}</span>
                 </div>
-                <span className="font-semibold">{chapter.playCount}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Duration</span>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Status</span>
+                  <Badge className={getStatusColor(chapter.status)}>
+                    {chapter.status}
+                  </Badge>
                 </div>
-                <span className="font-semibold">{formatDuration(chapter.duration)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Transcript</span>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Duration</span>
+                  <span className="font-semibold">
+                    {formatDuration(chapter.duration)}
+                  </span>
                 </div>
-                <span className="font-semibold">{chapter.transcript ? "Available" : "None"}</span>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-gray-600">Play Count</span>
+                  <span className="font-semibold">{chapter.playCount}</span>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Chapter Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Chapter Info</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Chapter:</span>
-                <span className="font-medium">#{chapter.trackNumber}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Duration:</span>
-                <span className="font-medium">{formatDuration(chapter.duration)}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Created:</span>
-                <span className="font-medium">{new Date(chapter.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Eye className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Status:</span>
-                <Badge className={getStatusColor(chapter.status)} variant="outline">
-                  {chapter.status}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Quick Actions */}
+            <Card className="border border-gray-200 shadow-lg bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  className="w-full justify-start bg-primary"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/edit`
+                    )
+                  }
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Chapter
+                </Button>
 
-          {/* Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                className="w-full" 
-                onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/edit`)}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Chapter
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/transcript/edit`)}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Edit Transcript
-              </Button>
-              <Button variant="outline" className="w-full">
-                <Download className="h-4 w-4 mr-2" />
-                Download Audio
-              </Button>
-              <Button variant="outline" className="w-full">
-                <Share className="h-4 w-4 mr-2" />
-                Share Chapter
-              </Button>
-            </CardContent>
-          </Card>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-gray-200 hover:bg-gray-50"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/transcript/edit`
+                    )
+                  }
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Edit Transcript
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-gray-200 hover:bg-gray-50"
+                  onClick={() =>
+                    router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)
+                  }
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Chapters
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

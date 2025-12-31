@@ -24,13 +24,14 @@ export default function PodcastDetailPage({
 }) {
   const [podcastId, setPodcastId] = useState<string | null>(null);
   const { toast } = useToast();
-  const { currentPodcast, currentEpisode, setCurrentPodcast, setCurrentEpisode, favorites } = usePodcastStore();
+  const { currentPodcast, currentEpisode, setCurrentPodcast, setCurrentEpisode } = usePodcastStore();
   
   const { data: podcast, isLoading: loadingPodcast, error: podcastError } = usePodcast(podcastId || '');
-  const { data: episodes = [], isLoading: loadingEpisodes } = usePodcastEpisodes(podcastId || '');
+  const { data: episodesData, isLoading: loadingEpisodes } = usePodcastEpisodes(podcastId || '');
+  const episodes = episodesData?.episodes || [];
   const toggleFavoriteMutation = useTogglePodcastFavorite();
 
-  const isFavorite = podcastId ? favorites.includes(podcastId) : false;
+  const isFavorite = podcast?.isFavorited || false;
   const isLoading = loadingPodcast || loadingEpisodes;
 
   useEffect(() => {
@@ -195,7 +196,7 @@ export default function PodcastDetailPage({
               <PodcastPlayer
                 title={currentEpisode.title || "Unknown Episode"}
                 artist={`${podcast.author.firstName} ${podcast.author.lastName}`}
-                audioUrl={currentEpisode.audioUrl || ""}
+                audioUrl={currentEpisode.audioFile || ""}
                 image={podcast.coverImage}
                 onFavoriteToggle={handleFavoriteToggle}
                 isFavorite={isFavorite}
@@ -220,7 +221,7 @@ export default function PodcastDetailPage({
                     description: episode.description || '',
                     releaseDate: episode.publishedAt || episode.createdAt,
                     trackTimeMillis: episode.duration ? episode.duration * 1000 : undefined,
-                    previewUrl: episode.audioUrl,
+                    previewUrl: episode.audioFile,
                   }))}
                   onPlay={(episode) => {
                     // Find the original episode by id

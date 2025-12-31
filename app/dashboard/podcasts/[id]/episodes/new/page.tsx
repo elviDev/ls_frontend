@@ -289,7 +289,7 @@ export default function NewEpisodePage() {
 
       const response = await createEpisode.mutateAsync({ 
         podcastId: params.id as string, 
-        formData 
+        data: formData 
       })
       const episode = response
       

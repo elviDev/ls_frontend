@@ -2,7 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/components/auth/auth-provider"
+import { AuthProvider as ZustandAuthProvider } from "@/components/auth/auth-provider"
+import { AuthProvider } from "@/contexts/auth-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { QueryProvider } from "@/providers/query-provider"
 import { GlobalLiveKitProvider } from "@/providers/global-livekit-provider"
@@ -32,17 +33,19 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ErrorBoundary>
             <QueryProvider>
-              <AuthProvider>
-                <GlobalLiveKitProvider>
-                  <GlobalAudioProvider>
-                    <ConditionalLayout>
-                      {children}
-                    </ConditionalLayout>
-                  </GlobalAudioProvider>
-                </GlobalLiveKitProvider>
-                <Toaster />
-                <SonnerToaster position="top-right" />
-              </AuthProvider>
+              <ZustandAuthProvider>
+                <AuthProvider>
+                  <GlobalLiveKitProvider>
+                    <GlobalAudioProvider>
+                      <ConditionalLayout>
+                        {children}
+                      </ConditionalLayout>
+                    </GlobalAudioProvider>
+                  </GlobalLiveKitProvider>
+                  <Toaster />
+                  <SonnerToaster position="top-right" />
+                </AuthProvider>
+              </ZustandAuthProvider>
             </QueryProvider>
           </ErrorBoundary>
         </ThemeProvider>

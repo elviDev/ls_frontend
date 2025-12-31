@@ -10,211 +10,67 @@ import { AudiobookPlayer } from "@/components/audiobook/audiobook-player";
 import { ChapterList } from "@/components/audiobook/chapter-list";
 import { ReviewSection } from "@/components/audiobook/review-section";
 import { CommentSection } from "@/components/audiobook/comment-section";
-import { generateSampleChapters, getSampleAudioUrl } from "@/lib/audiobook-api";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Calendar, User, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAudiobook, useToggleAudiobookFavorite } from "@/hooks/use-audiobooks";
+import { useToggleAudiobookBookmark } from "@/hooks/use-audiobook-bookmarks";
 
-export default async function AudiobookDetailPage({
+export default function AudiobookDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const [audiobookData, setAudiobookData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [audiobookId, setAudiobookId] = useState<string | null>(null);
   const [currentChapter, setCurrentChapter] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [chapters, setChapters] = useState<any[]>([]);
-  const [progress, setProgress] = useState<{
-    position: number;
-    chapter: number;
-  }>({ position: 0, chapter: 0 });
   const { toast } = useToast();
+  
+  const { data: audiobook, isLoading, error } = useAudiobook(audiobookId || '');
+  const toggleFavoriteMutation = useToggleAudiobookFavorite();
+  const toggleBookmarkMutation = useToggleAudiobookBookmark();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch audiobook details from our API
-        const response = await fetch(
-          `/api/audiobooks/${id}?withChapters=true`
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          const audiobook = result.data;
-
-          // Transform the data to match the expected format
-          const transformedData = {
-            volumeInfo: {
-              title: audiobook.title,
-              authors: [audiobook.author || "Unknown Author"],
-              description: audiobook.description,
-              imageLinks: {
-                thumbnail: audiobook.coverImage,
-              },
-              categories: [audiobook.genre?.name || "General"],
-              publishedDate: audiobook.releaseDate
-                ? new Date(audiobook.releaseDate).getFullYear().toString()
-                : undefined,
-              publisher: audiobook.publisher,
-              language: audiobook.language || "en",
-              pageCount: audiobook.chapters?.length || 0,
-              averageRating:
-                audiobook.averageRating > 0
-                  ? audiobook.averageRating
-                  : undefined,
-              ratingsCount: audiobook._count?.reviews || 0,
-            },
-          };
-
-          setAudiobookData(transformedData);
-
-          // Use actual chapters if available, otherwise generate sample ones
-          if (audiobook.chapters && audiobook.chapters.length > 0) {
-            const formattedChapters = audiobook.chapters.map(
-              (chapter: any, index: number) => ({
-                id: chapter.id,
-                title: chapter.title,
-                duration: chapter.duration || 300, // Default 5 minutes if no duration
-                trackNumber: chapter.trackNumber || index + 1,
-                audioFile: chapter.audioFile,
-              })
-            );
-            setChapters(formattedChapters);
-          } else {
-            const sampleChapters = generateSampleChapters(audiobook.title, 10);
-            setChapters(sampleChapters);
-          }
-        } else if (response.status === 404) {
-          setError("Audiobook not found");
-        } else {
-          setError("Failed to load audiobook");
-        }
-
-        // Check if this audiobook is in favorites
-        try {
-          const favoriteResult = await apiClient.request(`/audiobooks/${id}/favorite`);
-          if (favoriteResult.isFavorite !== undefined) {
-            setIsFavorite(favoriteResult.isFavorite);
-          }
-        } catch (error) {
-          // Ignore favorite check errors
-        }
-
-        // Get saved progress
-        try {
-          const progressResult = await apiClient.request(`/audiobooks/${id}/progress`);
-          if (progressResult.data) {
-            const data = progressResult.data as any;
-            setProgress({
-              position: data.position || 0,
-              chapter: data.chapter || data.chapterId || 0
-            });
-            setCurrentChapter(data.chapter || data.chapterId || 0);
-          }
-        } catch (error) {
-          // Ignore progress errors
-        }
-      } catch (err) {
-        setError("An unexpected error occurred");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setAudiobookId(resolvedParams.id);
     };
-
-    fetchData();
-  }, [id]);
+    getParams();
+  }, [params]);
 
   const handlePlayChapter = (chapter: any) => {
-    setCurrentChapter(chapters.findIndex((c) => c.id === chapter.id));
+    if (!audiobook?.chapters) return;
+    const chapterIndex = audiobook.chapters.findIndex((c) => c.id === chapter.id);
+    if (chapterIndex !== -1) {
+      setCurrentChapter(chapterIndex);
+    }
   };
 
   const handleChapterChange = (chapterIndex: number) => {
     setCurrentChapter(chapterIndex);
-    // Force re-render with new audio URL
-    const newAudioUrl =
-      chapters[chapterIndex]?.audioFile ||
-      getSampleAudioUrl(id, chapterIndex + 1);
-    // The AudiobookPlayer will handle the audio source change via useEffect
   };
 
   const handleFavoriteToggle = async () => {
-    if (!audiobookData?.volumeInfo) return;
-
+    if (!audiobookId) return;
+    
     try {
-      const result = await apiClient.request(`/audiobooks/${id}/favorite`, {
-        method: 'POST',
-        body: JSON.stringify({
-          title: audiobookData.volumeInfo.title,
-          image: audiobookData.volumeInfo.imageLinks?.thumbnail || "/placeholder.svg?height=600&width=400",
-          author: audiobookData.volumeInfo.authors?.[0] || "Unknown Author",
-        })
-      });
-
-      if (result.isFavorite !== undefined) {
-        setIsFavorite(result.isFavorite);
-        toast({
-          title: result.isFavorite
-            ? "Added to favorites"
-            : "Removed from favorites",
-          description: result.isFavorite
-            ? `${audiobookData.volumeInfo.title} has been added to your favorites`
-            : `${audiobookData.volumeInfo.title} has been removed from your favorites`,
-          duration: 3000,
-        });
-      }
+      await toggleFavoriteMutation.mutateAsync(audiobookId);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update favorites",
-        variant: "destructive",
-        duration: 3000,
-      });
+      // Error handled by mutation
     }
   };
 
-  // Generate rating stars
-  const renderRating = (rating: number) => {
-    if (!rating || rating === 0) return null;
-
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star
-          key={`full-${i}`}
-          className="h-4 w-4 fill-yellow-400 text-yellow-400"
-        />
-      );
+  const handleBookmarkToggle = async () => {
+    if (!audiobookId) return;
+    
+    try {
+      await toggleBookmarkMutation.mutateAsync(audiobookId);
+    } catch (error) {
+      // Error handled by mutation
     }
-
-    if (hasHalfStar) {
-      stars.push(<Star key="half" className="h-4 w-4 text-yellow-400" />);
-    }
-
-    const emptyStars = 5 - stars.length;
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />);
-    }
-
-    return (
-      <div className="flex items-center gap-0.5">
-        <Star className="h-4 w-4 text-yellow-400 mr-1" />
-        {stars}
-        <span className="ml-2 text-sm font-medium">{rating.toFixed(1)}</span>
-      </div>
-    );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -240,12 +96,12 @@ export default async function AudiobookDetailPage({
     );
   }
 
-  if (error) {
+  if (error || !audiobook) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-6 rounded-xl">
           <h2 className="text-2xl font-bold mb-2">Error Loading Audiobook</h2>
-          <p className="mb-4">{error}</p>
+          <p className="mb-4">The audiobook you're looking for could not be found.</p>
           <Button asChild>
             <Link href="/audiobooks">Back to Audiobooks</Link>
           </Button>
@@ -254,52 +110,8 @@ export default async function AudiobookDetailPage({
     );
   }
 
-  if (!audiobookData || !audiobookData.volumeInfo) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 p-6 rounded-xl">
-          <h2 className="text-2xl font-bold mb-2">Audiobook Not Found</h2>
-          <p className="mb-4">
-            The audiobook you're looking for could not be found.
-          </p>
-          <Button asChild>
-            <Link href="/audiobooks">Browse Audiobooks</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const { volumeInfo } = audiobookData;
-  // Use actual chapter audio file if available, otherwise fallback to sample
-  const audioUrl =
-    chapters[currentChapter]?.audioFile ||
-    getSampleAudioUrl(id, currentChapter + 1);
-
-  // Get related audiobooks (in a real app, this would come from an API)
-  const relatedAudiobooks = [
-    {
-      id: "1",
-      title: "The Silent Echo",
-      author: "J.R. Morgan",
-      image: "/placeholder.svg?height=400&width=300",
-      category: "Mystery",
-    },
-    {
-      id: "2",
-      title: "Beyond the Horizon",
-      author: "Elena Rodriguez",
-      image: "/placeholder.svg?height=400&width=300",
-      category: "Science Fiction",
-    },
-    {
-      id: "3",
-      title: "Whispers in the Dark",
-      author: "Michael Chen",
-      image: "/placeholder.svg?height=400&width=300",
-      category: "Thriller",
-    },
-  ];
+  const chapters = audiobook.chapters || [];
+  const currentAudioUrl = chapters[currentChapter]?.audioFile || '';
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -308,96 +120,80 @@ export default async function AudiobookDetailPage({
           <div className="flex flex-col md:flex-row gap-8 mb-8">
             <div className="relative w-48 h-72 flex-shrink-0 mx-auto md:mx-0">
               <Image
-                src={
-                  volumeInfo.imageLinks?.thumbnail ||
-                  "/placeholder.svg?height=600&width=400"
-                }
-                alt={volumeInfo.title}
+                src={audiobook.coverImage || "/placeholder.svg?height=600&width=400"}
+                alt={audiobook.title}
                 fill
                 className="object-cover rounded-lg shadow-md"
               />
             </div>
             <div className="flex-1">
               <div className="flex flex-wrap gap-2 mb-2">
-                {volumeInfo.categories?.map(
-                  (category: string, index: number) => (
-                    <Badge
-                      key={index}
-                      className="bg-purple-100 text-purple-800 hover:bg-purple-200"
-                    >
-                      {category}
-                    </Badge>
-                  )
+                {audiobook.genre && (
+                  <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
+                    {audiobook.genre.name}
+                  </Badge>
                 )}
               </div>
-              <h1 className="text-3xl font-bold mb-2">{volumeInfo.title}</h1>
+              <h1 className="text-3xl font-bold mb-2">{audiobook.title}</h1>
               <p className="text-lg text-muted-foreground mb-2">
-                by {volumeInfo.authors?.join(", ") || "Unknown Author"}
+                by {audiobook.createdBy.firstName} {audiobook.createdBy.lastName}
+              </p>
+              <p className="text-md text-muted-foreground mb-4">
+                Narrated by {audiobook.narrator}
               </p>
 
-              {volumeInfo.averageRating && volumeInfo.averageRating > 0 && (
-                <div className="mb-4">
-                  {renderRating(volumeInfo.averageRating)}
-                  <span className="text-sm text-muted-foreground ml-2">
-                    ({volumeInfo.ratingsCount || 0} ratings)
-                  </span>
-                </div>
-              )}
-
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground mb-4">
-                {volumeInfo.publishedDate && (
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>Published: {volumeInfo.publishedDate}</span>
-                  </div>
-                )}
-                {volumeInfo.pageCount && (
-                  <div className="flex items-center">
-                    <BookOpen className="h-4 w-4 mr-1" />
-                    <span>{volumeInfo.pageCount} pages</span>
-                  </div>
-                )}
-                {volumeInfo.publisher && (
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>Released: {new Date(audiobook.releaseDate).getFullYear()}</span>
+                </div>
+                <div className="flex items-center">
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  <span>{audiobook._count.chapters} chapters</span>
+                </div>
+                {audiobook.publisher && (
                   <div className="flex items-center">
                     <User className="h-4 w-4 mr-1" />
-                    <span>Publisher: {volumeInfo.publisher}</span>
+                    <span>Publisher: {audiobook.publisher}</span>
                   </div>
                 )}
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-1" />
                   <span>
                     {(() => {
-                      const totalMinutes = Math.round(
-                        chapters.reduce(
-                          (total, chapter) => total + chapter.duration,
-                          0
-                        ) / 60
-                      );
+                      const totalMinutes = Math.round(audiobook.duration / 60);
                       const hours = Math.floor(totalMinutes / 60);
                       const mins = totalMinutes % 60;
                       return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-                    })()}{" "}
-                    ({chapters.length} chapters)
+                    })()}
                   </span>
                 </div>
               </div>
 
               <div className="mb-6">
-                <p className="text-sm line-clamp-4">{volumeInfo.description}</p>
-                <Button variant="link" className="p-0 h-auto text-sm">
-                  Read more
-                </Button>
+                <p className="text-sm line-clamp-4">{audiobook.description}</p>
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <Button
                   className="bg-purple-600 hover:bg-purple-700"
-                  onClick={() => handlePlayChapter(chapters[0])}
+                  onClick={() => chapters[0] && handlePlayChapter(chapters[0])}
                 >
                   Start Listening
                 </Button>
-                <Button variant="outline" onClick={handleFavoriteToggle}>
-                  {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                <Button 
+                  variant="outline" 
+                  onClick={handleFavoriteToggle}
+                  disabled={toggleFavoriteMutation.isPending}
+                >
+                  {audiobook.isFavorited ? "Remove from Favorites" : "Add to Favorites"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleBookmarkToggle}
+                  disabled={toggleBookmarkMutation.isPending}
+                >
+                  {audiobook.isBookmarked ? "Remove Bookmark" : "Bookmark"}
                 </Button>
               </div>
             </div>
@@ -405,17 +201,18 @@ export default async function AudiobookDetailPage({
 
           <div id="audiobook-player" className="mb-8">
             <AudiobookPlayer
-              title={volumeInfo.title}
-              author={volumeInfo.authors?.[0] || "Unknown Author"}
-              audioUrl={audioUrl}
-              image={volumeInfo.imageLinks?.thumbnail}
+              title={audiobook.title}
+              author={`${audiobook.createdBy.firstName} ${audiobook.createdBy.lastName}`}
+              audioUrl={currentAudioUrl}
+              image={audiobook.coverImage}
               onFavoriteToggle={handleFavoriteToggle}
-              isFavorite={isFavorite}
+              isFavorite={audiobook.isFavorited || false}
               chapters={chapters}
               currentChapter={currentChapter}
               onChapterChange={handleChapterChange}
-              audiobookId={id}
-              initialPosition={progress.position}
+              audiobookId={audiobookId || ''}
+              initialPosition={audiobook.playbackProgress?.[0]?.position || 0}
+              key={`player-${audiobookId}`}
             />
           </div>
 
@@ -440,79 +237,48 @@ export default async function AudiobookDetailPage({
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Description</h3>
-                    <div
-                      className="text-muted-foreground"
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          volumeInfo.description || "No description available.",
-                      }}
-                    />
+                    <p className="text-muted-foreground">
+                      {audiobook.description || "No description available."}
+                    </p>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
-                      Book Information
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-2">Book Information</h3>
                     <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                      {volumeInfo.publisher && (
+                      {audiobook.publisher && (
                         <>
                           <dt className="font-medium">Publisher</dt>
-                          <dd className="text-muted-foreground">
-                            {volumeInfo.publisher}
-                          </dd>
+                          <dd className="text-muted-foreground">{audiobook.publisher}</dd>
                         </>
                       )}
-                      {volumeInfo.publishedDate && (
+                      <>
+                        <dt className="font-medium">Release Date</dt>
+                        <dd className="text-muted-foreground">
+                          {new Date(audiobook.releaseDate).toLocaleDateString()}
+                        </dd>
+                      </>
+                      <>
+                        <dt className="font-medium">Language</dt>
+                        <dd className="text-muted-foreground">
+                          {audiobook.language === "en" ? "English" : audiobook.language}
+                        </dd>
+                      </>
+                      <>
+                        <dt className="font-medium">Duration</dt>
+                        <dd className="text-muted-foreground">
+                          {Math.round(audiobook.duration / 60)} minutes
+                        </dd>
+                      </>
+                      {audiobook.genre && (
                         <>
-                          <dt className="font-medium">Publication Date</dt>
-                          <dd className="text-muted-foreground">
-                            {volumeInfo.publishedDate}
-                          </dd>
+                          <dt className="font-medium">Genre</dt>
+                          <dd className="text-muted-foreground">{audiobook.genre.name}</dd>
                         </>
                       )}
-                      {volumeInfo.language && (
-                        <>
-                          <dt className="font-medium">Language</dt>
-                          <dd className="text-muted-foreground">
-                            {volumeInfo.language === "en"
-                              ? "English"
-                              : volumeInfo.language}
-                          </dd>
-                        </>
-                      )}
-                      {volumeInfo.pageCount && (
-                        <>
-                          <dt className="font-medium">Page Count</dt>
-                          <dd className="text-muted-foreground">
-                            {volumeInfo.pageCount}
-                          </dd>
-                        </>
-                      )}
-                      {volumeInfo.printType && (
-                        <>
-                          <dt className="font-medium">Print Type</dt>
-                          <dd className="text-muted-foreground">
-                            {volumeInfo.printType}
-                          </dd>
-                        </>
-                      )}
-                      {volumeInfo.categories &&
-                        volumeInfo.categories.length > 0 && (
-                          <>
-                            <dt className="font-medium">Categories</dt>
-                            <dd className="text-muted-foreground">
-                              {volumeInfo.categories.join(", ")}
-                            </dd>
-                          </>
-                        )}
-                      {volumeInfo.industryIdentifiers && (
+                      {audiobook.isbn && (
                         <>
                           <dt className="font-medium">ISBN</dt>
-                          <dd className="text-muted-foreground">
-                            {volumeInfo.industryIdentifiers
-                              .map((id: any) => `${id.type}: ${id.identifier}`)
-                              .join(", ")}
-                          </dd>
+                          <dd className="text-muted-foreground">{audiobook.isbn}</dd>
                         </>
                       )}
                     </dl>
@@ -521,11 +287,11 @@ export default async function AudiobookDetailPage({
               </TabsContent>
 
               <TabsContent value="reviews">
-                <ReviewSection audiobookId={id} />
+                <ReviewSection audiobookId={audiobookId || ''} />
               </TabsContent>
 
               <TabsContent value="comments">
-                <CommentSection audiobookId={id} />
+                <CommentSection audiobookId={audiobookId || ''} />
               </TabsContent>
             </Tabs>
           </div>
@@ -534,135 +300,56 @@ export default async function AudiobookDetailPage({
         <div className="space-y-8">
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Similar Audiobooks</h2>
-              <div className="space-y-4">
-                {relatedAudiobooks.map((related) => (
-                  <Link
-                    href={`/audiobooks/${related.id}`}
-                    key={related.id}
-                    className="block"
-                  >
-                    <div className="flex items-center gap-3 group">
-                      <div className="relative w-16 h-24 rounded-md overflow-hidden flex-shrink-0">
-                        <Image
-                          src={related.image || "/placeholder.svg"}
-                          alt={related.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium group-hover:text-purple-600 transition-colors">
-                          {related.title}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          by {related.author}
-                        </p>
-                        <Badge className="mt-1 text-xs bg-purple-100 text-purple-800 hover:bg-purple-200">
-                          {related.category}
-                        </Badge>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">About the Author</h2>
               <div className="flex items-center gap-4 mb-4">
                 <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center">
-                  <User className="h-8 w-8 text-purple-600" />
+                  {audiobook.createdBy.profileImage ? (
+                    <Image
+                      src={audiobook.createdBy.profileImage}
+                      alt={`${audiobook.createdBy.firstName} ${audiobook.createdBy.lastName}`}
+                      width={64}
+                      height={64}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <User className="h-8 w-8 text-purple-600" />
+                  )}
                 </div>
                 <div>
                   <p className="font-medium">
-                    {volumeInfo.authors?.[0] || "Unknown Author"}
+                    {audiobook.createdBy.firstName} {audiobook.createdBy.lastName}
                   </p>
                   <p className="text-sm text-muted-foreground">Author</p>
                 </div>
               </div>
-              <p className="text-muted-foreground text-sm mb-4">
-                {volumeInfo.authors?.[0] || "The author"} has written multiple
-                bestselling books in the{" "}
-                {volumeInfo.categories?.[0] || "fiction"} genre, captivating
-                readers with engaging storytelling and memorable characters.
-              </p>
-              <Button variant="outline" className="w-full">
-                View All Books by This Author
-              </Button>
+              {audiobook.createdBy.bio && (
+                <p className="text-muted-foreground text-sm mb-4">
+                  {audiobook.createdBy.bio}
+                </p>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Share This Audiobook
-              </h2>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    const text = `Check out ${volumeInfo.title} by ${volumeInfo.authors?.[0] || "Unknown Author"}`;
-                    const url = window.location.href;
-
-                    if (navigator.share && window.isSecureContext) {
-                      navigator
-                        .share({
-                          title: volumeInfo.title,
-                          text: text,
-                          url: url,
-                        })
-                        .catch((err) => {
-                          console.error("Error sharing:", err);
-                          // Fallback to clipboard
-                          navigator.clipboard
-                            .writeText(url)
-                            .then(() =>
-                              toast({
-                                title: "Link copied",
-                                description:
-                                  "Audiobook link copied to clipboard",
-                                duration: 3000,
-                              })
-                            )
-                            .catch(() =>
-                              toast({
-                                title: "Sharing failed",
-                                description:
-                                  "Please manually copy the URL from your browser's address bar",
-                                variant: "destructive",
-                                duration: 3000,
-                              })
-                            );
-                        });
-                    } else {
-                      // Fallback for browsers without Web Share API
-                      navigator.clipboard
-                        .writeText(url)
-                        .then(() =>
-                          toast({
-                            title: "Link copied",
-                            description: "Audiobook link copied to clipboard",
-                            duration: 3000,
-                          })
-                        )
-                        .catch(() =>
-                          toast({
-                            title: "Sharing failed",
-                            description:
-                              "Please manually copy the URL from your browser's address bar",
-                            variant: "destructive",
-                            duration: 3000,
-                          })
-                        );
-                    }
-                  }}
-                  className="w-full"
-                >
-                  Share Audiobook
-                </Button>
+              <h2 className="text-xl font-semibold mb-4">Engagement</h2>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Favorites:</span>
+                  <span>{audiobook._count.favorites}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Comments:</span>
+                  <span>{audiobook._count.comments}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Reviews:</span>
+                  <span>{audiobook._count.reviews}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Bookmarks:</span>
+                  <span>{audiobook._count.bookmarks}</span>
+                </div>
               </div>
             </CardContent>
           </Card>

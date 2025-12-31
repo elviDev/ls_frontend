@@ -52,7 +52,8 @@ export default function PodcastDetailPage() {
   const { setCurrentPodcast } = usePodcastStore()
   
   const { data: podcast, isLoading, error } = usePodcast(params.id as string)
-  const { data: episodes, isLoading: episodesLoading } = usePodcastEpisodes(params.id as string)
+  const { data: episodesData, isLoading: episodesLoading } = usePodcastEpisodes(params.id as string)
+  const episodes = episodesData?.episodes || []
 
   useEffect(() => {
     if (podcast) {
@@ -124,7 +125,7 @@ export default function PodcastDetailPage() {
   }
 
   const getTotalDuration = () => {
-    if (!episodes) return 0
+    if (!episodes || !Array.isArray(episodes)) return 0
     return episodes.reduce((total, episode) => total + (episode?.duration || 0), 0)
   }
 
@@ -174,7 +175,7 @@ export default function PodcastDetailPage() {
             <Plus className="h-4 w-4 mr-2" />
             Add Episode
           </Button>
-          <Button variant="outline" onClick={() => router.push(`/dashboard/podcasts/${podcast.id}/edit`)}>
+          <Button variant="outline" onClick={() => router.push(`/dashboard/podcasts/new?edit=${podcast.id}`)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Series
           </Button>
@@ -535,7 +536,7 @@ export default function PodcastDetailPage() {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Episode
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => router.push(`/dashboard/podcasts/${podcast.id}/edit`)}>
+              <Button variant="outline" className="w-full" onClick={() => router.push(`/dashboard/podcasts/new?edit=${podcast.id}`)}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Series
               </Button>

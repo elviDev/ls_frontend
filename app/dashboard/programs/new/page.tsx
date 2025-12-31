@@ -1,171 +1,97 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { apiClient } from "@/lib/api-client"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Upload, Image as ImageIcon, X } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import Image from "next/image"
-
-type Staff = {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-}
-
-type Genre = {
-  id: string
-  name: string
-}
-
-type Asset = {
-  id: string
-  originalName: string
-  url: string
-  type: string
-}
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Upload, Image as ImageIcon, X } from "lucide-react";
+import Image from "next/image";
+import { useCreateProgram } from "@/hooks/use-programs";
+import { useStaff } from "@/hooks/use-staff";
+import { useGenres } from "@/hooks/use-genres";
+import { useAssets } from "@/hooks/use-assets";
+import { ProgramCategory, ProgramStatus } from "@/stores/program-store";
 
 export default function NewProgramPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [staff, setStaff] = useState<Staff[]>([])
-  const [genres, setGenres] = useState<Genre[]>([])
-  const [assets, setAssets] = useState<Asset[]>([])
-  const [selectedImage, setSelectedImage] = useState<string>("")
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string>("")
+  const router = useRouter();
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  const { data: staffData } = useStaff();
+  const { data: genres } = useGenres();
+  const { data: assetsData } = useAssets({ type: 'IMAGE', perPage: 50, page: 1, search: '' });
+  const createProgram = useCreateProgram();
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "",
+    category: "" as ProgramCategory | "",
     schedule: "",
     hostId: "",
     genreId: "",
-    status: "ACTIVE"
-  })
-
-  useEffect(() => {
-    fetchStaff()
-    fetchGenres()
-    fetchAssets()
-  }, [])
-
-  const fetchStaff = async () => {
-    try {
-      const response = await apiClient.request("/staff")
-      if (response.ok) {
-        const data = await response.json()
-        setStaff(data.staff)
-      }
-    } catch (error) {
-      console.error("Failed to fetch staff:", error)
-    }
-  }
-
-  const fetchGenres = async () => {
-    try {
-      const response = await fetch("/api/genres")
-      if (response.ok) {
-        const data = await response.json()
-        setGenres(data.genres)
-      }
-    } catch (error) {
-      console.error("Failed to fetch genres:", error)
-    }
-  }
-
-  const fetchAssets = async () => {
-    try {
-      const response = await apiClient.request("/assets?type=IMAGE")
-      if (response.ok) {
-        const data = await response.json()
-        setAssets(data.assets)
-      }
-    } catch (error) {
-      console.error("Failed to fetch assets:", error)
-    }
-  }
+    status: "ACTIVE" as ProgramStatus,
+    image: "" as string | undefined,
+  });
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setUploadedFile(file)
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-      setSelectedImage("")
+      setUploadedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      setSelectedImage("");
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
 
-    try {
-      let imageUrl = selectedImage
+    const submitData = {
+      ...formData
+    };
 
-      // Upload new file if selected
-      if (uploadedFile) {
-        const uploadFormData = new FormData()
-        uploadFormData.append("file", uploadedFile)
-        uploadFormData.append("type", "IMAGE")
-        uploadFormData.append("description", `Cover image for ${formData.title}`)
-
-        const uploadResponse = await apiClient.request("/assets/upload", {
-          method: "POST",
-          body: uploadFormData
-        })
-
-        if (uploadResponse.ok) {
-          const uploadData = await uploadResponse.json()
-          imageUrl = uploadData.url
-        }
+    // Handle image separately if needed
+    if (uploadedFile) {
+      const formDataWithFile = new FormData();
+      Object.entries(submitData).forEach(([key, value]) => {
+        if (value) formDataWithFile.append(key, value);
+      });
+      formDataWithFile.append("image", uploadedFile);
+      createProgram.mutate(formDataWithFile, {
+        onSuccess: () => router.push("/dashboard/programs"),
+      });
+    } else {
+      if (selectedImage) {
+        (submitData as any).image = selectedImage;
       }
-
-      const response = await apiClient.request("/programs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          image: imageUrl
-        })
-      })
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Program created successfully"
-        })
-        router.push("/dashboard/programs")
-      } else {
-        throw new Error("Failed to create program")
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create program",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
+      createProgram.mutate(submitData, {
+        onSuccess: () => router.push("/dashboard/programs"),
+      });
     }
-  }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Create New Program</h1>
-        <p className="text-muted-foreground">Add a new radio program to your lineup</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Create New Program
+        </h1>
+        <p className="text-muted-foreground">
+          Add a new radio program to your lineup
+        </p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -181,7 +107,12 @@ export default function NewProgramPage() {
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </div>
@@ -191,7 +122,12 @@ export default function NewProgramPage() {
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     rows={4}
                     required
                   />
@@ -200,34 +136,74 @@ export default function NewProgramPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="category">Category</Label>
-                    <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          category: value as ProgramCategory,
+                        }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="TALK_SHOW">Talk Show</SelectItem>
-                        <SelectItem value="MUSIC">Music</SelectItem>
-                        <SelectItem value="TECHNOLOGY">Technology</SelectItem>
-                        <SelectItem value="BUSINESS">Business</SelectItem>
-                        <SelectItem value="INTERVIEW">Interview</SelectItem>
-                        <SelectItem value="SPORTS">Sports</SelectItem>
-                        <SelectItem value="NEWS">News</SelectItem>
-                        <SelectItem value="ENTERTAINMENT">Entertainment</SelectItem>
-                        <SelectItem value="EDUCATION">Education</SelectItem>
+                        <SelectItem value={ProgramCategory.TALK_SHOW}>
+                          Talk Show
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.MUSIC}>
+                          Music
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.TECHNOLOGY}>
+                          Technology
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.BUSINESS}>
+                          Business
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.INTERVIEW}>
+                          Interview
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.SPORTS}>
+                          Sports
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.NEWS}>
+                          News
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.ENTERTAINMENT}>
+                          Entertainment
+                        </SelectItem>
+                        <SelectItem value={ProgramCategory.EDUCATION}>
+                          Education
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
                     <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          status: value as ProgramStatus,
+                        }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVE">Active</SelectItem>
-                        <SelectItem value="INACTIVE">Inactive</SelectItem>
-                        <SelectItem value="ARCHIVED">Archived</SelectItem>
+                        <SelectItem value={ProgramStatus.ACTIVE}>
+                          Active
+                        </SelectItem>
+                        <SelectItem value={ProgramStatus.INACTIVE}>
+                          Inactive
+                        </SelectItem>
+                        <SelectItem value={ProgramStatus.ARCHIVED}>
+                          Archived
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -238,7 +214,12 @@ export default function NewProgramPage() {
                   <Input
                     id="schedule"
                     value={formData.schedule}
-                    onChange={(e) => setFormData(prev => ({ ...prev, schedule: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        schedule: e.target.value,
+                      }))
+                    }
                     placeholder="e.g., Weekdays, 9AM - 11AM"
                     required
                   />
@@ -247,12 +228,17 @@ export default function NewProgramPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="host">Host</Label>
-                    <Select value={formData.hostId} onValueChange={(value) => setFormData(prev => ({ ...prev, hostId: value }))}>
+                    <Select
+                      value={formData.hostId}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, hostId: value }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select host" />
                       </SelectTrigger>
                       <SelectContent>
-                        {staff?.map((member) => (
+                        {staffData?.staff?.map((member) => (
                           <SelectItem key={member.id} value={member.id}>
                             {member.firstName} {member.lastName}
                           </SelectItem>
@@ -263,7 +249,12 @@ export default function NewProgramPage() {
 
                   <div>
                     <Label htmlFor="genre">Genre (Optional)</Label>
-                    <Select value={formData.genreId} onValueChange={(value) => setFormData(prev => ({ ...prev, genreId: value }))}>
+                    <Select
+                      value={formData.genreId}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, genreId: value }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select genre" />
                       </SelectTrigger>
@@ -292,7 +283,7 @@ export default function NewProgramPage() {
                     <TabsTrigger value="assets">From Assets</TabsTrigger>
                     <TabsTrigger value="upload">Upload New</TabsTrigger>
                   </TabsList>
-                  
+
                   <TabsContent value="assets" className="space-y-4">
                     {selectedImage && (
                       <div className="mb-4">
@@ -317,16 +308,16 @@ export default function NewProgramPage() {
                       </div>
                     )}
                     <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                      {assets?.map((asset) => (
+                      {assetsData?.assets?.map((asset) => (
                         <div
                           key={asset.id}
                           className={`relative cursor-pointer border-2 rounded-lg overflow-hidden ${
                             selectedImage === asset.url ? "border-primary" : "border-muted"
                           }`}
                           onClick={() => {
-                            setSelectedImage(asset.url)
-                            setUploadedFile(null)
-                            setPreviewUrl("")
+                            setSelectedImage(asset.url);
+                            setUploadedFile(null);
+                            setPreviewUrl("");
                           }}
                         >
                           <Image
@@ -345,7 +336,7 @@ export default function NewProgramPage() {
                       ))}
                     </div>
                   </TabsContent>
-                  
+
                   <TabsContent value="upload" className="space-y-4">
                     {previewUrl ? (
                       <div className="relative">
@@ -363,8 +354,8 @@ export default function NewProgramPage() {
                             size="icon"
                             className="absolute top-2 right-2"
                             onClick={() => {
-                              setUploadedFile(null)
-                              setPreviewUrl("")
+                              setUploadedFile(null);
+                              setPreviewUrl("");
                             }}
                           >
                             <X className="h-4 w-4" />
@@ -394,10 +385,18 @@ export default function NewProgramPage() {
             </Card>
 
             <div className="flex gap-2">
-              <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? "Creating..." : "Create Program"}
+              <Button
+                type="submit"
+                disabled={createProgram.isPending}
+                className="flex-1"
+              >
+                {createProgram.isPending ? "Creating..." : "Create Program"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => router.back()}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
                 Cancel
               </Button>
             </div>
@@ -405,5 +404,5 @@ export default function NewProgramPage() {
         </div>
       </form>
     </div>
-  )
+  );
 }
