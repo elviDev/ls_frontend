@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { usePodcastEpisode, useEpisodeComments } from "@/hooks/use-podcasts";
+import { usePodcastEpisode, useEpisodeComments, useUpdateEpisode, useDeleteEpisode } from "@/hooks/use-podcasts";
 import {
   Card,
   CardContent,
@@ -144,7 +144,7 @@ export default function EpisodeDetailPage() {
   const params = useParams();
   const { toast } = useToast();
   
-  // Use hooks for data fetching
+  // Use hooks for data fetching and mutations
   const { data: episode, isLoading: loading, error } = usePodcastEpisode(
     params.id as string, 
     params.episodeId as string
@@ -153,6 +153,8 @@ export default function EpisodeDetailPage() {
     params.id as string, 
     params.episodeId as string
   );
+  const updateEpisodeMutation = useUpdateEpisode();
+  const deleteEpisodeMutation = useDeleteEpisode();
   const comments = commentsData?.comments || [];
   
   const [isEditing, setIsEditing] = useState(false);
@@ -202,52 +204,25 @@ export default function EpisodeDetailPage() {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(
-        `/podcasts/${params.id}/episodes/${params.episodeId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to delete episode");
-
-      toast({
-        title: "Success",
-        description: "Episode deleted successfully",
+      await deleteEpisodeMutation.mutateAsync({
+        podcastId: params.id as string,
+        episodeId: params.episodeId as string,
       });
       router.push(`/dashboard/podcasts/${params.id}`);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete episode",
-        variant: "destructive",
-      });
+      // Error is already handled by the mutation
     }
   };
 
   const handleStatusChange = async (status: string) => {
     try {
-      const response = await fetch(
-        `/podcasts/${params.id}/episodes/${params.episodeId}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to update status");
-
-      toast({
-        title: "Success",
-        description: `Episode ${status.toLowerCase()} successfully`,
+      await updateEpisodeMutation.mutateAsync({
+        podcastId: params.id as string,
+        episodeId: params.episodeId as string,
+        data: { status },
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update episode status",
-        variant: "destructive",
-      });
+      // Error is already handled by the mutation
     }
   };
 
@@ -267,36 +242,17 @@ export default function EpisodeDetailPage() {
         });
       }, 200);
 
-      const response = await fetch(
-        `/podcasts/${params.id}/episodes/${params.episodeId}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      );
+      await updateEpisodeMutation.mutateAsync({
+        podcastId: params.id as string,
+        episodeId: params.episodeId as string,
+        data,
+      });
 
       clearInterval(progressInterval);
       setUploadProgress(100);
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to update episode");
-      }
-
-      const updatedEpisode = await response.json();
       setIsEditing(false);
-
-      toast({
-        title: "Success",
-        description: "Episode updated successfully!",
-      });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update episode",
-        variant: "destructive",
-      });
+      // Error is already handled by the mutation
     } finally {
       setIsSubmitting(false);
       setUploadProgress(0);
@@ -350,29 +306,15 @@ export default function EpisodeDetailPage() {
         formData.append("transcript", "");
       }
 
-      const response = await fetch(
-        `/podcasts/${params.id}/episodes/${params.episodeId}`,
-        {
-          method: "PATCH",
-          body: formData,
-        }
-      );
+      await updateEpisodeMutation.mutateAsync({
+        podcastId: params.id as string,
+        episodeId: params.episodeId as string,
+        data: formData,
+      });
 
-      if (!response.ok) throw new Error("Failed to save transcript");
-
-      const updatedEpisode = await response.json();
       setTranscriptDialog(false);
-
-      toast({
-        title: "Success",
-        description: "Transcript saved successfully",
-      });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save transcript",
-        variant: "destructive",
-      });
+      // Error is already handled by the mutation
     } finally {
       setIsUploadingTranscript(false);
     }
@@ -386,24 +328,18 @@ export default function EpisodeDetailPage() {
       audio.addEventListener("loadedmetadata", async () => {
         const newDuration = Math.floor(audio.duration);
 
-        // Update the episode duration in the database
-        const response = await fetch(
-          `/podcasts/${params.id}/episodes/${params.episodeId}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ duration: newDuration }),
-          }
-        );
+        // Update the episode duration using the mutation
+        await updateEpisodeMutation.mutateAsync({
+          podcastId: params.id as string,
+          episodeId: params.episodeId as string,
+          data: { duration: newDuration },
+        });
 
-        if (response.ok) {
-          const updatedEpisode = await response.json();
-          setAudioDuration(newDuration);
-          toast({
-            title: "Success",
-            description: `Duration updated to ${formatDuration(newDuration)}`,
-          });
-        }
+        setAudioDuration(newDuration);
+        toast({
+          title: "Success",
+          description: `Duration updated to ${formatDuration(newDuration)}`,
+        });
       });
       audio.addEventListener("error", () => {
         toast({

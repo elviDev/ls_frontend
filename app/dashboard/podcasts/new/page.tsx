@@ -714,8 +714,10 @@ export default function NewPodcastPage() {
                               <SelectItem key={member.id} value={member.id}>
                                 <div className="flex items-center gap-2">
                                   <User className="h-4 w-4" />
-                                  {member.name ||
-                                    `${member.firstName || ""} ${member.lastName || ""}`.trim()}
+                                  <span>
+                                    {member.name ||
+                                      `${member.firstName || ""} ${member.lastName || ""}`.trim()}
+                                  </span>
                                   <Badge variant="outline" className="text-xs">
                                     {member.role}
                                   </Badge>

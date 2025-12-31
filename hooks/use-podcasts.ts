@@ -157,7 +157,7 @@ export function useUpdatePodcast() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: FormData | any }) =>
       apiClient.request(`/podcasts/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         body: data instanceof FormData ? data : JSON.stringify(data),
         headers: data instanceof FormData ? {} : { 'Content-Type': 'application/json' },
       }),
@@ -209,14 +209,15 @@ export function useCreateEpisode() {
 export function useUpdateEpisode() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ episodeId, data }: { episodeId: string; data: FormData | any }) =>
-      apiClient.request(`/podcasts/episodes/${episodeId}`, {
-        method: 'PUT',
+    mutationFn: ({ podcastId, episodeId, data }: { podcastId: string; episodeId: string; data: FormData | any }) =>
+      apiClient.request(`/podcasts/${podcastId}/episodes/${episodeId}`, {
+        method: 'PATCH',
         body: data instanceof FormData ? data : JSON.stringify(data),
         headers: data instanceof FormData ? {} : { 'Content-Type': 'application/json' },
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: podcastKeys.all });
+    onSuccess: (_, { podcastId, episodeId }) => {
+      queryClient.invalidateQueries({ queryKey: podcastKeys.episode(podcastId, episodeId) });
+      queryClient.invalidateQueries({ queryKey: podcastKeys.episodes(podcastId) });
       toast.success('Episode updated successfully');
     },
     onError: (error: any) => {
@@ -228,9 +229,11 @@ export function useUpdateEpisode() {
 export function useDeleteEpisode() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (episodeId: string) => apiClient.request(`/podcasts/episodes/${episodeId}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: podcastKeys.all });
+    mutationFn: ({ podcastId, episodeId }: { podcastId: string; episodeId: string }) => 
+      apiClient.request(`/podcasts/${podcastId}/episodes/${episodeId}`, { method: 'DELETE' }),
+    onSuccess: (_, { podcastId }) => {
+      queryClient.invalidateQueries({ queryKey: podcastKeys.episodes(podcastId) });
+      queryClient.invalidateQueries({ queryKey: podcastKeys.detail(podcastId) });
       toast.success('Episode deleted successfully');
     },
     onError: (error: any) => {

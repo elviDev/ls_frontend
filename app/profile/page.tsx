@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { 
   User, 
@@ -23,7 +22,6 @@ import {
   X,
   Heart,
   Clock,
-  CheckCircle,
   Music,
   Headphones,
   Mic,
@@ -32,91 +30,86 @@ import {
   BookOpen,
   Star,
   TrendingUp,
-  Plus,
-  BarChart
+  BarChart,
+  Shield,
+  MapPin,
+  Briefcase
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { apiClient } from "@/lib/api-client"
-import { MediaItem } from "@/components/profile/media-item"
+import { useProfile, useUpdateProfile, useFavorites, UserProfile, StaffProfile } from "@/hooks/use-profile"
+import { useAuthStore } from "@/stores/auth-store"
 
-const profileSchema = z.object({
+const userProfileSchema = z.object({
   name: z.string().optional(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
   username: z.string().optional(),
   bio: z.string().optional(),
-  phone: z.string().optional(),
   profileImage: z.string().optional()
 })
 
-type ProfileData = z.infer<typeof profileSchema>
+const staffProfileSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  bio: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  emergencyContact: z.string().optional(),
+  profileImage: z.string().optional()
+})
+
+type UserProfileData = z.infer<typeof userProfileSchema>
+type StaffProfileData = z.infer<typeof staffProfileSchema>
 
 export default function ProfilePage() {
-  const { toast } = useToast()
-  const [profile, setProfile] = useState<any>(null)
+  const { user } = useAuthStore()
+  const { data: profileData, isLoading, error } = useProfile()
+  const { data: favorites } = useFavorites()
+  const updateProfile = useUpdateProfile()
   const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
 
-  const form = useForm<ProfileData>({
-    resolver: zodResolver(profileSchema)
+  const isStaff = user?.userType === 'staff'
+  const profile = profileData?.profile
+
+  const userForm = useForm<UserProfileData>({
+    resolver: zodResolver(userProfileSchema)
   })
 
-  useEffect(() => {
-    fetchProfile()
-  }, [])
+  const staffForm = useForm<StaffProfileData>({
+    resolver: zodResolver(staffProfileSchema)
+  })
 
-  const fetchProfile = async () => {
-    try {
-      const data = await apiClient.auth.me()
-      setProfile(data)
-      
-      // Set form values
-      if (data.type === 'staff' && data.profile) {
-        form.reset({
-          firstName: data.profile.firstName || '',
-          lastName: data.profile.lastName || '',
-          bio: data.profile.bio || '',
-          phone: data.profile.phone || '',
-          profileImage: data.profile.profileImage || ''
+  const form = isStaff ? staffForm : userForm
+
+  // Set form values when profile data loads
+  React.useEffect(() => {
+    if (profile && !isEditing) {
+      if (isStaff) {
+        const staffProfile = profile as StaffProfile
+        staffForm.reset({
+          firstName: staffProfile.firstName || '',
+          lastName: staffProfile.lastName || '',
+          bio: staffProfile.bio || '',
+          phone: staffProfile.phone || '',
+          address: staffProfile.address || '',
+          emergencyContact: staffProfile.emergencyContact || '',
+          profileImage: staffProfile.profileImage || ''
         })
-      } else if (data.profile) {
-        form.reset({
-          name: data.profile.name || '',
-          username: data.profile.username || '',
-          bio: data.profile.bio || '',
-          profileImage: data.profile.profileImage || ''
+      } else {
+        const userProfile = profile as UserProfile
+        userForm.reset({
+          name: userProfile.name || '',
+          username: userProfile.username || '',
+          bio: userProfile.bio || '',
+          profileImage: userProfile.profileImage || ''
         })
       }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error)
-    } finally {
-      setIsLoading(false)
     }
-  }
+  }, [profile, isEditing, isStaff, staffForm, userForm])
 
-  const onSubmit = async (data: ProfileData) => {
-    setIsSaving(true)
+  const onSubmit = async (data: UserProfileData | StaffProfileData) => {
     try {
-      await apiClient.request('/profile', {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      })
-
-      await fetchProfile()
+      await updateProfile.mutateAsync(data)
       setIsEditing(false)
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully"
-      })
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSaving(false)
+      // Error handled by mutation
     }
   }
 
@@ -130,6 +123,17 @@ export default function ProfilePage() {
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
+  }
+
+  const getDisplayName = () => {
+    if (!profile) return 'User'
+    if (isStaff) {
+      const staffProfile = profile as StaffProfile
+      return `${staffProfile.firstName || ''} ${staffProfile.lastName || ''}`.trim() || 'Staff Member'
+    } else {
+      const userProfile = profile as UserProfile
+      return userProfile.name || userProfile.username || 'User'
+    }
   }
 
   if (isLoading) {
@@ -150,20 +154,18 @@ export default function ProfilePage() {
     )
   }
 
-  if (!profile) {
+  if (error || !profile) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Profile not found</h1>
+          <p className="text-muted-foreground mt-2">{error?.message || 'Unable to load profile'}</p>
         </div>
       </div>
     )
   }
 
-  const isStaff = profile.type === 'staff'
-  const displayName = isStaff 
-    ? `${profile.profile?.firstName || ''} ${profile.profile?.lastName || ''}`.trim() || 'Staff Member'
-    : profile.profile?.name || profile.profile?.username || 'User'
+  const displayName = getDisplayName()
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
@@ -185,47 +187,63 @@ export default function ProfilePage() {
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile.profile?.profileImage || ''} />
+                  <AvatarImage src={profile.profileImage || ''} />
                   <AvatarFallback className="text-lg">
-                    {getInitials(displayName || 'U')}
+                    {getInitials(displayName)}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <CardTitle className="text-xl">{displayName}</CardTitle>
               <CardDescription className="flex items-center justify-center gap-2">
                 <Mail className="h-4 w-4" />
-                {profile.profile?.email || 'No email'}
+                {profile.email}
               </CardDescription>
               {isStaff && (
                 <div className="flex justify-center gap-2 mt-2">
-                  <Badge variant="secondary">{profile.profile?.role || 'Staff'}</Badge>
-                  {profile.profile?.department && (
-                    <Badge variant="outline">{profile.profile.department}</Badge>
+                  <Badge variant="secondary">{(profile as StaffProfile).role}</Badge>
+                  {(profile as StaffProfile).department && (
+                    <Badge variant="outline">{(profile as StaffProfile).department}</Badge>
                   )}
                 </div>
               )}
             </CardHeader>
             <CardContent className="space-y-4">
-              {profile.profile?.bio && (
+              {((isStaff && (profile as StaffProfile).bio) || (!isStaff && (profile as UserProfile).bio)) && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Bio</p>
-                  <p className="text-sm">{profile.profile.bio}</p>
+                  <p className="text-sm font-medium mb-1">Bio</p>
+                  <p className="text-sm text-muted-foreground">
+                    {isStaff ? (profile as StaffProfile).bio : (profile as UserProfile).bio}
+                  </p>
                 </div>
               )}
               
-              {isStaff && profile.profile?.phone && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  {profile.profile.phone}
-                </div>
+              {isStaff && (
+                <>
+                  {(profile as StaffProfile).phone && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      {(profile as StaffProfile).phone}
+                    </div>
+                  )}
+                  {(profile as StaffProfile).position && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Briefcase className="h-4 w-4 text-muted-foreground" />
+                      {(profile as StaffProfile).position}
+                    </div>
+                  )}
+                  {(profile as StaffProfile).address && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      {(profile as StaffProfile).address}
+                    </div>
+                  )}
+                </>
               )}
               
-              {profile.profile?.createdAt && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  Joined {formatDate(profile.profile.createdAt)}
-                </div>
-              )}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Joined {formatDate(profile.createdAt)}
+              </div>
 
               {/* Stats */}
               <div className="pt-4 border-t space-y-3">
@@ -233,26 +251,22 @@ export default function ProfilePage() {
                   <>
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Content Created</span>
-                      <span className="font-medium">{profile.stats?.contentCreated || 0}</span>
+                      <span className="font-medium">{profileData?.stats?.contentCreated || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Broadcasts Hosted</span>
-                      <span className="font-medium">{profile.stats?.broadcastsHosted || 0}</span>
+                      <span className="font-medium">{profileData?.stats?.broadcastsHosted || 0}</span>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Favorites</span>
-                      <span className="font-medium">{profile.stats?.favoritesCount || 0}</span>
+                      <span className="font-medium">{profileData?.stats?.favoritesCount || 0}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Playlists</span>
-                      <span className="font-medium">{profile.stats?.playlistsCount || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Completed</span>
-                      <span className="font-medium">{profile.stats?.totalListened || 0}</span>
+                      <span className="text-sm text-muted-foreground">Reviews</span>
+                      <span className="font-medium">{(profile as UserProfile)._count?.reviews || 0}</span>
                     </div>
                   </>
                 )}
@@ -267,16 +281,18 @@ export default function ProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Edit Profile</CardTitle>
-                <CardDescription>Update your profile information</CardDescription>
+                <CardDescription>
+                  Update your profile information
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     {isStaff ? (
                       <>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-4 md:grid-cols-2">
                           <FormField
-                            control={form.control}
+                            control={staffForm.control}
                             name="firstName"
                             render={({ field }) => (
                               <FormItem>
@@ -289,7 +305,7 @@ export default function ProfilePage() {
                             )}
                           />
                           <FormField
-                            control={form.control}
+                            control={staffForm.control}
                             name="lastName"
                             render={({ field }) => (
                               <FormItem>
@@ -303,7 +319,7 @@ export default function ProfilePage() {
                           />
                         </div>
                         <FormField
-                          control={form.control}
+                          control={staffForm.control}
                           name="phone"
                           render={({ field }) => (
                             <FormItem>
@@ -315,11 +331,37 @@ export default function ProfilePage() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={staffForm.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Address</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={staffForm.control}
+                          name="emergencyContact"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Emergency Contact</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </>
                     ) : (
                       <>
                         <FormField
-                          control={form.control}
+                          control={userForm.control}
                           name="name"
                           render={({ field }) => (
                             <FormItem>
@@ -332,7 +374,7 @@ export default function ProfilePage() {
                           )}
                         />
                         <FormField
-                          control={form.control}
+                          control={userForm.control}
                           name="username"
                           render={({ field }) => (
                             <FormItem>
@@ -354,17 +396,20 @@ export default function ProfilePage() {
                         <FormItem>
                           <FormLabel>Bio</FormLabel>
                           <FormControl>
-                            <Textarea {...field} className="min-h-[100px]" />
+                            <Textarea {...field} rows={3} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-
-                    <div className="flex gap-2 pt-4">
-                      <Button type="submit" disabled={isSaving}>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        type="submit" 
+                        disabled={updateProfile.isPending}
+                      >
                         <Save className="h-4 w-4 mr-2" />
-                        {isSaving ? "Saving..." : "Save Changes"}
+                        {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
                       </Button>
                       <Button 
                         type="button" 
@@ -380,168 +425,110 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           ) : (
-            <Tabs defaultValue={isStaff ? "overview" : "listening"} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
-                {isStaff ? (
-                  <>
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="content">My Content</TabsTrigger>
-                    <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  </>
-                ) : (
-                  <>
-                    <TabsTrigger value="listening">Listening</TabsTrigger>
-                    <TabsTrigger value="favorites">Favorites</TabsTrigger>
-                    <TabsTrigger value="playlists">Playlists</TabsTrigger>
-                    <TabsTrigger value="history">History</TabsTrigger>
-                  </>
-                )}
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                {!isStaff && <TabsTrigger value="favorites">Favorites</TabsTrigger>}
+                {isStaff && <TabsTrigger value="content">My Content</TabsTrigger>}
               </TabsList>
 
-              {/* Staff Overview */}
+              <TabsContent value="overview" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Profile Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="text-sm font-medium">Email</label>
+                        <p className="text-sm text-muted-foreground mt-1">{profile.email}</p>
+                      </div>
+                      {isStaff ? (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium">Role</label>
+                            <p className="text-sm text-muted-foreground mt-1">{(profile as StaffProfile).role}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Department</label>
+                            <p className="text-sm text-muted-foreground mt-1">{(profile as StaffProfile).department || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Status</label>
+                            <div className="mt-1">
+                              <Badge variant={(profile as StaffProfile).isActive ? 'default' : 'secondary'}>
+                                {(profile as StaffProfile).isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium">Username</label>
+                            <p className="text-sm text-muted-foreground mt-1">{(profile as UserProfile).username || 'N/A'}</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {!isStaff && (
+                <TabsContent value="favorites" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Heart className="h-5 w-5" />
+                        Favorites
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {favorites && Array.isArray(favorites) && favorites.length > 0 ? (
+                        <div className="space-y-4">
+                          {favorites.map((favorite: any) => (
+                            <div key={favorite.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                                {favorite.podcast ? <Mic className="h-6 w-6" /> : <BookOpen className="h-6 w-6" />}
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold">
+                                  {favorite.podcast?.title || favorite.audiobook?.title}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {favorite.podcast?.description || favorite.audiobook?.description}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="font-semibold mb-2">No favorites yet</h3>
+                          <p className="text-muted-foreground">Start exploring content to add favorites</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
               {isStaff && (
-                <TabsContent value="overview" className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Mic className="h-5 w-5" />
-                          Content Created
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-3xl font-bold text-primary">{profile.stats?.contentCreated || 0}</div>
-                        <p className="text-sm text-muted-foreground">Total episodes & books</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Users className="h-5 w-5" />
-                          Broadcasts Hosted
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-3xl font-bold text-primary">{profile.stats?.broadcastsHosted || 0}</div>
-                        <p className="text-sm text-muted-foreground">Live sessions</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Calendar className="h-5 w-5" />
-                          This Month
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-3xl font-bold text-primary">12</div>
-                        <p className="text-sm text-muted-foreground">Scheduled items</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  
+                <TabsContent value="content" className="space-y-6">
                   <div className="grid gap-6 md:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Clock className="h-5 w-5" />
-                          Recent Activity
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="flex items-center gap-3 p-2 rounded border">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">Published new podcast episode</p>
-                            <p className="text-xs text-muted-foreground">2 hours ago</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-2 rounded border">
-                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">Updated audiobook chapter</p>
-                            <p className="text-xs text-muted-foreground">1 day ago</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-2 rounded border">
-                          <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">Scheduled live broadcast</p>
-                            <p className="text-xs text-muted-foreground">3 days ago</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5" />
-                          Quick Actions
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <Button className="w-full justify-start" variant="outline">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Create New Podcast
-                        </Button>
-                        <Button className="w-full justify-start" variant="outline">
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Add Audiobook Chapter
-                        </Button>
-                        <Button className="w-full justify-start" variant="outline">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Schedule Broadcast
-                        </Button>
-                        <Button className="w-full justify-start" variant="outline">
-                          <BarChart className="h-4 w-4 mr-2" />
-                          View Analytics
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-
-              {/* Staff Content Management */}
-              {isStaff && (
-                <TabsContent value="content" className="space-y-4">
-                  <div className="grid gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
                           <Mic className="h-5 w-5" />
-                          My Podcasts
+                          Podcasts
                         </CardTitle>
-                        <CardDescription>Manage your podcast episodes</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                                <Mic className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <p className="font-medium">Tech Talk Weekly</p>
-                                <p className="text-sm text-muted-foreground">Episode 45 • Published</p>
-                              </div>
-                            </div>
-                            <Button size="sm" variant="outline">Edit</Button>
-                          </div>
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                                <Mic className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <p className="font-medium">Morning Insights</p>
-                                <p className="text-sm text-muted-foreground">Episode 12 • Draft</p>
-                              </div>
-                            </div>
-                            <Button size="sm" variant="outline">Edit</Button>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold">{(profile as StaffProfile)._count.podcasts}</div>
+                          <p className="text-sm text-muted-foreground">Created</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -550,97 +537,13 @@ export default function ProfilePage() {
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <BookOpen className="h-5 w-5" />
-                          My Audiobooks
-                        </CardTitle>
-                        <CardDescription>Manage your audiobook projects</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                                <BookOpen className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <p className="font-medium">The Digital Revolution</p>
-                                <p className="text-sm text-muted-foreground">12 chapters • Published</p>
-                              </div>
-                            </div>
-                            <Button size="sm" variant="outline">Manage</Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-
-              {/* Staff Schedule */}
-              {isStaff && (
-                <TabsContent value="schedule" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5" />
-                        My Schedule
-                      </CardTitle>
-                      <CardDescription>Upcoming broadcasts and deadlines</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold">15</div>
-                            <div className="text-xs text-muted-foreground">DEC</div>
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">Live Broadcast: Tech Talk</p>
-                            <p className="text-sm text-muted-foreground">2:00 PM - 3:00 PM</p>
-                          </div>
-                          <Badge variant="secondary">Live</Badge>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 border rounded-lg">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold">18</div>
-                            <div className="text-xs text-muted-foreground">DEC</div>
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">Podcast Recording</p>
-                            <p className="text-sm text-muted-foreground">10:00 AM - 11:30 AM</p>
-                          </div>
-                          <Badge variant="outline">Recording</Badge>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              )}
-
-              {/* Staff Analytics */}
-              {isStaff && (
-                <TabsContent value="analytics" className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <BarChart className="h-5 w-5" />
-                          Content Performance
+                          Audiobooks
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Total Plays</span>
-                            <span className="font-medium">12,450</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Average Rating</span>
-                            <span className="font-medium">4.8/5</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Completion Rate</span>
-                            <span className="font-medium">78%</span>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold">{(profile as StaffProfile)._count.audiobooks}</div>
+                          <p className="text-sm text-muted-foreground">Created</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -649,173 +552,19 @@ export default function ProfilePage() {
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Users className="h-5 w-5" />
-                          Audience Insights
+                          Broadcasts
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Subscribers</span>
-                            <span className="font-medium">2,340</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Monthly Growth</span>
-                            <span className="font-medium text-green-600">+12%</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Engagement Rate</span>
-                            <span className="font-medium">65%</span>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold">{(profile as StaffProfile)._count.hostedBroadcasts}</div>
+                          <p className="text-sm text-muted-foreground">Hosted</p>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                 </TabsContent>
               )}
-
-              {/* Listening Progress (Users) */}
-              {!isStaff && (
-                <TabsContent value="listening" className="space-y-4">
-                  <div className="grid gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Clock className="h-5 w-5" />
-                          Continue Listening
-                        </CardTitle>
-                        <CardDescription>Pick up where you left off</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {profile.inProgress?.length > 0 ? (
-                          <div className="space-y-4">
-                            {profile.inProgress.map((item: any) => (
-                              <div key={item.id} className="flex items-center gap-4 p-3 border rounded-lg">
-                                <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                                  {item.audiobook ? <BookOpen className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
-                                </div>
-                                <div className="flex-1">
-                                  <h4 className="font-medium">
-                                    {item.audiobook?.title || item.podcast?.title}
-                                  </h4>
-                                  <Progress value={item.position} className="mt-2" />
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    {item.position}% complete
-                                  </p>
-                                </div>
-                                <Button size="sm">
-                                  <Play className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-muted-foreground text-center py-8">
-                            No content in progress
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-
-
-
-              {/* Favorites */}
-              <TabsContent value="favorites" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Heart className="h-5 w-5" />
-                      Your Favorites
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {profile.favorites?.length > 0 ? (
-                      <div className="grid gap-3">
-                        {profile.favorites.map((fav: any) => (
-                          <MediaItem
-                            key={fav.id}
-                            item={fav}
-                            onPlay={() => console.log('Play favorite:', fav)}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-8">
-                        No favorites yet
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Playlists (Users Only) */}
-              {!isStaff && (
-                <TabsContent value="playlists" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Music className="h-5 w-5" />
-                        Your Playlists
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {profile.playlists?.length > 0 ? (
-                        <div className="grid gap-3">
-                          {profile.playlists.map((playlist: any) => (
-                            <div key={playlist.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                              <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                                <Music className="h-5 w-5" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-medium">{playlist.name}</h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {playlist._count.items} items
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground text-center py-8">
-                          No playlists created yet
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              )}
-
-              {/* History */}
-              <TabsContent value="history" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Headphones className="h-5 w-5" />
-                      Listening History
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {profile.completed?.length > 0 ? (
-                      <div className="space-y-3">
-                        {profile.completed.slice(0, 10).map((item: any) => (
-                          <MediaItem
-                            key={item.id}
-                            item={item}
-                            variant="compact"
-                            showDate={true}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-8">
-                        No listening history yet
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
           )}
         </div>

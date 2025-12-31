@@ -408,13 +408,13 @@ export default function DashboardHeader() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/profile" className="flex items-center">
+                <Link href="/profile" className="flex items-center">
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings" className="flex items-center">
+                <Link href="/settings" className="flex items-center">
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </Link>

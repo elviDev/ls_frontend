@@ -65,10 +65,24 @@ export default function PodcastsPage() {
   // Build query params for the hook
   const queryParams: PodcastQuery = {
     ...(filters.search && { search: filters.search }),
-    status: "DRAFT",
+    ...(filters.status !== "all" && { status: filters.status }),
+    dashboard: true,
   };
 
   const { data: podcasts = [], isLoading, error } = usePodcasts(queryParams);
+
+  // Debug logging
+  useEffect(() => {
+    if (podcasts.length > 0) {
+      console.log("Podcasts data from backend:", podcasts);
+      console.log("First podcast structure:", JSON.stringify(podcasts[0], null, 2));
+      console.log("Date fields:", {
+        releaseDate: podcasts[0].releaseDate,
+        createdAt: podcasts[0].createdAt,
+        updatedAt: podcasts[0].updatedAt
+      });
+    }
+  }, [podcasts]);
 
   const handleDelete = async (podcastId: string) => {
     try {
@@ -209,7 +223,7 @@ export default function PodcastsPage() {
                     {podcast.title}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    by {podcast.author.firstName} {podcast.author.lastName}
+                    by {podcast.author?.firstName || 'Unknown'} {podcast.author?.lastName || 'Author'}
                   </p>
                 </div>
                 <DropdownMenu>
@@ -274,7 +288,7 @@ export default function PodcastsPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                {podcast.description}
+                {podcast.description || 'No description available'}
               </p>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center gap-4">
@@ -282,11 +296,14 @@ export default function PodcastsPage() {
                     <Clock className="h-3 w-3" />
                     {podcast.latestEpisode?.duration
                       ? formatDuration(podcast.latestEpisode.duration)
-                      : "N/A"}
+                      : podcast._count?.episodes ? `${podcast._count.episodes} episodes` : "No episodes"}
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {new Date(podcast.releaseDate).toLocaleDateString()}
+                    {(() => {
+                      const date = podcast.releaseDate || podcast.createdAt;
+                      return date ? new Date(date).toLocaleDateString() : 'No date';
+                    })()}
                   </span>
                 </div>
               </div>
