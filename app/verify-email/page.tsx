@@ -35,7 +35,11 @@ function VerifyEmailContent() {
 
   const verifyEmail = async (verificationToken: string) => {
     try {
-      const res = await fetch(`/api/auth/verify-email?token=${verificationToken}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: verificationToken })
+      })
       const data = await res.json()
 
       if (res.ok) {
@@ -54,15 +58,17 @@ function VerifyEmailContent() {
   const resendVerification = async () => {
     setIsResending(true)
     try {
-      const res = await fetch("/api/auth/resend-verification", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: searchParams.get('email') || '' })
       })
 
       const data = await res.json()
 
       if (res.ok) {
         setMessage("A new verification email has been sent to your email address")
+        setStatus("success")
       } else {
         setMessage(data.error || "Failed to resend verification email")
       }
