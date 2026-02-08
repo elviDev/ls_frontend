@@ -215,28 +215,19 @@ export default function StaffPage() {
     }
 
     try {
-      const response = await apiClient.request(`/staff/${staffId}`, {
+      await apiClient.request(`/staff/${staffId}`, {
         method: "DELETE",
       });
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Staff member deleted successfully",
-        });
-        fetchStaff();
-      } else {
-        const data = await response.json();
-        toast({
-          title: "Error",
-          description: data.error || "Failed to delete staff member",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+      toast({
+        title: "Success",
+        description: "Staff member deleted successfully",
+      });
+      fetchStaff();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete staff member",
+        description: error.message || "Failed to delete staff member",
         variant: "destructive",
       });
     }
@@ -244,40 +235,19 @@ export default function StaffPage() {
 
   const handleApproveStaff = async (staffId: string) => {
     try {
-      const response = await apiClient.request(`/staff/${staffId}/approve`, {
+      await apiClient.request(`/staff/${staffId}/approve`, {
         method: "POST",
       });
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Staff member approved successfully",
-        });
-        fetchStaff(); // This will refresh both staff list and pending count
-      } else {
-        const data = await response.json();
-        
-        // Handle specific case where staff is already approved
-        if (response.status === 400 && data.error?.includes("already approved")) {
-          toast({
-            title: "Already Approved",
-            description: "This staff member is already approved",
-            variant: "default",
-          });
-          // Refresh the list to update the UI
-          fetchStaff();
-        } else {
-          toast({
-            title: "Error",
-            description: data.error || "Failed to approve staff member",
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error) {
+      toast({
+        title: "Success",
+        description: "Staff member approved successfully",
+      });
+      fetchStaff();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to approve staff member",
+        description: error.message || "Failed to approve staff member",
         variant: "destructive",
       });
     }
