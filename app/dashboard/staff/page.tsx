@@ -125,7 +125,7 @@ export default function StaffPage() {
         sortOrder: filters.sortOrder,
       };
 
-      const data = await apiClient.admin.staff(params);
+      const data: any = await apiClient.admin.staff(params);
       setStaff(data.staff || []);
       setStats(data.stats || {
         total: 0,

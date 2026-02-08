@@ -65,9 +65,11 @@ export function UnifiedBroadcastChat({
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const SOCKET_SERVER_URL =
-      process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ||
-      "https://lsbackend-production-46d9.up.railway.app";
+    let SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+    // Remove /api suffix if present
+    if (SOCKET_SERVER_URL.endsWith("/api")) {
+      SOCKET_SERVER_URL = SOCKET_SERVER_URL.slice(0, -4);
+    }
     const token = getAuthToken();
 
     console.log("[Chat] 🔐 Initializing socket connection");
@@ -208,9 +210,11 @@ export function UnifiedBroadcastChat({
 
   const loadMessages = async () => {
     try {
-      const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://lsbackend-production-46d9.up.railway.app/api";
+      let API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      // Ensure /api suffix is present
+      if (!API_BASE_URL.endsWith("/api")) {
+        API_BASE_URL = `${API_BASE_URL}/api`;
+      }
       const response = await fetch(`${API_BASE_URL}/chat/${broadcastId}`);
       if (response.ok) {
         const data = await response.json();
