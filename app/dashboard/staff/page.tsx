@@ -190,30 +190,20 @@ export default function StaffPage() {
     }
 
     try {
-      const response = await apiClient.request(`/staff/${staffId}`, {
+      await apiClient.request(`/staff/${staffId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !isActive }),
       });
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Staff member ${!isActive ? "activated" : "deactivated"} successfully`,
-        });
-        fetchStaff();
-      } else {
-        const data = await response.json();
-        toast({
-          title: "Error",
-          description: data.error || "Failed to update staff member",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+      toast({
+        title: "Success",
+        description: `Staff member ${!isActive ? "activated" : "deactivated"} successfully`,
+      });
+      fetchStaff();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update staff member",
+        description: error.message || "Failed to update staff member",
         variant: "destructive",
       });
     }
