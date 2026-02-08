@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Radio, AlertCircle, CheckCircle, Loader2, Mail } from "lucide-react"
+import { apiClient } from "@/lib/api-client"
 
 function VerifyEmailContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
@@ -35,23 +36,12 @@ function VerifyEmailContent() {
 
   const verifyEmail = async (verificationToken: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/verify-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: verificationToken })
-      })
-      const data = await res.json()
-
-      if (res.ok) {
-        setStatus("success")
-        setMessage("Your email has been successfully verified!")
-      } else {
-        setStatus("error")
-        setMessage(data.error || "Failed to verify email")
-      }
-    } catch (err) {
+      await apiClient.auth.verifyEmail({ token: verificationToken })
+      setStatus("success")
+      setMessage("Your email has been successfully verified!")
+    } catch (err: any) {
       setStatus("error")
-      setMessage("An unexpected error occurred")
+      setMessage(err.message || "Failed to verify email")
     }
   }
 
