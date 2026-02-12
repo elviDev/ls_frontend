@@ -10,6 +10,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   MessageSquare,
   Send,
   Heart,
@@ -19,6 +27,11 @@ import {
   Crown,
   Shield,
   User,
+  MoreVertical,
+  UserX,
+  Ban,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import { getAuthToken } from "@/lib/auth-token";
@@ -175,6 +188,35 @@ export function UnifiedBroadcastChat({
       setOnlineUsers(count);
     });
 
+    // Listen for moderation events
+    socketConnection.on("user-kicked", ({ userId, reason }) => {
+      console.log("[Chat] User kicked event:", userId, reason);
+      if (userId === user?.id) {
+        toast.error(`You have been kicked from the chat${reason ? `: ${reason}` : ""}`);
+        socketConnection.disconnect();
+      }
+    });
+
+    socketConnection.on("user-banned", ({ userId, reason, duration }) => {
+      console.log("[Chat] User banned event:", userId, reason, duration);
+      if (userId === user?.id) {
+        toast.error(`You have been banned from the chat${duration ? ` for ${duration} minutes` : ""}${reason ? `: ${reason}` : ""}`);
+        socketConnection.disconnect();
+      }
+    });
+
+    socketConnection.on("user-muted", ({ userId, reason, duration }) => {
+      console.log("[Chat] User muted event:", userId, reason, duration);
+      if (userId === user?.id) {
+        toast.error(`You have been muted${duration ? ` for ${duration} minutes` : ""}${reason ? `: ${reason}` : ""}`);
+      }
+    });
+
+    socketConnection.on("error", (error) => {
+      console.error("[Chat] Socket error:", error);
+      toast.error(error.message || "An error occurred");
+    });
+
     // Load existing messages
     loadMessages();
 
@@ -298,6 +340,120 @@ export function UnifiedBroadcastChat({
       messageId,
       broadcastId,
     });
+  };
+
+  const kickUser = async (userId: string, reason?: string) => {
+    if (!socket || !isModerator) {
+      console.log("[Chat] Cannot kick - socket:", !!socket, "isModerator:", isModerator);
+      return;
+    }
+
+    console.log("[Chat] Kicking user:", userId, "reason:", reason);
+    
+    // Kick from chat
+    socket.emit("kick-user", {
+      broadcastId,
+      targetUserId: userId,
+      reason,
+    });
+
+    // Also try to remove from LiveKit if they're in the studio
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/livekit/remove-participant`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+        },
+        body: JSON.stringify({
+          roomName: broadcastId,
+          participantIdentity: userId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.notInRoom) {
+          console.log("[Chat] User not in LiveKit studio");
+          toast.success(`User kicked from chat`);
+        } else {
+          console.log("[Chat] User also removed from LiveKit studio");
+          toast.success(`User kicked from chat and studio`);
+        }
+      } else {
+        // LiveKit removal failed, but chat kick succeeded
+        toast.success(`User kicked from chat`);
+      }
+    } catch (error) {
+      console.log("[Chat] Error removing from LiveKit:", error);
+      toast.success(`User kicked from chat`);
+    }
+  };
+
+  const banUser = async (userId: string, reason?: string, duration?: number) => {
+    if (!socket || !isModerator) {
+      console.log("[Chat] Cannot ban - socket:", !!socket, "isModerator:", isModerator);
+      return;
+    }
+
+    console.log("[Chat] Banning user:", userId, "duration:", duration, "reason:", reason);
+    
+    // Ban from chat
+    socket.emit("ban-user", {
+      broadcastId,
+      targetUserId: userId,
+      reason,
+      duration,
+    });
+
+    // Also try to remove from LiveKit if they're in the studio
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/livekit/remove-participant`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+        },
+        body: JSON.stringify({
+          roomName: broadcastId,
+          participantIdentity: userId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.notInRoom) {
+          console.log("[Chat] User not in LiveKit studio");
+          toast.success(`User banned from chat${duration ? ` for ${duration} minutes` : ""}`);
+        } else {
+          console.log("[Chat] User also removed from LiveKit studio");
+          toast.success(`User banned from chat and studio${duration ? ` for ${duration} minutes` : ""}`);
+        }
+      } else {
+        // LiveKit removal failed, but chat ban succeeded
+        toast.success(`User banned from chat${duration ? ` for ${duration} minutes` : ""}`);
+      }
+    } catch (error) {
+      console.log("[Chat] Error removing from LiveKit:", error);
+      toast.success(`User banned from chat${duration ? ` for ${duration} minutes` : ""}`);
+    }
+  };
+
+  const muteUser = async (userId: string, reason?: string, duration?: number) => {
+    if (!socket || !isModerator) {
+      console.log("[Chat] Cannot mute - socket:", !!socket, "isModerator:", isModerator);
+      return;
+    }
+
+    console.log("[Chat] Muting user:", userId, "duration:", duration, "reason:", reason);
+    socket.emit("mute-user", {
+      broadcastId,
+      targetUserId: userId,
+      reason,
+      duration,
+    });
+
+    toast.success(`User muted${duration ? ` for ${duration} minutes` : ""}`);
   };
 
   const getRoleIcon = (messageType: string) => {
@@ -436,18 +592,65 @@ export function UnifiedBroadcastChat({
                         {message.likes}
                       </Button>
                       {isModerator && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-xs"
-                          onClick={() => togglePin(message.id)}
-                        >
-                          {message.isPinned ? (
-                            <PinOff className="h-3 w-3" />
-                          ) : (
-                            <Pin className="h-3 w-3" />
-                          )}
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => togglePin(message.id)}
+                          >
+                            {message.isPinned ? (
+                              <PinOff className="h-3 w-3" />
+                            ) : (
+                              <Pin className="h-3 w-3" />
+                            )}
+                          </Button>
+                      {isModerator && message.userId !== user?.id && message.messageType !== "host" && message.messageType !== "moderator" && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs hover:bg-red-50"
+                              title="Moderate user"
+                            >
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Moderate {message.username}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => muteUser(message.userId, undefined, 5)}
+                            >
+                              <VolumeX className="h-4 w-4 mr-2" />
+                              Mute (5 min)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => kickUser(message.userId)}
+                              className="text-orange-600 focus:text-orange-600"
+                            >
+                              <UserX className="h-4 w-4 mr-2" />
+                              Kick from Chat
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => banUser(message.userId, undefined, 30)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Ban className="h-4 w-4 mr-2" />
+                              Ban (30 min)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => banUser(message.userId)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Ban className="h-4 w-4 mr-2" />
+                              Ban Permanently
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                        </>
                       )}
                     </div>
                   </div>

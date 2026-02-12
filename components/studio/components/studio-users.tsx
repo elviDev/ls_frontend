@@ -2,22 +2,79 @@ import { Mic, MicOff, UserPlus, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocalParticipant, useRemoteParticipants, ConnectionQualityIndicator, BarVisualizer, useTracks } from "@livekit/components-react";
+import { useLocalParticipant, useRemoteParticipants, ConnectionQualityIndicator, BarVisualizer, useTracks, useRoomContext } from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { toast } from "sonner";
 
 export function StudioUsers() {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
   const tracks = useTracks([Track.Source.Microphone], { onlySubscribed: false });
+  const room = useRoomContext();
 
   const handleMuteParticipant = async (participantId: string, mute: boolean) => {
     // Host can request participant to mute (this would need server-side implementation)
     console.log(`Request ${mute ? 'mute' : 'unmute'} for participant:`, participantId);
+    toast.info(`Mute request sent to participant`);
   };
 
-  const handleRemoveParticipant = (participantId: string) => {
-    // Host can remove participant (this would need server-side implementation)
-    console.log('Remove participant:', participantId);
+  const handleRemoveParticipant = async (participantId: string) => {
+    try {
+      console.log('Removing participant:', participantId);
+      
+      // Find the participant
+      const participant = remoteParticipants.find(p => p.identity === participantId);
+      if (!participant) {
+        toast.error('Participant not found');
+        return;
+      }
+
+      // Remove from LiveKit room
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/livekit/remove-participant`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+        },
+        body: JSON.stringify({
+          roomName: room.name,
+          participantIdentity: participantId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to remove participant from studio');
+        return;
+      }
+
+      // Also kick from chat if they're there
+      try {
+        const chatResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/kick`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+          },
+          body: JSON.stringify({
+            broadcastId: room.name,
+            targetUserId: participantId,
+            reason: 'Removed from studio',
+          }),
+        });
+        
+        if (chatResponse.ok) {
+          console.log('Participant also kicked from chat');
+        }
+      } catch (chatError) {
+        console.log('Error kicking from chat (may not be in chat):', chatError);
+      }
+
+      toast.success('Participant removed from studio and chat');
+    } catch (error) {
+      console.error('Error removing participant:', error);
+      toast.error('Failed to remove participant');
+    }
   };
 
   const getRoleColor = (identity: string) => {
