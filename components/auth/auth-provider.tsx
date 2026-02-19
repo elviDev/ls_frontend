@@ -21,9 +21,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     // Set up unauthorized handler
     apiClient.setUnauthorizedHandler(() => {
-      setUser(null);
-      router.push('/signin');
-      toast.error('Session expired. Please log in again.');
+      // Only show toast if user was actually logged in
+      if (useAuthStore.getState().user) {
+        setUser(null);
+        router.push('/signin');
+        toast.error('Session expired. Please log in again.');
+      }
     });
   }, [setUser, router]);
 

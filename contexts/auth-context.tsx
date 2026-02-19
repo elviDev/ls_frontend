@@ -47,16 +47,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Set up unauthorized handler
     apiClient.setUnauthorizedHandler(() => {
-      setUser(null);
-      setIsAuthenticated(false);
-      router.push("/signin");
-      toast({
-        title: "Session Expired",
-        description: "Please log in again to continue.",
-        variant: "destructive",
-      });
+      // Only show toast and redirect if user was actually logged in
+      if (user) {
+        setUser(null);
+        setIsAuthenticated(false);
+        router.push("/signin");
+        toast({
+          title: "Session Expired",
+          description: "Please log in again to continue.",
+          variant: "destructive",
+        });
+      }
     });
-  }, []);
+  }, [user]);
 
   const checkAuth = async () => {
     try {
