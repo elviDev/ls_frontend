@@ -19,6 +19,7 @@ import { Plus, Search, MoreHorizontal, Edit, Trash2, Calendar, MapPin, Users, Do
 import { useToast } from "@/hooks/use-toast"
 import { FileUpload } from "@/components/ui/file-upload"
 import { DateTimePicker } from "@/components/ui/datetime-picker"
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal"
 
 interface Event {
   id: string
@@ -121,7 +122,6 @@ export default function EventsManagePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [upcomingOnly, setUpcomingOnly] = useState(false)
@@ -130,6 +130,13 @@ export default function EventsManagePage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    event: Event | null;
+  }>({
+    isOpen: false,
+    event: null,
+  });
 
   const [formData, setFormData] = useState<EventFormData>({
     title: "",
@@ -352,21 +359,21 @@ export default function EventsManagePage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this event?")) return
+  const handleDelete = async () => {
+    if (!deleteDialog.event) return
 
-    setDeletingId(id)
     try {
-      const response = await apiClient.request(`/events/${id}`, {
+      const response = await apiClient.request(`/events/${deleteDialog.event.id}`, {
         method: 'DELETE'
       })
 
       if (response.ok) {
-        setEvents(events.filter(e => e.id !== id))
+        setEvents(events.filter(e => e.id !== deleteDialog.event!.id))
         toast({
           title: "Success",
           description: "Event deleted successfully"
         })
+        setDeleteDialog({ isOpen: false, event: null })
       } else {
         throw new Error("Failed to delete event")
       }
@@ -376,8 +383,6 @@ export default function EventsManagePage() {
         description: error.message,
         variant: "destructive"
       })
-    } finally {
-      setDeletingId(null)
     }
   }
 
@@ -1341,16 +1346,11 @@ export default function EventsManagePage() {
                               )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                onClick={() => handleDelete(event.id)}
+                                onClick={() => setDeleteDialog({ isOpen: true, event })}
                                 className="text-red-600"
-                                disabled={deletingId === event.id}
                               >
-                                {deletingId === event.id ? (
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                )}
-                                {deletingId === event.id ? "Deleting..." : "Delete"}
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1390,6 +1390,16 @@ export default function EventsManagePage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, event: null })}
+        onConfirm={handleDelete}
+        title="Delete Event"
+        description={`Are you sure you want to delete "${deleteDialog.event?.title}"? This action cannot be undone.`}
+        isLoading={submitting}
+      />
     </div>
   )
 }

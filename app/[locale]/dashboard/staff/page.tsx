@@ -49,6 +49,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth-store";
 import Link from "next/link";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 interface StaffMember {
   id: string;
   name: string;
@@ -106,6 +107,15 @@ export default function StaffPage() {
     isActive: "all",
     sortBy: "createdAt",
     sortOrder: "desc",
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    staff: StaffMember | null;
+    isDeleting: boolean;
+  }>({
+    isOpen: false,
+    staff: null,
+    isDeleting: false,
   });
   const { toast } = useToast();
   
@@ -209,13 +219,12 @@ export default function StaffPage() {
     }
   };
 
-  const handleDeleteStaff = async (staffId: string) => {
-    if (!confirm("Are you sure you want to delete this staff member? This action cannot be undone.")) {
-      return;
-    }
+  const handleDeleteStaff = async () => {
+    if (!deleteDialog.staff) return;
 
+    setDeleteDialog(prev => ({ ...prev, isDeleting: true }));
     try {
-      await apiClient.request(`/staff/${staffId}`, {
+      await apiClient.request(`/staff/${deleteDialog.staff.id}`, {
         method: "DELETE",
       });
 
@@ -224,12 +233,14 @@ export default function StaffPage() {
         description: "Staff member deleted successfully",
       });
       fetchStaff();
+      setDeleteDialog({ isOpen: false, staff: null, isDeleting: false });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to delete staff member",
         variant: "destructive",
       });
+      setDeleteDialog(prev => ({ ...prev, isDeleting: false }));
     }
   };
 
@@ -570,7 +581,7 @@ export default function StaffPage() {
                           <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => handleDeleteStaff(member.id)}
+                              onClick={() => setDeleteDialog({ isOpen: true, staff: member, isDeleting: false })}
                               className="text-red-600 focus:text-red-600"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
@@ -621,6 +632,16 @@ export default function StaffPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, staff: null, isDeleting: false })}
+        onConfirm={handleDeleteStaff}
+        title="Delete Staff Member"
+        description={`Are you sure you want to delete "${deleteDialog.staff?.name}"? This action cannot be undone.`}
+        isLoading={deleteDialog.isDeleting}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
@@ -61,21 +62,22 @@ export default function AdminLayout({
           <aside
             className={cn(
               "hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300",
-              sidebarCollapsed ? "lg:w-16" : "lg:w-72"
+              sidebarCollapsed ? "lg:w-30" : "lg:w-72",
             )}
           >
             <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-200 bg-white px-6 pb-4">
-              <div className="flex h-16 shrink-0 items-center">
+              <div className="flex h-20 shrink-0 items-center">
                 <Link
                   href="/"
                   className="flex items-center hover:opacity-80 transition-opacity"
                 >
-                  <Radio className="h-8 w-8 text-brand-500" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-2 text-xl font-bold text-brand-600">
-                      CBStudio Radio
-                    </span>
-                  )}
+                  <Image
+                    src="/logo.png"
+                    alt="CBStudio Radio"
+                    width={sidebarCollapsed ? 40 : 64}
+                    height={sidebarCollapsed ? 40 : 64}
+                    className={cn(sidebarCollapsed ? "h-10 w-10" : "h-16 w-16")}
+                  />
                 </Link>
               </div>
 
@@ -109,7 +111,7 @@ export default function AdminLayout({
                                 isActive
                                   ? "bg-brand-50 text-brand-600"
                                   : "text-slate-700 hover:bg-slate-50 hover:text-brand-600",
-                                sidebarCollapsed ? "justify-center" : ""
+                                sidebarCollapsed ? "justify-center" : "",
                               )}
                               title={sidebarCollapsed ? item.name : undefined}
                             >
@@ -138,7 +140,7 @@ export default function AdminLayout({
                                 isActive
                                   ? "bg-brand-50 text-brand-600"
                                   : "text-slate-700 hover:bg-slate-50 hover:text-brand-600",
-                                sidebarCollapsed ? "justify-center" : ""
+                                sidebarCollapsed ? "justify-center" : "",
                               )}
                               title={sidebarCollapsed ? item.name : undefined}
                             >
@@ -159,7 +161,7 @@ export default function AdminLayout({
           <div
             className={cn(
               "flex flex-col min-h-screen transition-all duration-300",
-              sidebarCollapsed ? "lg:pl-16" : "lg:pl-72"
+              sidebarCollapsed ? "lg:pl-16" : "lg:pl-72",
             )}
           >
             {/* Dashboard Header */}
@@ -175,9 +177,14 @@ export default function AdminLayout({
               <div className="px-4 py-8 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-c  ols-2 lg:grid-cols-4 gap-8 mb-8">
                   <div>
-                    <div className="flex items-center space-x-2 mb-4">
-                      <Radio className="h-8 w-8 text-white-400" />
-                      <span className="font-bold text-xl">CBStudio Radio</span>
+                    <div className="flex items-center mb-4">
+                      <Image
+                        src="/logo.png"
+                        alt="CBStudio Radio"
+                        width={64}
+                        height={64}
+                        className="h-16 w-16"
+                      />
                     </div>
                     <p className="text-brand-100 mb-4">
                       Your premier destination for podcasts, audiobooks, and

@@ -27,17 +27,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   Plus,
   MoreVertical,
   Edit,
@@ -70,6 +59,7 @@ import {
   type Audiobook,
   type AudiobookStats,
 } from "@/stores/audiobook-store";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 
 export default function AudiobooksPage() {
   const router = useRouter();
@@ -81,6 +71,13 @@ export default function AudiobooksPage() {
     author: "all",
     sortBy: "updatedAt",
     sortOrder: "desc",
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    audiobook: Audiobook | null;
+  }>({
+    isOpen: false,
+    audiobook: null,
   });
 
   const { data: audiobooksData, isLoading } = useAudiobooks({
@@ -128,13 +125,11 @@ export default function AudiobooksPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteAudiobook.mutateAsync(id);
+  const handleDelete = async () => {
+    if (deleteDialog.audiobook) {
+      await deleteAudiobook.mutateAsync(deleteDialog.audiobook.id);
       toast.success("Audiobook deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete audiobook");
-      setError("Failed to delete audiobook");
+      setDeleteDialog({ isOpen: false, audiobook: null });
     }
   };
 
@@ -488,37 +483,13 @@ export default function AudiobooksPage() {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem
-                            onSelect={(e) => e.preventDefault()}
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            <Trash className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Delete Audiobook
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{audiobook.title}
-                              "? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(audiobook.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <DropdownMenuItem
+                        onClick={() => setDeleteDialog({ isOpen: true, audiobook })}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <Trash className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -757,6 +728,16 @@ export default function AudiobooksPage() {
           </p>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, audiobook: null })}
+        onConfirm={handleDelete}
+        title="Delete Audiobook"
+        description={`Are you sure you want to delete "${deleteDialog.audiobook?.title}"? This action cannot be undone.`}
+        isLoading={deleteAudiobook.isPending}
+      />
     </div>
   );
 }

@@ -11,7 +11,8 @@ export default function ConditionalLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isDashboardPage = pathname?.startsWith("/dashboard");
+  // Check if path contains /dashboard/ (with locale prefix like /en/dashboard or /es/dashboard)
+  const isDashboardPage = pathname?.match(/\/[a-z]{2}\/dashboard/)?.length > 0;
 
   // Listen for broadcast events via SSE globally
   useBroadcastSSE();

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,11 +27,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthNav } from "@/components/auth/auth-nav";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 export default function Header() {
-  const t = useTranslations('nav');
-  const tSearch = useTranslations('search');
-  const tAuth = useTranslations('auth');
+  const t = useTranslations("nav");
+  const tSearch = useTranslations("search");
+  const tAuth = useTranslations("auth");
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMobile();
   const { user } = useAuthStore();
@@ -51,21 +52,18 @@ export default function Header() {
         "sticky top-0 z-40 w-full transition-all duration-200",
         isScrolled
           ? "bg-background/95 backdrop-blur-md shadow-sm"
-          : "bg-transparent"
+          : "bg-transparent",
       )}
     >
       <div className="container flex items-center justify-between h-16 px-4 mx-auto">
-        <Link href="/" className="flex items-center space-x-2">
-          <Radio className={cn("text-primary", isMobile ? "h-6 w-6" : "h-8 w-8")} />
-          <span
-            className={cn(
-              "font-serif font-bold",
-              isMobile ? "text-base" : "text-lg",
-              isScrolled ? "text-foreground" : "text-primary dark:text-white"
-            )}
-          >
-            CBStudio Radio
-          </span>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logo.png"
+            alt="CBStudio Radio"
+            width={isMobile ? 40 : 64}
+            height={isMobile ? 40 : 64}
+            className={cn(isMobile ? "h-10 w-10" : "h-16 w-16")}
+          />
         </Link>
 
         {!isMobile ? (
@@ -77,12 +75,12 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      {t('home')}
+                      {t("home")}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>{t('listen')}</NavigationMenuTrigger>
+                  <NavigationMenuTrigger>{t("listen")}</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                       <li className="row-span-3">
@@ -92,22 +90,22 @@ export default function Header() {
                             href="/live"
                           >
                             <div className="mt-4 mb-2 text-lg font-medium text-primary-foreground">
-                              {t('liveNow')}
+                              {t("liveNow")}
                             </div>
                             <p className="text-sm leading-tight text-primary-foreground/90">
-                              {t('liveNow')}
+                              {t("liveNow")}
                             </p>
                           </a>
                         </NavigationMenuLink>
                       </li>
-                      <ListItem href="/podcasts" title={t('podcasts')}>
-                        {t('podcasts')}
+                      <ListItem href="/podcasts" title={t("podcasts")}>
+                        {t("podcasts")}
                       </ListItem>
-                      <ListItem href="/audiobooks" title={t('audiobooks')}>
-                        {t('audiobooks')}
+                      <ListItem href="/audiobooks" title={t("audiobooks")}>
+                        {t("audiobooks")}
                       </ListItem>
-                      <ListItem href="/archives" title={t('archives')}>
-                        {t('archives')}
+                      <ListItem href="/archives" title={t("archives")}>
+                        {t("archives")}
                       </ListItem>
                     </ul>
                   </NavigationMenuContent>
@@ -117,7 +115,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      {t('programs')}
+                      {t("programs")}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -126,7 +124,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      {t('events')}
+                      {t("events")}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -135,7 +133,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      {t('about')}
+                      {t("about")}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -144,7 +142,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      {t('contact')}
+                      {t("contact")}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -156,7 +154,7 @@ export default function Header() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder={tSearch('placeholder')}
+                  placeholder={tSearch("placeholder")}
                   className="w-[200px] pl-8 rounded-full bg-muted"
                 />
               </form>
@@ -174,7 +172,7 @@ export default function Header() {
                     className={cn(
                       "h-5 w-5",
 
-                      "text-primary dark:text-white"
+                      "text-primary dark:text-white",
                     )}
                   />
                   <span className="sr-only">Toggle menu</span>
@@ -184,15 +182,14 @@ export default function Header() {
                 <div className="flex flex-col h-full">
                   <div className="flex items-center justify-between pb-4 border-b border-border">
                     <SheetClose asChild>
-                      <Link href="/" className="flex items-center space-x-2">
-                        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                          <span className="font-serif text-primary-foreground text-sm font-bold">
-                            CB
-                          </span>
-                        </div>
-                        <span className="font-serif font-bold text-foreground">
-                          CBStudio Radio
-                        </span>
+                      <Link href="/" className="flex items-center">
+                        <Image
+                          src="/logo.png"
+                          alt="CBStudio Radio"
+                          width={40}
+                          height={40}
+                          className="h-10 w-10"
+                        />
                       </Link>
                     </SheetClose>
                   </div>
@@ -202,7 +199,7 @@ export default function Header() {
                         href="/"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('home')}
+                        {t("home")}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -210,7 +207,7 @@ export default function Header() {
                         href="/podcasts"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('podcasts')}
+                        {t("podcasts")}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -218,7 +215,7 @@ export default function Header() {
                         href="/audiobooks"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('audiobooks')}
+                        {t("audiobooks")}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -226,7 +223,7 @@ export default function Header() {
                         href="/archives"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('archives')}
+                        {t("archives")}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -234,7 +231,7 @@ export default function Header() {
                         href="/programs"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('programs')}
+                        {t("programs")}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -242,7 +239,7 @@ export default function Header() {
                         href="/events"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('events')}
+                        {t("events")}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -250,7 +247,7 @@ export default function Header() {
                         href="/about"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('about')}
+                        {t("about")}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -258,7 +255,7 @@ export default function Header() {
                         href="/contact"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        {t('contact')}
+                        {t("contact")}
                       </Link>
                     </SheetClose>
                   </nav>
@@ -269,12 +266,19 @@ export default function Header() {
                       <div className="flex flex-col gap-2 w-full">
                         <SheetClose asChild>
                           <Link href="/signin" className="w-full">
-                            <Button variant="ghost" className="w-full justify-start">{tAuth('signIn')}</Button>
+                            <Button
+                              variant="ghost"
+                              className="w-full justify-start"
+                            >
+                              {tAuth("signIn")}
+                            </Button>
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
                           <Link href="/register" className="w-full">
-                            <Button className="w-full justify-start">{tAuth('signUp')}</Button>
+                            <Button className="w-full justify-start">
+                              {tAuth("signUp")}
+                            </Button>
                           </Link>
                         </SheetClose>
                       </div>
@@ -301,7 +305,7 @@ const ListItem = React.forwardRef<
           ref={ref}
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
+            className,
           )}
           {...props}
         >

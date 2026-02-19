@@ -21,17 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   Plus,
   Search,
   Play,
@@ -44,6 +33,7 @@ import {
 } from "lucide-react";
 import { usePodcasts, useDeletePodcast } from "@/hooks/use-podcasts";
 import { type PodcastQuery } from "@/stores/podcast-store";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 
 interface PodcastFilters {
   search: string;
@@ -58,7 +48,13 @@ export default function PodcastsPage() {
     status: "all",
     sortBy: "recent",
   });
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    podcast: any | null;
+  }>({
+    isOpen: false,
+    podcast: null,
+  });
 
   const deletePodcastMutation = useDeletePodcast();
 
@@ -84,14 +80,10 @@ export default function PodcastsPage() {
     }
   }, [podcasts]);
 
-  const handleDelete = async (podcastId: string) => {
-    try {
-      setIsDeleting(podcastId);
-      await deletePodcastMutation.mutateAsync(podcastId);
-    } catch (error) {
-      console.error("Failed to delete podcast:", error);
-    } finally {
-      setIsDeleting(null);
+  const handleDelete = async () => {
+    if (deleteDialog.podcast) {
+      await deletePodcastMutation.mutateAsync(deleteDialog.podcast.id);
+      setDeleteDialog({ isOpen: false, podcast: null });
     }
   };
 
@@ -250,38 +242,13 @@ export default function PodcastsPage() {
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem
-                          onSelect={(e) => e.preventDefault()}
-                          className="text-destructive"
-                        >
-                          <Trash className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Podcast</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{podcast.title}"?
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(podcast.id)}
-                            disabled={isDeleting === podcast.id}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            {isDeleting === podcast.id
-                              ? "Deleting..."
-                              : "Delete"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <DropdownMenuItem
+                      onClick={() => setDeleteDialog({ isOpen: true, podcast })}
+                      className="text-destructive"
+                    >
+                      <Trash className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -338,6 +305,16 @@ export default function PodcastsPage() {
           </Button>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, podcast: null })}
+        onConfirm={handleDelete}
+        title="Delete Podcast"
+        description={`Are you sure you want to delete "${deleteDialog.podcast?.title}"? This action cannot be undone.`}
+        isLoading={deletePodcastMutation.isPending}
+      />
     </div>
   );
 }

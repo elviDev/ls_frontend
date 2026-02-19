@@ -36,6 +36,7 @@ import {
   ProgramCategory,
   ProgramStatus,
 } from "@/stores/program-store";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 
 const categoryColors = {
   TALK_SHOW: "bg-emerald-100 text-emerald-800",
@@ -60,6 +61,13 @@ export default function ProgramsPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    program: any | null;
+  }>({
+    isOpen: false,
+    program: null,
+  });
 
   const { programs, setPrograms } = useProgramStore();
   const { data: allPrograms, isLoading } = usePrograms(); // Load all programs
@@ -91,9 +99,11 @@ export default function ProgramsPage() {
     });
   }, [programs, search, categoryFilter, statusFilter]);
 
-  const handleDelete = (id: string) => {
-    if (!confirm("Are you sure you want to delete this program?")) return;
-    deleteProgram.mutate(id);
+  const handleDelete = async () => {
+    if (deleteDialog.program) {
+      await deleteProgram.mutateAsync(deleteDialog.program.id);
+      setDeleteDialog({ isOpen: false, program: null });
+    }
   };
 
   const formatCategory = (category: string) => {
@@ -322,7 +332,7 @@ export default function ProgramsPage() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs hover:bg-red-50 hover:text-red-700"
-                      onClick={() => handleDelete(program.id)}
+                      onClick={() => setDeleteDialog({ isOpen: true, program })}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -350,6 +360,16 @@ export default function ProgramsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, program: null })}
+        onConfirm={handleDelete}
+        title="Delete Program"
+        description={`Are you sure you want to delete "${deleteDialog.program?.title}"? This action cannot be undone.`}
+        isLoading={deleteProgram.isPending}
+      />
     </div>
   );
 }

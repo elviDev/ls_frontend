@@ -60,6 +60,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import Link from "next/link";
 import { useUsers, useSuspendUser, useDeleteUser, type User } from "@/hooks/use-users";
 import { useUserStore } from "@/stores/user-store";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 
 export default function UsersManagePage() {
   const { user } = useAuthStore();
@@ -73,6 +74,13 @@ export default function UsersManagePage() {
     isOpen: false,
     user: null,
     reason: "",
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    user: User | null;
+  }>({
+    isOpen: false,
+    user: null,
   });
   
   const isAdmin = user?.userType === 'staff' && user?.role === 'ADMIN';
@@ -103,11 +111,11 @@ export default function UsersManagePage() {
     setSuspendDialog({ isOpen: false, user: null, reason: "" });
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
-      return;
+  const handleDeleteUser = async () => {
+    if (deleteDialog.user) {
+      await deleteMutation.mutateAsync(deleteDialog.user.id);
+      setDeleteDialog({ isOpen: false, user: null });
     }
-    deleteMutation.mutate(userId);
   };
 
   const getInitials = (name?: string, email?: string) => {
@@ -422,7 +430,7 @@ export default function UsersManagePage() {
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={() => setDeleteDialog({ isOpen: true, user })}
                           className="text-red-600 focus:text-red-600"
                           disabled={!isAdmin}
                         >
@@ -526,6 +534,16 @@ export default function UsersManagePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Confirmation */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, user: null })}
+        onConfirm={handleDeleteUser}
+        title="Delete User"
+        description={`Are you sure you want to delete "${deleteDialog.user?.name || deleteDialog.user?.email}"? This action cannot be undone.`}
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

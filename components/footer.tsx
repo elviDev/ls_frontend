@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
@@ -14,15 +15,8 @@ export default function Footer() {
       <div className="container px-4 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center">
-                <span className="font-serif text-brand-700 text-lg font-bold">
-                  CB
-                </span>
-              </div>
-              <span className="font-serif font-bold text-xl text-white">
-                {tSite('name')}
-              </span>
+            <div className="flex items-center mb-4">
+              <Image src="/logo.png" alt="CBStudio Radio" width={64} height={64} className="h-16 w-16" />
             </div>
             <p className="text-brand-100 mb-4">
               {t('description')}

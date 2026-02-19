@@ -33,6 +33,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { DatePicker } from "@/components/ui/date-picker"
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal"
 
 type Schedule = {
   id: string
@@ -121,6 +122,15 @@ export default function SchedulesPage() {
   const [staff, setStaff] = useState<Staff[]>([])
   const [loading, setLoading] = useState(true)
   const [currentView, setCurrentView] = useState("list")
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    schedule: Schedule | null;
+    isDeleting: boolean;
+  }>({
+    isOpen: false,
+    schedule: null,
+    isDeleting: false,
+  });
   
   // Filters
   const [search, setSearch] = useState("")
@@ -187,11 +197,12 @@ export default function SchedulesPage() {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
   }
 
-  const handleDeleteSchedule = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this schedule?")) return
+  const handleDeleteSchedule = async () => {
+    if (!deleteDialog.schedule) return
 
+    setDeleteDialog(prev => ({ ...prev, isDeleting: true }))
     try {
-      const response = await apiClient.request(`/schedules/${id}`, {
+      const response = await apiClient.request(`/schedules/${deleteDialog.schedule.id}`, {
         method: "DELETE"
       })
 
@@ -201,6 +212,7 @@ export default function SchedulesPage() {
           description: "Schedule deleted successfully"
         })
         fetchSchedules()
+        setDeleteDialog({ isOpen: false, schedule: null, isDeleting: false })
       } else {
         throw new Error("Failed to delete")
       }
@@ -210,6 +222,7 @@ export default function SchedulesPage() {
         description: "Failed to delete schedule",
         variant: "destructive"
       })
+      setDeleteDialog(prev => ({ ...prev, isDeleting: false }))
     }
   }
 
@@ -276,7 +289,7 @@ export default function SchedulesPage() {
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => router.push(`/dashboard/schedules/${schedule.id}/edit`)}>
                 <Edit className="h-3 w-3" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleDeleteSchedule(schedule.id)}>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setDeleteDialog({ isOpen: true, schedule, isDeleting: false })}>
                 <Trash2 className="h-3 w-3" />
               </Button>
             </div>
@@ -610,6 +623,16 @@ export default function SchedulesPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, schedule: null, isDeleting: false })}
+        onConfirm={handleDeleteSchedule}
+        title="Delete Schedule"
+        description={`Are you sure you want to delete "${deleteDialog.schedule?.title}"? This action cannot be undone.`}
+        isLoading={deleteDialog.isDeleting}
+      />
     </div>
   )
 }

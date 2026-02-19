@@ -38,6 +38,7 @@ import {
 import { useAssetStore } from "@/stores/asset-store"
 import { useAssets, useUploadAssets, useDeleteAsset } from "@/hooks/use-assets"
 import { toast } from "sonner"
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal"
 
 export default function AssetsPage() {
   const { filters, pagination, selectedAssets, setFilters, clearSelection } = useAssetStore()
@@ -50,6 +51,13 @@ export default function AssetsPage() {
     files: [] as File[],
     description: "",
     tags: ""
+  })
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    asset: typeof assets[0] | null;
+  }>({
+    isOpen: false,
+    asset: null,
   })
 
   const assets = data?.assets || []
@@ -98,16 +106,18 @@ export default function AssetsPage() {
     setUploadForm({ ...uploadForm, files: newFiles })
   }
 
-  const handleDelete = async (asset: typeof assets[0]) => {
+  const handleDelete = (asset: typeof assets[0]) => {
     if ((asset._count?.broadcasts || 0) > 0) {
       toast.error("Cannot delete asset that is being used by broadcasts")
       return
     }
+    setDeleteDialog({ isOpen: true, asset })
+  }
 
-    try {
-      await deleteAsset.mutateAsync(asset.id)
-    } catch (error) {
-      // Error handling is done in the mutation
+  const confirmDelete = async () => {
+    if (deleteDialog.asset) {
+      await deleteAsset.mutateAsync(deleteDialog.asset.id)
+      setDeleteDialog({ isOpen: false, asset: null })
     }
   }
 
@@ -462,6 +472,16 @@ export default function AssetsPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) => setDeleteDialog({ isOpen: open, asset: null })}
+        onConfirm={confirmDelete}
+        title="Delete Asset"
+        description={`Are you sure you want to delete "${deleteDialog.asset?.originalName}"? This action cannot be undone.`}
+        isLoading={deleteAsset.isPending}
+      />
     </div>
   )
 }

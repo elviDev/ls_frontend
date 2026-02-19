@@ -4,21 +4,12 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useBroadcasts, useDeleteBroadcast } from "@/hooks/use-broadcasts";
 import { useBroadcastStore } from "@/stores/broadcast-store";
 import { BroadcastFiltersComponent } from "./components/broadcast-filters";
 import { BroadcastCard } from "./components/broadcast-card";
 import { CreateBroadcastDialog } from "./components/create-broadcast-dialog";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 import type { Broadcast } from "@/hooks/use-broadcasts";
 
 export default function BroadcastsPage() {
@@ -85,13 +76,8 @@ export default function BroadcastsPage() {
 
   const confirmDelete = async () => {
     if (broadcastToDelete) {
-      try {
-        await deleteBroadcastMutation.mutateAsync(broadcastToDelete.id);
-        setDeleteDialogOpen(false);
-        setBroadcastToDelete(null);
-      } catch (error) {
-        // Error is handled by the mutation
-      }
+      await deleteBroadcastMutation.mutateAsync(broadcastToDelete.id);
+      setBroadcastToDelete(null);
     }
   };
 
@@ -202,26 +188,14 @@ export default function BroadcastsPage() {
         editingBroadcast={editingBroadcast}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Broadcast</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{broadcastToDelete?.title}"? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationModal
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Broadcast"
+        description={`Are you sure you want to delete "${broadcastToDelete?.title}"? This action cannot be undone.`}
+        isLoading={deleteBroadcastMutation.isPending}
+      />
     </div>
   );
 }
