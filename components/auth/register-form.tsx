@@ -5,6 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { useRegister } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +20,7 @@ type UserType = 'user' | 'staff'
 type StaffRole = 'ADMIN' | 'HOST' | 'CO_HOST' | 'PRODUCER' | 'SOUND_ENGINEER' | 'CONTENT_MANAGER' | 'TECHNICAL_SUPPORT'
 
 export function RegisterForm() {
+  const t = useTranslations()
   const [userType, setUserType] = useState<UserType>('user')
   const [formData, setFormData] = useState({
     // Common fields
@@ -55,29 +57,29 @@ export function RegisterForm() {
 
     // Basic validation
     if (!formData.email || !formData.password) {
-      setError("Email and password are required")
+      setError(t('validation.required'))
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
+      setError(t('validation.passwordsDoNotMatch'))
       return
     }
 
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long")
+      setError(t('validation.passwordTooShort'))
       return
     }
 
     // User type specific validation
     if (userType === 'user' && !formData.name) {
-      setError("Name is required for user registration")
+      setError(t('validation.required'))
       return
     }
 
     if (userType === 'staff') {
       if (!formData.firstName || !formData.lastName || !formData.username || !formData.role) {
-        setError("First name, last name, username, and role are required for staff registration")
+        setError(t('validation.required'))
         return
       }
     }
@@ -116,8 +118,8 @@ export function RegisterForm() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Create an Account</h1>
-        <p className="text-gray-500 dark:text-gray-400">Choose your account type and enter your information</p>
+        <h1 className="text-3xl font-bold">{t('register.title')}</h1>
+        <p className="text-gray-500 dark:text-gray-400">{t('register.description')}</p>
       </div>
 
       {/* User Type Selection */}
@@ -129,7 +131,7 @@ export function RegisterForm() {
           className="h-20 flex-col gap-2"
         >
           <Users className="h-6 w-6" />
-          <span>Regular User</span>
+          <span>{t('register.userType.user')}</span>
         </Button>
         <Button
           type="button"
@@ -138,7 +140,7 @@ export function RegisterForm() {
           className="h-20 flex-col gap-2"
         >
           <UserCheck className="h-6 w-6" />
-          <span>Staff Member</span>
+          <span>{t('register.userType.staff')}</span>
         </Button>
       </div>
 
@@ -153,11 +155,11 @@ export function RegisterForm() {
         {/* Common Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('auth.email')} *</Label>
             <Input
               id="email"
               type="email"
-              placeholder="john@example.com"
+              placeholder={t('register.emailPlaceholder')}
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               disabled={registerMutation.isPending}
@@ -166,10 +168,10 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Username {userType === 'staff' && '*'}</Label>
+            <Label htmlFor="username">{t('auth.username')} {userType === 'staff' && '*'}</Label>
             <Input
               id="username"
-              placeholder="johndoe"
+              placeholder={t('register.usernamePlaceholder')}
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
               disabled={registerMutation.isPending}
@@ -181,7 +183,7 @@ export function RegisterForm() {
         {/* User Type Specific Fields */}
         {userType === 'user' ? (
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name *</Label>
+            <Label htmlFor="name">{t('forms.fullName')} *</Label>
             <Input
               id="name"
               placeholder="John Doe"
@@ -194,7 +196,7 @@ export function RegisterForm() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="firstName">{t('auth.firstName')} *</Label>
               <Input
                 id="firstName"
                 placeholder="John"
@@ -205,7 +207,7 @@ export function RegisterForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name *</Label>
+              <Label htmlFor="lastName">{t('auth.lastName')} *</Label>
               <Input
                 id="lastName"
                 placeholder="Doe"
@@ -222,27 +224,27 @@ export function RegisterForm() {
         {userType === 'staff' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="role">Role *</Label>
+              <Label htmlFor="role">{t('register.role')} *</Label>
               <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
+                  <SelectValue placeholder={t('register.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="HOST">Host</SelectItem>
-                  <SelectItem value="CO_HOST">Co-Host</SelectItem>
-                  <SelectItem value="PRODUCER">Producer</SelectItem>
-                  <SelectItem value="SOUND_ENGINEER">Sound Engineer</SelectItem>
-                  <SelectItem value="CONTENT_MANAGER">Content Manager</SelectItem>
-                  <SelectItem value="TECHNICAL_SUPPORT">Technical Support</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="HOST">{t('register.roles.HOST')}</SelectItem>
+                  <SelectItem value="CO_HOST">{t('register.roles.CO_HOST')}</SelectItem>
+                  <SelectItem value="PRODUCER">{t('register.roles.PRODUCER')}</SelectItem>
+                  <SelectItem value="SOUND_ENGINEER">{t('register.roles.SOUND_ENGINEER')}</SelectItem>
+                  <SelectItem value="CONTENT_MANAGER">{t('register.roles.CONTENT_MANAGER')}</SelectItem>
+                  <SelectItem value="TECHNICAL_SUPPORT">{t('register.roles.TECHNICAL_SUPPORT')}</SelectItem>
+                  <SelectItem value="ADMIN">{t('register.roles.ADMIN')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
+              <Label htmlFor="department">{t('register.department')}</Label>
               <Input
                 id="department"
-                placeholder="Broadcasting"
+                placeholder={t('register.departmentPlaceholder')}
                 value={formData.department}
                 onChange={(e) => handleInputChange('department', e.target.value)}
                 disabled={registerMutation.isPending}
@@ -254,11 +256,11 @@ export function RegisterForm() {
         {/* Additional Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{t('auth.phone')}</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder="+1 (555) 123-4567"
+              placeholder={t('register.phonePlaceholder')}
               value={formData.phone}
               onChange={(e) => handleInputChange('phone', e.target.value)}
               disabled={registerMutation.isPending}
@@ -266,10 +268,10 @@ export function RegisterForm() {
           </div>
           {userType === 'staff' && (
             <div className="space-y-2">
-              <Label htmlFor="position">Position</Label>
+              <Label htmlFor="position">{t('register.position')}</Label>
               <Input
                 id="position"
-                placeholder="Senior Host"
+                placeholder={t('register.positionPlaceholder')}
                 value={formData.position}
                 onChange={(e) => handleInputChange('position', e.target.value)}
                 disabled={registerMutation.isPending}
@@ -280,10 +282,10 @@ export function RegisterForm() {
 
         {/* Bio */}
         <div className="space-y-2">
-          <Label htmlFor="bio">Bio</Label>
+          <Label htmlFor="bio">{t('auth.bio')}</Label>
           <Textarea
             id="bio"
-            placeholder="Tell us about yourself..."
+            placeholder={t('forms.tellUsAboutYourself')}
             value={formData.bio}
             onChange={(e) => handleInputChange('bio', e.target.value)}
             disabled={registerMutation.isPending}
@@ -295,7 +297,7 @@ export function RegisterForm() {
         {userType === 'staff' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address">{t('forms.address')}</Label>
               <Input
                 id="address"
                 placeholder="123 Main St, City, State"
@@ -305,7 +307,7 @@ export function RegisterForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="emergencyContact">Emergency Contact</Label>
+              <Label htmlFor="emergencyContact">{t('forms.emergencyContact')}</Label>
               <Input
                 id="emergencyContact"
                 placeholder="Jane Doe - +1 (555) 987-6543"
@@ -320,7 +322,7 @@ export function RegisterForm() {
         {/* Password Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="password">Password *</Label>
+            <Label htmlFor="password">{t('auth.password')} *</Label>
             <PasswordInput
               id="password"
               value={formData.password}
@@ -330,7 +332,7 @@ export function RegisterForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm Password *</Label>
+            <Label htmlFor="confirm-password">{t('auth.confirmPassword')} *</Label>
             <PasswordInput
               id="confirm-password"
               value={formData.confirmPassword}
@@ -342,14 +344,14 @@ export function RegisterForm() {
         </div>
 
         <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-          {registerMutation.isPending ? "Creating account..." : `Register as ${userType === 'user' ? 'User' : 'Staff'}`}
+          {registerMutation.isPending ? t('loading.creatingAccount') : userType === 'user' ? t('register.registerAsUser') : t('register.registerAsStaff')}
         </Button>
       </form>
 
       <div className="text-center text-sm">
-        Already have an account?{" "}
+        {t('register.alreadyHaveAccount')}{" "}
         <Link href="/signin" className="underline">
-          Sign in
+          {t('register.signIn')}
         </Link>
       </div>
       
@@ -357,7 +359,7 @@ export function RegisterForm() {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Staff accounts require approval from an administrator before you can log in.
+            {t('register.staffApprovalRequired')}
           </AlertDescription>
         </Alert>
       )}

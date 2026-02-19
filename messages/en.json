@@ -1,0 +1,674 @@
+{
+  "site": {
+    "name": "CBStudio Radio",
+    "description": "Your online radio station",
+    "tagline": "Listen, Connect, Enjoy"
+  },
+  "nav": {
+    "home": "Home",
+    "listen": "Listen",
+    "programs": "Programs",
+    "events": "Events",
+    "about": "About",
+    "contact": "Contact",
+    "podcasts": "Podcasts",
+    "audiobooks": "Audiobooks",
+    "archives": "Archives",
+    "liveNow": "Live Now",
+    "browse": "Browse",
+    "discover": "Discover"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "enterEmail": "Enter your email",
+    "enterPassword": "Enter your password",
+    "signInTitle": "Sign In",
+    "signInDescription": "Enter your credentials to access your account",
+    "signingIn": "Signing in...",
+    "register": "Register",
+    "profile": "Profile",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "name": "Name",
+    "username": "Username",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone",
+    "bio": "Bio",
+    "createAccount": "Create Account",
+    "accountCreated": "Account created successfully",
+    "verifyEmail": "Verify Email",
+    "emailVerified": "Email verified successfully",
+    "resetPassword": "Reset Password",
+    "passwordReset": "Password reset successfully"
+  },
+  "search": {
+    "placeholder": "Search...",
+    "search": "Search",
+    "results": "Results",
+    "noResults": "No results found",
+    "searching": "Searching..."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "more": "More",
+    "less": "Less",
+    "show": "Show",
+    "hide": "Hide",
+    "all": "All",
+    "none": "None",
+    "select": "Select",
+    "upload": "Upload",
+    "download": "Download",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied",
+    "new": "New",
+    "create": "Create",
+    "update": "Update",
+    "remove": "Remove",
+    "add": "Add",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "retry": "Retry"
+  },
+
+  "home": {
+    "welcome": "Welcome to CBStudio Radio",
+    "featuredPodcasts": "Featured Podcasts",
+    "popularPrograms": "Popular Programs",
+    "upcomingEvents": "Upcoming Events",
+    "liveNow": "Live Now",
+    "recentEpisodes": "Recent Episodes",
+    "trending": "Trending"
+  },
+  "podcast": {
+    "episodes": "Episodes",
+    "episode": "Episode",
+    "duration": "Duration",
+    "releaseDate": "Release Date",
+    "host": "Host",
+    "guests": "Guests",
+    "description": "Description",
+    "subscribe": "Subscribe",
+    "share": "Share",
+    "download": "Download",
+    "play": "Play",
+    "pause": "Pause",
+    "addToFavorites": "Add to Favorites",
+    "removeFromFavorites": "Remove from Favorites",
+    "addToPlaylist": "Add to Playlist",
+    "comments": "Comments",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "relatedPodcasts": "Related Podcasts"
+  },
+  "program": {
+    "schedule": "Schedule",
+    "category": "Category",
+    "host": "Host",
+    "description": "Description",
+    "episodes": "Episodes",
+    "upcomingShows": "Upcoming Shows",
+    "pastShows": "Past Shows"
+  },
+  "event": {
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "venue": "Venue",
+    "tickets": "Tickets",
+    "register": "Register",
+    "details": "Details",
+    "upcoming": "Upcoming",
+    "past": "Past"
+  },
+  "player": {
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "volume": "Volume",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "forward": "Forward",
+    "rewind": "Rewind",
+    "speed": "Speed",
+    "playlist": "Playlist",
+    "nowPlaying": "Now Playing",
+    "queue": "Queue",
+    "repeat": "Repeat",
+    "shuffle": "Shuffle"
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "content": "Content",
+    "users": "Users",
+    "staff": "Staff",
+    "broadcasts": "Broadcasts",
+    "podcasts": "Podcasts",
+    "programs": "Programs",
+    "events": "Events",
+    "settings": "Settings",
+    "reports": "Reports",
+    "statistics": "Statistics"
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "serverError": "Server error",
+    "networkError": "Network error",
+    "tryAgain": "Try again"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "invalidFormat": "Invalid format"
+  },
+  "register": {
+    "title": "Create an Account",
+    "description": "Choose your account type and enter your information",
+    "userType": {
+      "user": "Regular User",
+      "staff": "Staff Member"
+    },
+    "role": "Role",
+    "selectRole": "Select role",
+    "roles": {
+      "HOST": "Host",
+      "CO_HOST": "Co-Host",
+      "PRODUCER": "Producer",
+      "SOUND_ENGINEER": "Sound Engineer",
+      "CONTENT_MANAGER": "Content Manager",
+      "TECHNICAL_SUPPORT": "Technical Support",
+      "ADMIN": "Admin"
+    },
+    "department": "Department",
+    "position": "Position",
+    "phonePlaceholder": "+1 (555) 123-4567",
+    "departmentPlaceholder": "Broadcasting",
+    "positionPlaceholder": "Senior Host",
+    "emailPlaceholder": "john@example.com",
+    "usernamePlaceholder": "johndoe",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "registerAsUser": "Register as User",
+    "registerAsStaff": "Register as Staff",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "staffApprovalRequired": "Staff accounts require approval from an administrator before you can log in."
+  },
+  "broadcast": {
+    "liveAudioStream": "Live Audio Stream",
+    "radioHost": "Radio Host",
+    "interact": "Interact",
+    "like": "Like",
+    "liked": "Liked",
+    "joinChat": "Join Chat",
+    "stats": "Stats",
+    "listeners": "Listeners",
+    "started": "Started",
+    "joinLiveBroadcast": "Join Live Broadcast",
+    "leaveBroadcast": "Leave Broadcast",
+    "liveBroadcast": "Live Broadcast",
+    "live": "LIVE",
+    "noLiveBroadcast": "No live broadcast available"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Audiobook Creators",
+      "subtitle": "Your Sound Universe",
+      "features": {
+        "ost": "★ Original Soundtrack (OST) Composer",
+        "narrators": "★ Professional Narrators",
+        "sound": "★ FX HD Sound",
+        "multilanguage": "★ Multilanguage Translations"
+      },
+      "listenNow": "Listen Now",
+      "startProject": "Start Project"
+    },
+    "features": {
+      "liveBroadcasts": {
+        "title": "Live Broadcasts",
+        "description": "Tune in to our live shows using the player below and join the chat"
+      },
+      "podcasts": {
+        "title": "Podcasts",
+        "description": "Explore our collection of engaging podcasts"
+      },
+      "audiobooks": {
+        "title": "Audiobooks",
+        "description": "Immerse yourself in captivating stories"
+      },
+      "archives": {
+        "title": "Archives",
+        "description": "Access our library of past content"
+      }
+    },
+    "viewAllEvents": "View All Events →",
+    "viewAllPrograms": "View All Programs →",
+    "professionalTeam": {
+      "title": "Professional Team",
+      "description1": "CBStudio Radio Studio is a dual partnership. Ours is the objective of creating distinct Audiobooks. Your book can have just one narrator or several voice readers with optional FX sounds, or an original soundtrack, much like a film.",
+      "description2": "We give personalized study to your project, to elevate the excellence of your Audiobook.",
+      "feature1": "The Raven (A Poem by Edgar Allan Poe)",
+      "feature2": "A Fragment of the Hanging Gardens of Babylon in Spanish",
+      "feature3": "Custom productions tailored to your vision"
+    }
+  },
+  "about": {
+    "title": "About Us",
+    "features": {
+      "production": {
+        "title": "Professional Production",
+        "description": "High-quality audiobook production with experienced narrators and crystal-clear audio."
+      },
+      "narration": {
+        "title": "Expert Narration",
+        "description": "Professional voice actors and narrators bring stories to life with engaging performances."
+      },
+      "soundtracks": {
+        "title": "Original Soundtracks",
+        "description": "Custom music and sound effects enhance the listening experience for every story."
+      },
+      "multilanguage": {
+        "title": "Multilanguage Support",
+        "description": "Audiobooks available in multiple languages to reach a global audience."
+      }
+    },
+    "stats": {
+      "audiobooks": "Audiobooks Produced",
+      "narrators": "Professional Narrators",
+      "languages": "Languages Supported",
+      "founded": "Founded"
+    }
+  },
+  "programs": {
+    "title": "Our Programs",
+    "description": "Discover our diverse lineup of shows covering everything from music and technology to business and culture.",
+    "failedToLoad": "Failed to load programs. Please try again later."
+  },
+  "events": {
+    "title": "Events",
+    "categories": {
+      "all": "All Events",
+      "concert": "Concerts",
+      "meetup": "Meetups",
+      "interview": "Interviews",
+      "specialBroadcast": "Special Broadcasts",
+      "contest": "Contests",
+      "giveaway": "Giveaways",
+      "communityEvent": "Community Events",
+      "fundraiser": "Fundraisers"
+    }
+  },
+  "archives": {
+    "category": "Category",
+    "allCategories": "All Categories",
+    "sortBy": "Sort by",
+    "sortOptions": {
+      "date": "Date (Newest)",
+      "title": "Title (A-Z)",
+      "duration": "Duration",
+      "popularity": "Popularity"
+    }
+  },
+  "transcript": {
+    "title": "Transcript",
+    "searchPlaceholder": "Search transcript...",
+    "loading": "Loading transcript...",
+    "noMatching": "No matching segments found",
+    "noAvailable": "No transcript available for this episode"
+  },
+  "comments": {
+    "title": "Comments",
+    "addComment": "Add a comment...",
+    "signInToComment": "Sign in to add a comment",
+    "postComment": "Post Comment",
+    "posting": "Posting...",
+    "signInToCommentButton": "Sign in to Comment"
+  },
+  "audioPlayer": {
+    "title": "Audio Player",
+    "downloadEpisode": "Download episode",
+    "shareEpisode": "Share episode"
+  },
+  "episodeList": {
+    "noEpisodes": "No episodes found"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "noNotifications": "No notifications"
+  },
+  "dashboardMenu": {
+    "title": "Dashboard Menu"
+  },
+  "loginAlerts": {
+    "emailVerifiedSuccess": "Email verified successfully! You can now sign in.",
+    "emailVerificationFailed": "Email verification failed. Please try again.",
+    "emailNotVerified": "Your email is not verified. Please check your inbox for the verification link.",
+    "resendVerification": "Resend Verification Email",
+    "sending": "Sending..."
+  },
+  "footer": {
+    "description": "Your premier destination for podcasts, audiobooks, and live broadcasts that inspire, entertain, and connect.",
+    "quickLinks": "Quick Links",
+    "aboutUs": "About Us",
+    "resources": "Resources",
+    "helpCenter": "Help Center",
+    "advertiseWithUs": "Advertise With Us",
+    "careers": "Careers",
+    "privacy": "Privacy",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms",
+    "termsOfService": "Terms of Service",
+    "cookies": "Cookies",
+    "contactUs": "Contact Us",
+    "followUs": "Follow Us",
+    "newsletter": "Newsletter",
+    "subscribeNewsletter": "Subscribe to our newsletter",
+    "subscribe": "Subscribe",
+    "subscribeDescription": "Subscribe to our newsletter for updates on new content and events.",
+    "yourEmail": "Your email address",
+    "subscribeButton": "Subscribe",
+    "copyright": "All rights reserved",
+    "allRightsReserved": "All rights reserved"
+  },
+  "toast": {
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "failedToUpdateFavorites": "Failed to update favorites",
+    "searchFailed": "Search failed",
+    "failedToSearch": "Failed to search {type}. Please try again.",
+    "pleaseSignIn": "Please sign in",
+    "signInToViewFavorites": "Sign in to view your favorite {type}",
+    "sharingFailed": "Sharing failed",
+    "downloadUnavailable": "Download unavailable",
+    "linkCopied": "Link copied",
+    "episodeLinkCopied": "Episode link copied to clipboard",
+    "verificationEmailSent": "Verification email sent! Please check your inbox.",
+    "failedToResendVerification": "Failed to resend verification email"
+  },
+  "loading": {
+    "loadingPodcasts": "Loading podcasts...",
+    "loadingAudiobooks": "Loading audiobooks...",
+    "loadingArchives": "Loading archives...",
+    "loadingComments": "Loading comments...",
+    "searching": "Searching...",
+    "posting": "Posting...",
+    "sending": "Sending...",
+    "creatingAccount": "Creating account..."
+  },
+  "empty": {
+    "noPodcastsFound": "No podcasts found",
+    "noAudiobooksFound": "No audiobooks found",
+    "noArchivesFound": "No archives found",
+    "noEpisodesFound": "No episodes found",
+    "noCommentsYet": "No comments yet. Be the first to comment!",
+    "noFavoritePodcasts": "No favorite podcasts yet",
+    "noFavoriteAudiobooks": "No favorite audiobooks yet",
+    "startExploringPodcasts": "Start exploring podcasts and add some to your favorites!",
+    "startExploringAudiobooks": "Start exploring audiobooks and add some to your favorites!",
+    "noProgramsAvailable": "No programs available at the moment.",
+    "noUpcomingEvents": "No upcoming events at this time.",
+    "noPublishedPodcasts": "No podcasts have been published yet. Check back later!"
+  },
+  "filters": {
+    "allGenres": "All Genres",
+    "sortBy": "Sort by",
+    "genre": "Genre"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "actions": {
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "signInToComment": "Sign in to Comment",
+    "postComment": "Post Comment"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions, feedback, or want to work with us? We'd love to hear from you.",
+    "callUs": "Call Us",
+    "emailUs": "Email Us",
+    "visitUs": "Visit Us",
+    "businessHours": "Mon-Fri from 8am to 5pm",
+    "responseTime": "We'll respond within 24 hours",
+    "officeLocation": "Come say hello at our office",
+    "getInTouch": "Get In Touch",
+    "sendMessage": "Send a Message",
+    "bookAppointment": "Book an Appointment",
+    "messageSent": "Your message has been sent! We'll get back to you soon.",
+    "appointmentSubmitted": "Your appointment request has been submitted! We'll confirm shortly.",
+    "advertisingInquiryReceived": "Your advertising inquiry has been received! Our team will contact you soon.",
+    "faq": "Frequently Asked Questions",
+    "stillHaveQuestions": "Still have questions?",
+    "supportTeamReady": "Our support team is here to help."
+  },
+  "forms": {
+    "fullName": "Full Name",
+    "subject": "Subject",
+    "message": "Message",
+    "companyName": "Company name",
+    "contactName": "Contact name",
+    "estimatedBudget": "Estimated Budget",
+    "campaignDetails": "Campaign Details",
+    "advertisingInterest": "Advertising Interest",
+    "additionalNotes": "Additional Notes",
+    "preferredDate": "Preferred Date",
+    "preferredTime": "Preferred Time",
+    "appointmentType": "Appointment Type",
+    "selectSubject": "Select a subject",
+    "selectAppointmentType": "Select appointment type",
+    "selectDate": "Select a date",
+    "selectTime": "Select a time",
+    "yourMessageHere": "Your message here...",
+    "tellUsAboutYourself": "Tell us about yourself...",
+    "address": "Address",
+    "emergencyContact": "Emergency Contact"
+  },
+  "appointmentTypes": {
+    "studioTour": "Studio Tour",
+    "podcastGuest": "Podcast Guest Appearance",
+    "businessMeeting": "Business Meeting",
+    "consultation": "Consultation"
+  },
+  "advertisingOptions": {
+    "podcastSponsorship": "Podcast Sponsorship",
+    "liveBroadcastAds": "Live Broadcast Ads",
+    "websiteBanners": "Website Banners",
+    "inAppPromotions": "In-App Promotions"
+  },
+  "budgetRanges": {
+    "under5k": "Under $5,000",
+    "5kTo10k": "$5,000 - $10,000",
+    "10kTo25k": "$10,000 - $25,000",
+    "25kTo50k": "$25,000 - $50,000",
+    "over50k": "Over $50,000"
+  },
+  "inquiryTypes": {
+    "generalInquiry": "General Inquiry",
+    "technicalSupport": "Technical Support",
+    "feedback": "Feedback",
+    "partnershipOpportunity": "Partnership Opportunity"
+  },
+  "tabs": {
+    "allPodcasts": "All Podcasts",
+    "allAudiobooks": "All Audiobooks"
+  },
+  "podcasts": {
+    "title": "Explore Our Podcasts",
+    "subtitle": "Discover thought-provoking conversations, inspiring stories, and expert insights across a variety of topics.",
+    "noPodcastsAvailable": "No Podcasts Available"
+  },
+  "audiobooks": {
+    "title": "Explore Our Audiobooks",
+    "subtitle": "Immerse yourself in captivating stories narrated by professional voice actors."
+  },
+  "aboutPage": {
+    "title": "CBStudio Radio",
+    "subtitle": "Professional audiobook production that brings stories to life",
+    "ourMission": "Our Mission",
+    "missionText": "We transform written stories into immersive audio experiences through professional narration, original soundtracks, and HD sound effects. Every audiobook we produce is crafted with cinematic attention to detail.",
+    "ourStory": "Our Story",
+    "storyParagraph1": "Founded in 2018, CBStudio Radio began with a vision to elevate audiobook production to cinematic standards. We believe every story deserves to be told with the highest quality audio production.",
+    "storyParagraph2": "Today, we work with authors, publishers, and content creators worldwide to produce audiobooks that captivate listeners through professional narration, immersive soundscapes, and multilanguage accessibility.",
+    "storyParagraph3": "Our commitment to excellence has made us a trusted partner in the audiobook industry, helping bring hundreds of stories to life for audiences around the globe.",
+    "features": {
+      "professionalAudiobooks": "Professional Audiobooks",
+      "professionalAudiobooksDesc": "High-quality audiobook production with experienced narrators and crystal-clear audio.",
+      "expertNarration": "Expert Narration",
+      "expertNarrationDesc": "Professional voice actors and narrators bring stories to life with engaging performances.",
+      "originalSoundtracks": "Original Soundtracks",
+      "originalSoundtracksDesc": "Custom music and sound effects enhance the listening experience for every story.",
+      "multilanguageSupport": "Multilanguage Support",
+      "multilanguageSupportDesc": "Audiobooks available in multiple languages to reach a global audience."
+    }
+  },
+  "featuredContent": {
+    "with": "with",
+    "episodes": "episodes",
+    "favorites": "favorites",
+    "min": "min",
+    "unknown": "Unknown",
+    "uncategorized": "Uncategorized",
+    "noPodcastsAvailable": "No podcasts available at the moment."
+  },
+  "navbar": {
+    "home": "Home",
+    "nextAuth": "Next Auth"
+  },
+  "contactPage": {
+    "title": "Contact Us",
+    "subtitle": "Have questions, feedback, or want to work with us? We'd love to hear from you.",
+    "callUs": "Call Us",
+    "emailUs": "Email Us",
+    "visitUs": "Visit Us",
+    "businessHours": "Mon-Fri from 8am to 5pm",
+    "responseTime": "We'll respond within 24 hours",
+    "officeLocation": "Come say hello at our office",
+    "getInTouch": "Get In Touch",
+    "tabs": {
+      "message": "Send a Message",
+      "appointment": "Book an Appointment",
+      "advertise": "Advertise With Us"
+    },
+    "form": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "subject": "Subject",
+      "message": "Message",
+      "selectSubject": "Select a subject",
+      "sendMessage": "Send Message",
+      "companyName": "Company name",
+      "contactName": "Contact name",
+      "appointmentType": "Appointment Type",
+      "selectAppointmentType": "Select appointment type",
+      "preferredDate": "Preferred Date",
+      "selectDate": "Select a date",
+      "preferredTime": "Preferred Time",
+      "selectTime": "Select a time",
+      "additionalNotes": "Additional Notes",
+      "requestAppointment": "Request Appointment",
+      "advertisingInterest": "Advertising Interest",
+      "estimatedBudget": "Estimated Budget",
+      "selectBudget": "Select budget range",
+      "campaignDetails": "Campaign Details",
+      "submitInquiry": "Submit Advertising Inquiry",
+      "messagePlaceholder": "Your message here...",
+      "appointmentNotesPlaceholder": "Any specific details about your appointment...",
+      "campaignDetailsPlaceholder": "Tell us about your product/service and advertising goals..."
+    },
+    "success": {
+      "messageSent": "Your message has been sent! We'll get back to you soon.",
+      "appointmentSubmitted": "Your appointment request has been submitted! We'll confirm shortly.",
+      "advertisingReceived": "Your advertising inquiry has been received! Our team will contact you soon."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "How can I listen to CBStudio Radio?",
+      "a1": "You can listen to CBStudio Radio directly through our website or by installing our progressive web app on your mobile device. We're also available on major podcast platforms.",
+      "q2": "How do I submit my podcast to CBStudio Radio?",
+      "a2": "We're always looking for great content! Please use the contact form and select 'Partnership Opportunity' as the subject to submit your podcast for consideration.",
+      "q3": "Do you offer studio rentals?",
+      "a3": "Yes, our professional recording studios are available for rent. Please book an appointment to discuss your needs and schedule a tour.",
+      "q4": "How can I advertise on CBStudio Radio?",
+      "a4": "We offer various advertising options including podcast sponsorships, live broadcast ads, and digital promotions. Use our advertising form to get started.",
+      "q5": "Are there job opportunities at CBStudio Radio?",
+      "a5": "We're growing! Check our About page for current job openings or send your resume to careers@cbstudio.example.",
+      "stillHaveQuestions": "Still have questions?",
+      "supportReady": "Our support team is here to help. Reach out to us and we'll get back to you as soon as possible.",
+      "chatWithSupport": "Chat with Support"
+    }
+  },
+  "podcastsPage": {
+    "title": "Explore Our Podcasts",
+    "subtitle": "Discover thought-provoking conversations, inspiring stories, and expert insights across a variety of topics.",
+    "tabs": {
+      "all": "All Podcasts",
+      "featured": "Featured",
+      "popular": "Popular",
+      "recent": "Recent"
+    },
+    "genrePodcasts": "{genre} Podcasts",
+    "noPodcastsPublished": "No podcasts have been published yet. Check back later!",
+    "noPodcastsAvailable": "No Podcasts Available"
+  },
+  "chat": {
+    "liveChat": "Live Chat",
+    "online": "online",
+    "pinnedMessages": "Pinned Messages",
+    "host": "Host",
+    "moderator": "Mod",
+    "announcement": "Announcement",
+    "typeMessage": "Type a message...",
+    "typeMessageAnonymous": "Type a message as Anonymous...",
+    "sendAsAnnouncement": "Send as Announcement",
+    "moderate": "Moderate",
+    "mute5min": "Mute (5 min)",
+    "kickFromChat": "Kick from Chat",
+    "ban30min": "Ban (30 min)",
+    "banPermanently": "Ban Permanently",
+    "kickedFromChat": "You have been kicked from the chat",
+    "bannedFromChat": "You have been banned from the chat",
+    "mutedFromChat": "You have been muted"
+  }
+}

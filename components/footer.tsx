@@ -2,8 +2,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function Footer() {
+  const t = useTranslations('footer');
+  const tNav = useTranslations('nav');
+  const tSite = useTranslations('site');
+  
   return (
     <footer className="bg-brand-700 text-white pt-12 pb-6 mt-auto">
       <div className="container px-4 mx-auto">
@@ -16,12 +21,11 @@ export default function Footer() {
                 </span>
               </div>
               <span className="font-serif font-bold text-xl text-white">
-                Cinema Book
+                {tSite('name')}
               </span>
             </div>
             <p className="text-brand-100 mb-4">
-              Your premier destination for podcasts, audiobooks, and live
-              broadcasts that inspire, entertain, and connect.
+              {t('description')}
             </p>
             <div className="flex space-x-4">
               <Link
@@ -57,7 +61,7 @@ export default function Footer() {
 
           <div>
             <h3 className="font-serif font-semibold text-white text-lg mb-4">
-              Quick Links
+              {t('quickLinks')}
             </h3>
             <ul className="space-y-2">
               <li>
@@ -65,7 +69,7 @@ export default function Footer() {
                   href="/about"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  About Us
+                  {t('aboutUs')}
                 </Link>
               </li>
               <li>
@@ -73,7 +77,7 @@ export default function Footer() {
                   href="/programs"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Programs
+                  {tNav('programs')}
                 </Link>
               </li>
               <li>
@@ -81,7 +85,7 @@ export default function Footer() {
                   href="/podcasts"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Podcasts
+                  {tNav('podcasts')}
                 </Link>
               </li>
               <li>
@@ -89,7 +93,7 @@ export default function Footer() {
                   href="/events"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Events
+                  {tNav('events')}
                 </Link>
               </li>
               <li>
@@ -97,7 +101,7 @@ export default function Footer() {
                   href="/contact"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Contact
+                  {tNav('contact')}
                 </Link>
               </li>
             </ul>
@@ -105,7 +109,7 @@ export default function Footer() {
 
           <div>
             <h3 className="font-serif font-semibold text-white text-lg mb-4">
-              Resources
+              {t('resources')}
             </h3>
             <ul className="space-y-2">
               <li>
@@ -113,7 +117,7 @@ export default function Footer() {
                   href="/help"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Help Center
+                  {t('helpCenter')}
                 </Link>
               </li>
               <li>
@@ -121,7 +125,7 @@ export default function Footer() {
                   href="/advertise"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Advertise With Us
+                  {t('advertiseWithUs')}
                 </Link>
               </li>
               <li>
@@ -129,7 +133,7 @@ export default function Footer() {
                   href="/careers"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Careers
+                  {t('careers')}
                 </Link>
               </li>
               <li>
@@ -137,7 +141,7 @@ export default function Footer() {
                   href="/privacy"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Privacy Policy
+                  {t('privacyPolicy')}
                 </Link>
               </li>
               <li>
@@ -145,7 +149,7 @@ export default function Footer() {
                   href="/terms"
                   className="text-brand-100 hover:text-white transition-colors"
                 >
-                  Terms of Service
+                  {t('termsOfService')}
                 </Link>
               </li>
             </ul>
@@ -153,19 +157,19 @@ export default function Footer() {
 
           <div>
             <h3 className="font-serif font-semibold text-white text-lg mb-4">
-              Subscribe
+              {t('subscribe')}
             </h3>
             <p className="text-brand-100 mb-4">
-              Subscribe to our newsletter for updates on new content and events.
+              {t('subscribeDescription')}
             </p>
             <form className="space-y-2">
               <Input
                 type="email"
-                placeholder="Your email address"
+                placeholder={t('yourEmail')}
                 className="bg-brand-600 border-brand-500 text-white placeholder:text-brand-300"
               />
               <Button className="w-full bg-white hover:bg-brand-100 text-brand-700">
-                Subscribe
+                {t('subscribeButton')}
               </Button>
             </form>
           </div>
@@ -173,26 +177,26 @@ export default function Footer() {
 
         <div className="border-t border-brand-600 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-brand-200 text-sm">
-            © {new Date().getFullYear()} WaveStream Radio. All rights reserved.
+            © {new Date().getFullYear()} {tSite('name')}. {t('copyright')}.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link
               href="/privacy"
               className="text-brand-200 hover:text-white text-sm transition-colors"
             >
-              Privacy
+              {t('privacy')}
             </Link>
             <Link
               href="/terms"
               className="text-brand-200 hover:text-white text-sm transition-colors"
             >
-              Terms
+              {t('terms')}
             </Link>
             <Link
               href="/cookies"
               className="text-brand-200 hover:text-white text-sm transition-colors"
             >
-              Cookies
+              {t('cookies')}
             </Link>
           </div>
         </div>

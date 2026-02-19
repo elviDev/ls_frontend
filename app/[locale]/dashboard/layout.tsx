@@ -73,7 +73,7 @@ export default function AdminLayout({
                   <Radio className="h-8 w-8 text-brand-500" />
                   {!sidebarCollapsed && (
                     <span className="ml-2 text-xl font-bold text-brand-600">
-                      Cinema Book
+                      CBStudio Radio
                     </span>
                   )}
                 </Link>
@@ -177,7 +177,7 @@ export default function AdminLayout({
                   <div>
                     <div className="flex items-center space-x-2 mb-4">
                       <Radio className="h-8 w-8 text-white-400" />
-                      <span className="font-bold text-xl">Cinema Book</span>
+                      <span className="font-bold text-xl">CBStudio Radio</span>
                     </div>
                     <p className="text-brand-100 mb-4">
                       Your premier destination for podcasts, audiobooks, and
@@ -274,7 +274,7 @@ export default function AdminLayout({
 
                 <div className="border-t border-brand-700 pt-6 flex flex-col md:flex-row justify-between items-center">
                   <p className="text-brand-200 text-sm">
-                    © {new Date().getFullYear()} Cinema Book. All rights
+                    © {new Date().getFullYear()} CBStudio Radio. All rights
                     reserved.
                   </p>
                   <div className="flex space-x-4 mt-4 md:mt-0">

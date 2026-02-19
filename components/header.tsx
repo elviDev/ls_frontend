@@ -26,8 +26,12 @@ import { useMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthNav } from "@/components/auth/auth-nav";
+import { useTranslations } from "next-intl";
 
 export default function Header() {
+  const t = useTranslations('nav');
+  const tSearch = useTranslations('search');
+  const tAuth = useTranslations('auth');
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMobile();
   const { user } = useAuthStore();
@@ -60,7 +64,7 @@ export default function Header() {
               isScrolled ? "text-foreground" : "text-primary dark:text-white"
             )}
           >
-            Cinema Book
+            CBStudio Radio
           </span>
         </Link>
 
@@ -73,12 +77,12 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      Home
+                      {t('home')}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Listen</NavigationMenuTrigger>
+                  <NavigationMenuTrigger>{t('listen')}</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                       <li className="row-span-3">
@@ -88,23 +92,22 @@ export default function Header() {
                             href="/live"
                           >
                             <div className="mt-4 mb-2 text-lg font-medium text-primary-foreground">
-                              Live Now
+                              {t('liveNow')}
                             </div>
                             <p className="text-sm leading-tight text-primary-foreground/90">
-                              Tune in to our live broadcast and join the
-                              conversation
+                              {t('liveNow')}
                             </p>
                           </a>
                         </NavigationMenuLink>
                       </li>
-                      <ListItem href="/podcasts" title="Podcasts">
-                        Browse our collection of podcasts on various topics
+                      <ListItem href="/podcasts" title={t('podcasts')}>
+                        {t('podcasts')}
                       </ListItem>
-                      <ListItem href="/audiobooks" title="Audiobooks">
-                        Immerse yourself in captivating stories and knowledge
+                      <ListItem href="/audiobooks" title={t('audiobooks')}>
+                        {t('audiobooks')}
                       </ListItem>
-                      <ListItem href="/archives" title="Archives">
-                        Access our library of past broadcasts and episodes
+                      <ListItem href="/archives" title={t('archives')}>
+                        {t('archives')}
                       </ListItem>
                     </ul>
                   </NavigationMenuContent>
@@ -114,7 +117,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      Programs
+                      {t('programs')}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -123,7 +126,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      Events
+                      {t('events')}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -132,7 +135,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      About
+                      {t('about')}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -141,7 +144,7 @@ export default function Header() {
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                     >
-                      Contact
+                      {t('contact')}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -153,7 +156,7 @@ export default function Header() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search..."
+                  placeholder={tSearch('placeholder')}
                   className="w-[200px] pl-8 rounded-full bg-muted"
                 />
               </form>
@@ -188,7 +191,7 @@ export default function Header() {
                           </span>
                         </div>
                         <span className="font-serif font-bold text-foreground">
-                          Cinema Book
+                          CBStudio Radio
                         </span>
                       </Link>
                     </SheetClose>
@@ -199,7 +202,7 @@ export default function Header() {
                         href="/"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        Home
+                        {t('home')}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -207,7 +210,7 @@ export default function Header() {
                         href="/podcasts"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        Podcasts
+                        {t('podcasts')}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -215,7 +218,7 @@ export default function Header() {
                         href="/audiobooks"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        Audiobooks
+                        {t('audiobooks')}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -223,7 +226,7 @@ export default function Header() {
                         href="/archives"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        Archives
+                        {t('archives')}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -231,7 +234,7 @@ export default function Header() {
                         href="/programs"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        Programs
+                        {t('programs')}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -239,7 +242,7 @@ export default function Header() {
                         href="/events"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        Events
+                        {t('events')}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -247,7 +250,7 @@ export default function Header() {
                         href="/about"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        About
+                        {t('about')}
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
@@ -255,7 +258,7 @@ export default function Header() {
                         href="/contact"
                         className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
                       >
-                        Contact
+                        {t('contact')}
                       </Link>
                     </SheetClose>
                   </nav>
@@ -266,12 +269,12 @@ export default function Header() {
                       <div className="flex flex-col gap-2 w-full">
                         <SheetClose asChild>
                           <Link href="/signin" className="w-full">
-                            <Button variant="ghost" className="w-full justify-start">Sign In</Button>
+                            <Button variant="ghost" className="w-full justify-start">{tAuth('signIn')}</Button>
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
                           <Link href="/register" className="w-full">
-                            <Button className="w-full justify-start">Sign Up</Button>
+                            <Button className="w-full justify-start">{tAuth('signUp')}</Button>
                           </Link>
                         </SheetClose>
                       </div>

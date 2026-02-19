@@ -9,8 +9,10 @@ import { useBroadcastStore } from "@/stores/broadcast-store";
 import { useBroadcastDiscovery } from "@/hooks/use-broadcast-discovery";
 import { LiveKitListener } from "./live-player/components/livekit-listener";
 import { audioContextManager } from "@/utils/audio-context-manager";
+import { useTranslations } from "next-intl";
 
 function LivePlayerInterface() {
+  const t = useTranslations('broadcast');
   const { user } = useAuthStore();
   const { currentBroadcast } = useBroadcastStore();
   const { liveBroadcasts, hasLiveBroadcasts } = useBroadcastDiscovery();
@@ -49,7 +51,7 @@ function LivePlayerInterface() {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
         <div className="container mx-auto px-4 py-4 text-center">
-          <p className="text-gray-500">No live broadcast available</p>
+          <p className="text-gray-500">{t('noLiveBroadcast')}</p>
         </div>
       </div>
     );
@@ -77,12 +79,12 @@ function LivePlayerInterface() {
               {isPlaying ? (
                 <>
                   <Pause className="h-4 w-4" />
-                  Leave Broadcast
+                  {t('leaveBroadcast')}
                 </>
               ) : (
                 <>
                   <Play className="h-4 w-4" />
-                  Join Live Broadcast
+                  {t('joinLiveBroadcast')}
                 </>
               )}
             </Button>
@@ -90,11 +92,11 @@ function LivePlayerInterface() {
             {activeBroadcast && (
               <div className="text-sm">
                 <span className="font-medium">
-                  {activeBroadcast.title || "Live Broadcast"}
+                  {activeBroadcast.title || t('liveBroadcast')}
                 </span>
                 <div className="flex items-center gap-1 text-xs text-red-600">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                  LIVE
+                  {t('live')}
                 </div>
               </div>
             )}

@@ -34,10 +34,10 @@ export function AuthNav() {
     return (
       <>
         <Link href="/signin">
-          <Button variant="ghost">Sign In</Button>
+          <Button variant="ghost">Acceder</Button>
         </Link>
         <Link href="/register">
-          <Button>Sign Up</Button>
+          <Button>Registrarse</Button>
         </Link>
       </>
     );

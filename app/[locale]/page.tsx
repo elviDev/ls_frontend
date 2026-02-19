@@ -7,19 +7,23 @@ import UpcomingEvents from "@/components/upcoming-events";
 import FeaturedPrograms from "@/components/featured-programs";
 import HeroAnimation from "@/components/hero-animation";
 import { Metadata } from "next";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
-  title: "Cinema Book - Professional Audiobook Production",
+  title: "CBStudio Radio - Professional Audiobook Production",
   description: "Professional audiobook production with original soundtracks, professional narrators, HD sound effects, and multilanguage translations. Your premier destination for digital storytelling.",
   keywords: "audiobook production, professional narrators, original soundtrack, HD sound effects, multilanguage translations, digital storytelling",
   openGraph: {
-    title: "Cinema Book - Professional Audiobook Production",
+    title: "CBStudio Radio - Professional Audiobook Production",
     description: "Professional audiobook production with original soundtracks, professional narrators, HD sound effects, and multilanguage translations.",
     type: "website",
   },
 };
 
-export default function Home() {
+export default async function Home() {
+  const t = await getTranslations('homepage');
+  const tCommon = await getTranslations('common');
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -39,18 +43,18 @@ export default function Home() {
         </div>
         <div className="container relative z-10 flex flex-col items-center justify-center h-full px-4 mx-auto text-center text-primary-foreground">
           <h1 className="font-serif text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl mb-6 animate-fade-in">
-            <span className="block">Audiobook Creators</span>
+            <span className="block">{t('hero.title')}</span>
             <span className="block text-2xl sm:text-3xl md:text-4xl mt-2 text-primary-foreground/80">
-              Your Sound Universe
+              {t('hero.subtitle')}
             </span>
           </h1>
           <div className="max-w-3xl mx-auto space-y-6 animate-fade-in-delay">
             <p className="text-xl md:text-2xl">
-              ★ Original Soundtrack (OST) Composer
+              {t('hero.features.ost')}
             </p>
-            <p className="text-xl md:text-2xl">★ Professional Narrators</p>
-            <p className="text-xl md:text-2xl">★ FX HD Sound</p>
-            <p className="text-xl md:text-2xl">★ Multilanguage Translations</p>
+            <p className="text-xl md:text-2xl">{t('hero.features.narrators')}</p>
+            <p className="text-xl md:text-2xl">{t('hero.features.sound')}</p>
+            <p className="text-xl md:text-2xl">{t('hero.features.multilanguage')}</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4 mt-8 animate-fade-in-delay-2">
             <Link href="/podcasts">
@@ -58,7 +62,7 @@ export default function Home() {
                 size="lg"
                 className="bg-background hover:bg-muted text-foreground"
               >
-                <Play className="mr-2 h-5 w-5" /> Listen Now
+                <Play className="mr-2 h-5 w-5" /> {t('hero.listenNow')}
               </Button>
             </Link>
             <Link href="/contact">
@@ -67,7 +71,7 @@ export default function Home() {
                 variant="outline"
                 className="text-primary-foreground bg-transparent border-primary-foreground hover:bg-primary-foreground/10"
               >
-                Start Project
+                {t('hero.startProject')}
               </Button>
             </Link>
           </div>
@@ -84,11 +88,10 @@ export default function Home() {
                   <Radio className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2">
-                  Live Broadcasts
+                  {t('features.liveBroadcasts.title')}
                 </h3>
                 <p className="text-muted-foreground">
-                  Tune in to our live shows using the player below and join the
-                  chat
+                  {t('features.liveBroadcasts.description')}
                 </p>
               </div>
             </div>
@@ -98,11 +101,10 @@ export default function Home() {
                   <Headphones className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2">
-                  Podcasts
+                  {t('features.podcasts.title')}
                 </h3>
                 <p className="text-muted-foreground">
-                  Explore our collection of podcasts covering various topics and
-                  interests
+                  {t('features.podcasts.description')}
                 </p>
               </div>
             </Link>
@@ -112,11 +114,10 @@ export default function Home() {
                   <BookOpen className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2">
-                  Audiobooks
+                  {t('features.audiobooks.title')}
                 </h3>
                 <p className="text-muted-foreground">
-                  Immerse yourself in stories narrated by professional voice
-                  artists
+                  {t('features.audiobooks.description')}
                 </p>
               </div>
             </Link>
@@ -126,10 +127,10 @@ export default function Home() {
                   <Calendar className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2">
-                  Events
+                  {t('features.archives.title')}
                 </h3>
                 <p className="text-muted-foreground">
-                  Join our upcoming events and be part of our growing community
+                  {t('features.archives.description')}
                 </p>
               </div>
             </Link>
@@ -138,13 +139,13 @@ export default function Home() {
           <div className="mb-20">
             <div className="flex flex-col md:flex-row justify-between items-center mb-8">
               <h2 className="text-3xl font-serif font-bold">
-                Featured Podcasts
+                {t('features.podcasts.title')}
               </h2>
               <Link
                 href="/podcasts"
                 className="text-primary hover:text-primary/80 font-medium"
               >
-                View All Podcasts →
+                {t('viewAllPrograms')}
               </Link>
             </div>
             <FeaturedPodcasts />
@@ -152,12 +153,12 @@ export default function Home() {
 
           <div className="mb-20">
             <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold">Upcoming Events</h2>
+              <h2 className="text-3xl font-serif font-bold">{t('viewAllEvents').replace(' →', '')}</h2>
               <Link
                 href="/events"
                 className="text-primary hover:text-primary/80 font-medium"
               >
-                View All Events →
+                {t('viewAllEvents')}
               </Link>
             </div>
             <UpcomingEvents />
@@ -166,13 +167,13 @@ export default function Home() {
           <div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-8">
               <h2 className="text-3xl font-serif font-bold">
-                Popular Programs
+                {t('viewAllPrograms').replace(' →', '')}
               </h2>
               <Link
                 href="/programs"
                 className="text-primary hover:text-primary/80 font-medium"
               >
-                View All Programs →
+                {t('viewAllPrograms')}
               </Link>
             </div>
             <FeaturedPrograms />
@@ -195,30 +196,26 @@ export default function Home() {
             </div>
             <div>
               <h2 className="text-3xl font-serif font-bold mb-6">
-                Professional Team
+                {t('professionalTeam.title')}
               </h2>
               <p className="text-lg mb-6">
-                Cinema Book Studio is a dual partnership. Ours is the objective
-                of creating distinct Audiobooks. Your book can have just one
-                narrator or several voice readers with optional FX sounds, or an
-                original soundtrack, much like a film.
+                {t('professionalTeam.description1')}
               </p>
               <p className="text-lg mb-8">
-                We give personalized study to your project, to elevate the
-                excellence of your Audiobook.
+                {t('professionalTeam.description2')}
               </p>
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="text-primary mr-2">•</div>
-                  <p>The Raven (A Poem by Edgar Allan Poe)</p>
+                  <p>{t('professionalTeam.feature1')}</p>
                 </div>
                 <div className="flex items-start">
                   <div className="text-primary mr-2">•</div>
-                  <p>A Fragment of the Hanging Gardens of Babylon in Spanish</p>
+                  <p>{t('professionalTeam.feature2')}</p>
                 </div>
                 <div className="flex items-start">
                   <div className="text-primary mr-2">•</div>
-                  <p>Auld Lang Syne (by Robert Burns)</p>
+                  <p>{t('professionalTeam.feature3')}</p>
                 </div>
               </div>
             </div>
@@ -230,15 +227,14 @@ export default function Home() {
       <section className="section-padding bg-primary text-primary-foreground">
         <div className="container px-4 mx-auto text-center">
           <h2 className="text-3xl font-serif font-bold mb-4">
-            Let us make your project real!
+            {t('professionalTeam.title')}
           </h2>
           <p className="max-w-[600px] mx-auto mb-8 text-primary-foreground/80">
-            Subscribe to our newsletter and never miss updates on new podcasts,
-            events, and special broadcasts.
+            {t('professionalTeam.description2')}
           </p>
           <Link href="/contact">
             <Button className="bg-background hover:bg-muted text-foreground px-8 py-6 text-lg">
-              Contact
+              {tCommon('contact')}
             </Button>
           </Link>
         </div>

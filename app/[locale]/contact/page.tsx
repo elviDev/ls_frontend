@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +36,11 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 export default function ContactPage() {
+  const t = useTranslations('contactPage');
+  const tInquiry = useTranslations('inquiryTypes');
+  const tAppointment = useTranslations('appointmentTypes');
+  const tAdvertising = useTranslations('advertisingOptions');
+  const tBudget = useTranslations('budgetRanges');
   const [date, setDate] = useState<Date>();
   const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -48,10 +54,9 @@ export default function ContactPage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
+        <h1 className="text-4xl font-bold mb-4">{t('title')}</h1>
         <p className="text-xl text-muted-foreground">
-          Have questions, feedback, or want to work with us? We'd love to hear
-          from you.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -61,9 +66,9 @@ export default function ContactPage() {
             <div className="rounded-full bg-brand-100 dark:bg-brand-900 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <Phone className="h-6 w-6 text-brand-600 dark:text-brand-300" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Call Us</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('callUs')}</h3>
             <p className="text-muted-foreground mb-4">
-              Mon-Fri from 8am to 5pm
+              {t('businessHours')}
             </p>
             <p className="font-medium">+1 (555) 123-4567</p>
           </CardContent>
@@ -73,9 +78,9 @@ export default function ContactPage() {
             <div className="rounded-full bg-brand-100 dark:bg-brand-900 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <Mail className="h-6 w-6 text-brand-600 dark:text-brand-300" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Email Us</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('emailUs')}</h3>
             <p className="text-muted-foreground mb-4">
-              We'll respond within 24 hours
+              {t('responseTime')}
             </p>
             <p className="font-medium">contact@wavestream.example</p>
           </CardContent>
@@ -85,9 +90,9 @@ export default function ContactPage() {
             <div className="rounded-full bg-brand-100 dark:bg-brand-900 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <MapPin className="h-6 w-6 text-brand-600 dark:text-brand-300" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Visit Us</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('visitUs')}</h3>
             <p className="text-muted-foreground mb-4">
-              Come say hello at our office
+              {t('officeLocation')}
             </p>
             <p className="font-medium">
               123 Broadcast Ave, Suite 200
@@ -100,29 +105,29 @@ export default function ContactPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
         <div>
-          <h2 className="text-2xl font-bold mb-6">Get In Touch</h2>
+          <h2 className="text-2xl font-bold mb-6">{t('getInTouch')}</h2>
 
           <Tabs defaultValue="message">
             <TabsList className="mb-6">
-              <TabsTrigger value="message">Send a Message</TabsTrigger>
-              <TabsTrigger value="appointment">Book an Appointment</TabsTrigger>
-              <TabsTrigger value="advertise">Advertise With Us</TabsTrigger>
+              <TabsTrigger value="message">{t('tabs.message')}</TabsTrigger>
+              <TabsTrigger value="appointment">{t('tabs.appointment')}</TabsTrigger>
+              <TabsTrigger value="advertise">{t('tabs.advertise')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="message">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="first-name">First name</Label>
+                    <Label htmlFor="first-name">{t('form.firstName')}</Label>
                     <Input id="first-name" placeholder="John" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="last-name">Last name</Label>
+                    <Label htmlFor="last-name">{t('form.lastName')}</Label>
                     <Input id="last-name" placeholder="Doe" required />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('form.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -131,27 +136,26 @@ export default function ContactPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="subject">Subject</Label>
+                  <Label htmlFor="subject">{t('form.subject')}</Label>
                   <Select>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a subject" />
+                      <SelectValue placeholder={t('form.selectSubject')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="general">General Inquiry</SelectItem>
-                      <SelectItem value="support">Technical Support</SelectItem>
-                      <SelectItem value="feedback">Feedback</SelectItem>
+                      <SelectItem value="general">{tInquiry('generalInquiry')}</SelectItem>
+                      <SelectItem value="support">{tInquiry('technicalSupport')}</SelectItem>
+                      <SelectItem value="feedback">{tInquiry('feedback')}</SelectItem>
                       <SelectItem value="partnership">
-                        Partnership Opportunity
+                        {tInquiry('partnershipOpportunity')}
                       </SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
+                  <Label htmlFor="message">{t('form.message')}</Label>
                   <Textarea
                     id="message"
-                    placeholder="Your message here..."
+                    placeholder={t('form.messagePlaceholder')}
                     className="min-h-[150px]"
                     required
                   />
@@ -160,14 +164,14 @@ export default function ContactPage() {
                   type="submit"
                   className="w-full bg-brand-600 hover:bg-brand-700"
                 >
-                  Send Message
+                  {t('form.sendMessage')}
                 </Button>
 
                 {formSubmitted && (
                   <div className="flex items-center gap-2 p-3 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-md">
                     <CheckCircle2 className="h-5 w-5" />
                     <span>
-                      Your message has been sent! We'll get back to you soon.
+                      {t('success.messageSent')}
                     </span>
                   </div>
                 )}
@@ -178,7 +182,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="appointment-name">Full name</Label>
+                    <Label htmlFor="appointment-name">{t('form.fullName')}</Label>
                     <Input
                       id="appointment-name"
                       placeholder="John Doe"
@@ -186,7 +190,7 @@ export default function ContactPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="appointment-email">Email</Label>
+                    <Label htmlFor="appointment-email">{t('form.email')}</Label>
                     <Input
                       id="appointment-email"
                       type="email"
@@ -197,26 +201,26 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="appointment-type">Appointment Type</Label>
+                  <Label htmlFor="appointment-type">{t('form.appointmentType')}</Label>
                   <Select>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select appointment type" />
+                      <SelectValue placeholder={t('form.selectAppointmentType')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="studio-tour">Studio Tour</SelectItem>
+                      <SelectItem value="studio-tour">{tAppointment('studioTour')}</SelectItem>
                       <SelectItem value="podcast-guest">
-                        Podcast Guest Appearance
+                        {tAppointment('podcastGuest')}
                       </SelectItem>
                       <SelectItem value="business-meeting">
-                        Business Meeting
+                        {tAppointment('businessMeeting')}
                       </SelectItem>
-                      <SelectItem value="consultation">Consultation</SelectItem>
+                      <SelectItem value="consultation">{tAppointment('consultation')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Preferred Date</Label>
+                  <Label>{t('form.preferredDate')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -227,7 +231,7 @@ export default function ContactPage() {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : "Select a date"}
+                        {date ? format(date, "PPP") : t('form.selectDate')}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -242,10 +246,10 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Preferred Time</Label>
+                  <Label>{t('form.preferredTime')}</Label>
                   <Select>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a time" />
+                      <SelectValue placeholder={t('form.selectTime')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="9am">9:00 AM</SelectItem>
@@ -260,10 +264,10 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="appointment-notes">Additional Notes</Label>
+                  <Label htmlFor="appointment-notes">{t('form.additionalNotes')}</Label>
                   <Textarea
                     id="appointment-notes"
-                    placeholder="Any specific details about your appointment..."
+                    placeholder={t('form.appointmentNotesPlaceholder')}
                   />
                 </div>
 
@@ -271,15 +275,14 @@ export default function ContactPage() {
                   type="submit"
                   className="w-full bg-brand-600 hover:bg-brand-700"
                 >
-                  Request Appointment
+                  {t('form.requestAppointment')}
                 </Button>
 
                 {formSubmitted && (
                   <div className="flex items-center gap-2 p-3 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-md">
                     <CheckCircle2 className="h-5 w-5" />
                     <span>
-                      Your appointment request has been submitted! We'll confirm
-                      shortly.
+                      {t('success.appointmentSubmitted')}
                     </span>
                   </div>
                 )}
@@ -290,18 +293,18 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="company-name">Company name</Label>
+                    <Label htmlFor="company-name">{t('form.companyName')}</Label>
                     <Input id="company-name" placeholder="Acme Inc." required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contact-name">Contact name</Label>
+                    <Label htmlFor="contact-name">{t('form.contactName')}</Label>
                     <Input id="contact-name" placeholder="John Doe" required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="contact-email">Email</Label>
+                    <Label htmlFor="contact-email">{t('form.email')}</Label>
                     <Input
                       id="contact-email"
                       type="email"
@@ -310,7 +313,7 @@ export default function ContactPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contact-phone">Phone</Label>
+                    <Label htmlFor="contact-phone">{t('form.phone')}</Label>
                     <Input
                       id="contact-phone"
                       type="tel"
@@ -320,51 +323,51 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Advertising Interest</Label>
+                  <Label>{t('form.advertisingInterest')}</Label>
                   <RadioGroup
                     defaultValue="podcast"
                     className="grid grid-cols-1 md:grid-cols-2 gap-4"
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="podcast" id="podcast" />
-                      <Label htmlFor="podcast">Podcast Sponsorship</Label>
+                      <Label htmlFor="podcast">{tAdvertising('podcastSponsorship')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="live" id="live" />
-                      <Label htmlFor="live">Live Broadcast Ads</Label>
+                      <Label htmlFor="live">{tAdvertising('liveBroadcastAds')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="website" id="website" />
-                      <Label htmlFor="website">Website Banners</Label>
+                      <Label htmlFor="website">{tAdvertising('websiteBanners')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="app" id="app" />
-                      <Label htmlFor="app">In-App Promotions</Label>
+                      <Label htmlFor="app">{tAdvertising('inAppPromotions')}</Label>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="budget">Estimated Budget</Label>
+                  <Label htmlFor="budget">{t('form.estimatedBudget')}</Label>
                   <Select>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select budget range" />
+                      <SelectValue placeholder={t('form.selectBudget')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="under5k">Under $5,000</SelectItem>
-                      <SelectItem value="5k-10k">$5,000 - $10,000</SelectItem>
-                      <SelectItem value="10k-25k">$10,000 - $25,000</SelectItem>
-                      <SelectItem value="25k-50k">$25,000 - $50,000</SelectItem>
-                      <SelectItem value="over50k">Over $50,000</SelectItem>
+                      <SelectItem value="under5k">{tBudget('under5k')}</SelectItem>
+                      <SelectItem value="5k-10k">{tBudget('5kTo10k')}</SelectItem>
+                      <SelectItem value="10k-25k">{tBudget('10kTo25k')}</SelectItem>
+                      <SelectItem value="25k-50k">{tBudget('25kTo50k')}</SelectItem>
+                      <SelectItem value="over50k">{tBudget('over50k')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="campaign-details">Campaign Details</Label>
+                  <Label htmlFor="campaign-details">{t('form.campaignDetails')}</Label>
                   <Textarea
                     id="campaign-details"
-                    placeholder="Tell us about your product/service and advertising goals..."
+                    placeholder={t('form.campaignDetailsPlaceholder')}
                     className="min-h-[150px]"
                     required
                   />
@@ -374,15 +377,14 @@ export default function ContactPage() {
                   type="submit"
                   className="w-full bg-brand-600 hover:bg-brand-700"
                 >
-                  Submit Advertising Inquiry
+                  {t('form.submitInquiry')}
                 </Button>
 
                 {formSubmitted && (
                   <div className="flex items-center gap-2 p-3 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-md">
                     <CheckCircle2 className="h-5 w-5" />
                     <span>
-                      Your advertising inquiry has been received! Our team will
-                      contact you soon.
+                      {t('success.advertisingReceived')}
                     </span>
                   </div>
                 )}
@@ -393,56 +395,47 @@ export default function ContactPage() {
 
         <div>
           <h2 className="text-2xl font-bold mb-6">
-            Frequently Asked Questions
+            {t('faq.title')}
           </h2>
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                How can I listen to WaveStream?
+                {t('faq.q1')}
               </h3>
               <p className="text-muted-foreground">
-                You can listen to WaveStream directly through our website or by
-                installing our progressive web app on your mobile device. We're
-                also available on major podcast platforms.
+                {t('faq.a1')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                How do I submit my podcast to WaveStream?
+                {t('faq.q2')}
               </h3>
               <p className="text-muted-foreground">
-                We're always looking for great content! Please use the contact
-                form and select "Partnership Opportunity" as the subject to
-                submit your podcast for consideration.
+                {t('faq.a2')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                Do you offer studio rentals?
+                {t('faq.q3')}
               </h3>
               <p className="text-muted-foreground">
-                Yes, our professional recording studios are available for rent.
-                Please book an appointment to discuss your needs and schedule a
-                tour.
+                {t('faq.a3')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                How can I advertise on WaveStream?
+                {t('faq.q4')}
               </h3>
               <p className="text-muted-foreground">
-                We offer various advertising options including podcast
-                sponsorships, live broadcast ads, and digital promotions. Use
-                our advertising form to get started.
+                {t('faq.a4')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                Are there job opportunities at WaveStream?
+                {t('faq.q5')}
               </h3>
               <p className="text-muted-foreground">
-                We're growing! Check our About page for current job openings or
-                send your resume to careers@wavestream.example.
+                {t('faq.a5')}
               </p>
             </div>
           </div>
@@ -453,13 +446,12 @@ export default function ContactPage() {
                 <MessageSquare className="h-5 w-5 text-brand-600 dark:text-brand-300" />
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Still have questions?</h3>
+                <h3 className="font-semibold mb-2">{t('faq.stillHaveQuestions')}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Our support team is here to help. Reach out to us and we'll
-                  get back to you as soon as possible.
+                  {t('faq.supportReady')}
                 </p>
                 <Button variant="outline" size="sm">
-                  Chat with Support
+                  {t('faq.chatWithSupport')}
                 </Button>
               </div>
             </div>

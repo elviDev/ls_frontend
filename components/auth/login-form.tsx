@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLogin } from '@/hooks/use-auth';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -25,6 +26,9 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
+  const t = useTranslations('auth');
+  const tValidation = useTranslations('validation');
+  const tAlerts = useTranslations('loginAlerts');
   const [showPassword, setShowPassword] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
@@ -90,9 +94,9 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">{t('signInTitle')}</CardTitle>
         <CardDescription className="text-center">
-          Enter your credentials to access your account
+          {t('signInDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -101,7 +105,7 @@ export function LoginForm() {
           <Alert className="mb-4 border-green-500 bg-green-50">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              Email verified successfully! You can now sign in.
+              {tAlerts('emailVerifiedSuccess')}
             </AlertDescription>
           </Alert>
         )}
@@ -109,7 +113,7 @@ export function LoginForm() {
           <Alert className="mb-4 border-red-500 bg-red-50">
             <XCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              {error ? decodeURIComponent(error) : 'Email verification failed. Please try again.'}
+              {error ? decodeURIComponent(error) : tAlerts('emailVerificationFailed')}
             </AlertDescription>
           </Alert>
         )}
@@ -119,7 +123,7 @@ export function LoginForm() {
           <Alert className="mb-4 border-yellow-500 bg-yellow-50">
             <Mail className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-yellow-800">
-              <p className="mb-2">Your email is not verified. Please check your inbox for the verification link.</p>
+              <p className="mb-2">{tAlerts('emailNotVerified')}</p>
               <Button
                 type="button"
                 size="sm"
@@ -128,7 +132,7 @@ export function LoginForm() {
                 disabled={isResending}
                 className="mt-2"
               >
-                {isResending ? 'Sending...' : 'Resend Verification Email'}
+                {isResending ? tAlerts('sending') : tAlerts('resendVerification')}
               </Button>
             </AlertDescription>
           </Alert>
@@ -136,11 +140,11 @@ export function LoginForm() {
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder={t('enterEmail')}
               {...register('email')}
               className={errors.email ? 'border-red-500' : ''}
             />
@@ -150,12 +154,12 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder={t('enterPassword')}
                 {...register('password')}
                 className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
               />
@@ -186,14 +190,14 @@ export function LoginForm() {
                 onCheckedChange={(checked) => setValue('rememberMe', !!checked)}
               />
               <Label htmlFor="rememberMe" className="text-sm">
-                Remember me
+                {t('rememberMe')}
               </Label>
             </div>
             <Link
               href="/forgot-password"
               className="text-sm text-blue-600 hover:underline"
             >
-              Forgot password?
+              {t('forgotPassword')}
             </Link>
           </div>
 
@@ -202,13 +206,13 @@ export function LoginForm() {
             className="w-full"
             disabled={loginMutation.isPending}
           >
-            {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
+            {loginMutation.isPending ? t('signingIn') : t('signIn')}
           </Button>
 
           <div className="text-center text-sm">
-            Don't have an account?{' '}
+            {t('noAccount')}{' '}
             <Link href="/register" className="text-blue-600 hover:underline">
-              Sign up
+              {t('signUp')}
             </Link>
           </div>
         </form>

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +60,7 @@ export function UnifiedBroadcastChat({
   broadcastId,
   className = "",
 }: UnifiedBroadcastChatProps) {
+  const t = useTranslations('chat');
   const { user } = useAuthStore();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -192,7 +194,7 @@ export function UnifiedBroadcastChat({
     socketConnection.on("user-kicked", ({ userId, reason }) => {
       console.log("[Chat] User kicked event:", userId, reason);
       if (userId === user?.id) {
-        toast.error(`You have been kicked from the chat${reason ? `: ${reason}` : ""}`);
+        toast.error(t('kickedFromChat', { reason: reason || '' }));
         socketConnection.disconnect();
       }
     });
@@ -476,19 +478,19 @@ export function UnifiedBroadcastChat({
       case "host":
         return (
           <Badge className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs">
-            Host
+            {t('host')}
           </Badge>
         );
       case "moderator":
         return (
           <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs">
-            Mod
+            {t('moderator')}
           </Badge>
         );
       case "announcement":
         return (
           <Badge className="bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 text-xs">
-            Announcement
+            {t('announcement')}
           </Badge>
         );
       default:
@@ -509,13 +511,13 @@ export function UnifiedBroadcastChat({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            <span>Live Chat</span>
+            <span>{t('liveChat')}</span>
             <div className="flex items-center gap-1">
               <div
                 className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500"}`}
               />
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {onlineUsers} online
+                {onlineUsers} {t('online')}
               </span>
             </div>
           </div>
@@ -528,7 +530,7 @@ export function UnifiedBroadcastChat({
             <div className="border-b bg-yellow-50 dark:bg-yellow-900/20 p-2">
               <div className="text-xs font-medium text-yellow-800 dark:text-yellow-200 mb-1 flex items-center gap-1">
                 <Pin className="h-3 w-3" />
-                Pinned Messages
+                {t('pinnedMessages')}
               </div>
               {pinnedMessages.map((message) => (
                 <div
@@ -618,34 +620,34 @@ export function UnifiedBroadcastChat({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Moderate {message.username}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t('moderate')} {message.username}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => muteUser(message.userId, undefined, 5)}
                             >
                               <VolumeX className="h-4 w-4 mr-2" />
-                              Mute (5 min)
+                              {t('mute5min')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => kickUser(message.userId)}
                               className="text-orange-600 focus:text-orange-600"
                             >
                               <UserX className="h-4 w-4 mr-2" />
-                              Kick from Chat
+                              {t('kickFromChat')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => banUser(message.userId, undefined, 30)}
                               className="text-red-600 focus:text-red-600"
                             >
                               <Ban className="h-4 w-4 mr-2" />
-                              Ban (30 min)
+                              {t('ban30min')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => banUser(message.userId)}
                               className="text-red-600 focus:text-red-600"
                             >
                               <Ban className="h-4 w-4 mr-2" />
-                              Ban Permanently
+                              {t('banPermanently')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -670,8 +672,8 @@ export function UnifiedBroadcastChat({
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder={
                     user
-                      ? "Type a message..."
-                      : "Type a message as Anonymous..."
+                      ? t('typeMessage')
+                      : t('typeMessageAnonymous')
                   }
                   className="flex-1"
                   disabled={false}
@@ -690,7 +692,7 @@ export function UnifiedBroadcastChat({
                   className="w-full"
                 >
                   <Megaphone className="h-4 w-4 mr-2" />
-                  Send as Announcement
+                  {t('sendAsAnnouncement')}
                 </Button>
               )}
             </form>

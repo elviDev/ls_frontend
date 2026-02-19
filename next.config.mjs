@@ -1,3 +1,7 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
 let userConfig = undefined;
 try {
   // try to import ESM first
@@ -52,4 +56,4 @@ if (userConfig) {
   }
 }
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
