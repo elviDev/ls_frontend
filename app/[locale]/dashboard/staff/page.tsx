@@ -267,14 +267,14 @@ export default function StaffPage() {
   const getRoleBadgeColor = (role: string) => {
     const colors: Record<string, string> = {
       ADMIN: "bg-red-100 text-red-800",
-      HOST: "bg-blue-100 text-blue-800",
+      HOST: "bg-info/10 text-info",
       CO_HOST: "bg-indigo-100 text-indigo-800",
       PRODUCER: "bg-purple-100 text-purple-800",
-      SOUND_ENGINEER: "bg-green-100 text-green-800",
+      SOUND_ENGINEER: "bg-success/10 text-success",
       CONTENT_MANAGER: "bg-orange-100 text-orange-800",
-      TECHNICAL_SUPPORT: "bg-gray-100 text-gray-800",
+      TECHNICAL_SUPPORT: "bg-muted text-gray-800",
     };
-    return colors[role] || "bg-gray-100 text-gray-800";
+    return colors[role] || "bg-muted text-gray-800";
   };
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -345,7 +345,7 @@ export default function StaffPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Active Staff</CardTitle>
-              <UserCheck className="h-4 w-4 text-green-600" />
+              <UserCheck className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.active}</div>
@@ -498,8 +498,8 @@ export default function StaffPage() {
                       variant={member.isActive ? "default" : "secondary"}
                       className={
                         member.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-success/10 text-success"
+                          : "bg-muted text-gray-800"
                       }
                     >
                       {member.isActive ? "Active" : "Inactive"}
@@ -510,7 +510,7 @@ export default function StaffPage() {
                       variant={member.isApproved ? "default" : "outline"}
                       className={
                         member.isApproved
-                          ? "bg-blue-100 text-blue-800"
+                          ? "bg-info/10 text-info"
                           : "bg-orange-100 text-orange-800 border-orange-300"
                       }
                     >
@@ -570,7 +570,7 @@ export default function StaffPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleApproveStaff(member.id)}
-                              className="text-green-600 focus:text-green-600"
+                              className="text-success focus:text-success"
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Approve Staff
@@ -582,7 +582,7 @@ export default function StaffPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => setDeleteDialog({ isOpen: true, staff: member, isDeleting: false })}
-                              className="text-red-600 focus:text-red-600"
+                              className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete

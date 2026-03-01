@@ -153,7 +153,7 @@ export default function DashboardPage() {
               Live Broadcasts
             </CardTitle>
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2" />
+              <div className="w-2 h-2 bg-destructive rounded-full animate-pulse mr-2" />
               <Radio className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardHeader>
@@ -474,7 +474,7 @@ export default function DashboardPage() {
                   <div className="text-sm text-muted-foreground">
                     Total plays
                   </div>
-                  <div className="text-sm text-green-600">
+                  <div className="text-sm text-success">
                     <TrendingUp className="inline h-3 w-3 mr-1" />
                     +12% this week
                   </div>

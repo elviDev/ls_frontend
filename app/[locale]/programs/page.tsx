@@ -52,7 +52,7 @@ export default function ProgramsPage() {
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Our Programs</h1>
           <div className="text-center py-12">
-            <p className="text-red-600 mb-4">Failed to load programs. Please try again later.</p>
+            <p className="text-destructive mb-4">Failed to load programs. Please try again later.</p>
           </div>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function ProgramsPage() {
                           className="object-cover"
                         />
                         <div className="absolute top-3 left-3">
-                          <Badge className="bg-brand-600 hover:bg-brand-700">
+                          <Badge className="bg-primary hover:bg-primary">
                             {program.category.replace('_', ' ')}
                           </Badge>
                         </div>
@@ -122,7 +122,7 @@ export default function ProgramsPage() {
                           {program.description}
                         </p>
                         <div className="flex flex-wrap gap-2 mt-auto">
-                          <div className="text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-200 px-3 py-1 rounded-full inline-flex items-center">
+                          <div className="text-xs font-medium bg-primary/10 text-primary dark:bg-primary dark:text-primary/20 px-3 py-1 rounded-full inline-flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
                             {program.schedule}
                           </div>

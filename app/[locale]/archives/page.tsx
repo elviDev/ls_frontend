@@ -57,7 +57,7 @@ async function ArchivesContent() {
           </div>
 
           <div className="text-center py-12">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 p-6 rounded-lg max-w-md mx-auto">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-warning dark:text-yellow-200 p-6 rounded-lg max-w-md mx-auto">
               <h2 className="text-lg font-semibold mb-2">
                 No Archives Available
               </h2>
@@ -152,7 +152,7 @@ async function ArchivesContent() {
           </p>
           <details className="mt-2">
             <summary>Error details (for debugging)</summary>
-            <pre className="text-xs mt-2 bg-gray-100 dark:bg-gray-800 p-2 rounded">
+            <pre className="text-xs mt-2 bg-muted dark:bg-gray-800 p-2 rounded">
               {error instanceof Error ? error.message : "Unknown error"}
             </pre>
           </details>

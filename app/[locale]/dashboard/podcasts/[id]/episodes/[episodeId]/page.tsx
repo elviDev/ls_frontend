@@ -377,13 +377,13 @@ export default function EpisodeDetailPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-success/10 text-success border-green-200";
       case "DRAFT":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-warning/10 text-warning border-yellow-200";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-gray-800 border";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-gray-800 border";
     }
   };
 
@@ -705,13 +705,13 @@ export default function EpisodeDetailPage() {
                               </SelectItem>
                               <SelectItem value="PUBLISHED">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                                  <div className="w-2 h-2 rounded-full bg-success" />
                                   Published
                                 </div>
                               </SelectItem>
                               <SelectItem value="ARCHIVED">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-2 h-2 rounded-full bg-gray-500" />
+                                  <div className="w-2 h-2 rounded-full bg-muted0" />
                                   Archived
                                 </div>
                               </SelectItem>
@@ -1091,7 +1091,7 @@ export default function EpisodeDetailPage() {
                         </pre>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <CheckCircle className="h-3 w-3 text-green-600" />
+                        <CheckCircle className="h-3 w-3 text-success" />
                         <span>Transcript available</span>
                         {episode.transcriptFile && (
                           <>

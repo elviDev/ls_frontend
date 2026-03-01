@@ -22,7 +22,7 @@ export const defaultRadioSounds = [
     hotkey: 'F2',
     fadeIn: 0,
     fadeOut: 0.5,
-    color: 'bg-red-500',
+    color: 'bg-destructive',
     tags: ['news', 'intro', 'serious'],
     description: 'Professional news segment introduction'
   },
@@ -35,7 +35,7 @@ export const defaultRadioSounds = [
     hotkey: 'F3',
     fadeIn: 0,
     fadeOut: 0.5,
-    color: 'bg-blue-600',
+    color: 'bg-info',
     tags: ['weather', 'forecast', 'update'],
     description: 'Weather forecast segment opener'
   },
@@ -50,7 +50,7 @@ export const defaultRadioSounds = [
     hotkey: 'F4',
     fadeIn: 0,
     fadeOut: 0,
-    color: 'bg-green-500',
+    color: 'bg-success',
     tags: ['transition', 'swoosh', 'smooth'],
     description: 'Smooth swoosh transition effect'
   },
@@ -63,7 +63,7 @@ export const defaultRadioSounds = [
     hotkey: 'F5',
     fadeIn: 0,
     fadeOut: 0,
-    color: 'bg-green-600',
+    color: 'bg-success',
     tags: ['transition', 'whoosh', 'down'],
     description: 'Downward whoosh transition'
   },
@@ -130,7 +130,7 @@ export const defaultRadioSounds = [
     hotkey: 'F10',
     fadeIn: 0,
     fadeOut: 0,
-    color: 'bg-green-700',
+    color: 'bg-success',
     tags: ['money', 'cash', 'commercial'],
     description: 'Classic cash register cha-ching'
   },

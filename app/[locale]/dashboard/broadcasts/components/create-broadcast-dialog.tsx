@@ -367,7 +367,7 @@ export function CreateBroadcastDialog({
               Cover Image
             </Label>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+            <div className="border-2 border-dashed border rounded-lg p-6">
               {formData.bannerFile ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-center">
@@ -378,7 +378,7 @@ export function CreateBroadcastDialog({
                     />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {formData.bannerFile.name}
                     </p>
                     <Button
@@ -396,7 +396,7 @@ export function CreateBroadcastDialog({
                 <div className="text-center">
                   <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                   <div className="space-y-2">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Upload a cover image for your broadcast
                     </p>
                     <input

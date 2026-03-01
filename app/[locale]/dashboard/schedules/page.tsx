@@ -90,17 +90,17 @@ type Staff = {
 
 const scheduleTypes = [
   { value: "EVENT", label: "Event", icon: Calendar, color: "bg-blue-500" },
-  { value: "CAMPAIGN", label: "Campaign", icon: Megaphone, color: "bg-green-500" },
+  { value: "CAMPAIGN", label: "Campaign", icon: Megaphone, color: "bg-success" },
   { value: "ADVERTISEMENT", label: "Advertisement", icon: Zap, color: "bg-yellow-500" },
-  { value: "LIVE_BROADCAST", label: "Live Broadcast", icon: PlayCircle, color: "bg-red-500" },
+  { value: "LIVE_BROADCAST", label: "Live Broadcast", icon: PlayCircle, color: "bg-destructive" },
   { value: "ANNOUNCEMENT", label: "Announcement", icon: AlertCircle, color: "bg-purple-500" },
-  { value: "MAINTENANCE", label: "Maintenance", icon: Users, color: "bg-gray-500" }
+  { value: "MAINTENANCE", label: "Maintenance", icon: Users, color: "bg-muted0" }
 ]
 
 const statusColors = {
-  DRAFT: "bg-gray-100 text-gray-800",
-  SCHEDULED: "bg-blue-100 text-blue-800",
-  ACTIVE: "bg-green-100 text-green-800",
+  DRAFT: "bg-muted text-gray-800",
+  SCHEDULED: "bg-info/10 text-info",
+  ACTIVE: "bg-success/10 text-success",
   COMPLETED: "bg-emerald-100 text-emerald-800",
   CANCELLED: "bg-red-100 text-red-800",
   FAILED: "bg-orange-100 text-orange-800"
@@ -356,7 +356,7 @@ export default function SchedulesPage() {
                       <Button 
                         size="sm" 
                         onClick={() => router.push(`/dashboard/broadcasts/${schedule.liveBroadcast?.slug}/studio`)}
-                        className="h-7 text-xs bg-green-600 hover:bg-green-700"
+                        className="h-7 text-xs bg-success hover:bg-success"
                       >
                         Go Live
                       </Button>
@@ -365,7 +365,7 @@ export default function SchedulesPage() {
                       <Button 
                         size="sm" 
                         onClick={() => router.push(`/dashboard/broadcasts/${schedule.liveBroadcast?.slug}/studio`)}
-                        className="h-7 text-xs bg-red-600 hover:bg-red-700 animate-pulse"
+                        className="h-7 text-xs bg-destructive hover:bg-destructive animate-pulse"
                       >
                         Studio
                       </Button>
@@ -388,7 +388,7 @@ export default function SchedulesPage() {
                       <Button 
                         size="sm" 
                         onClick={() => handleStatusToggle(schedule.id, "SCHEDULED")}
-                        className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
+                        className="h-7 text-xs bg-info hover:bg-blue-700"
                       >
                         Publish
                       </Button>
@@ -398,7 +398,7 @@ export default function SchedulesPage() {
                         size="sm" 
                         variant="outline"
                         onClick={() => handleStatusToggle(schedule.id, "ACTIVE")}
-                        className="h-7 text-xs border-green-600 text-green-600 hover:bg-green-50"
+                        className="h-7 text-xs border-green-600 text-success hover:bg-green-50"
                       >
                         Activate
                       </Button>

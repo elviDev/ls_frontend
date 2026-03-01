@@ -51,7 +51,7 @@ function LivePlayerInterface() {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
         <div className="container mx-auto px-4 py-4 text-center">
-          <p className="text-gray-500">{t('noLiveBroadcast')}</p>
+          <p className="text-muted-foreground">{t('noLiveBroadcast')}</p>
         </div>
       </div>
     );
@@ -94,8 +94,8 @@ function LivePlayerInterface() {
                 <span className="font-medium">
                   {activeBroadcast.title || t('liveBroadcast')}
                 </span>
-                <div className="flex items-center gap-1 text-xs text-red-600">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <div className="flex items-center gap-1 text-xs text-destructive">
+                  <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
                   {t('live')}
                 </div>
               </div>

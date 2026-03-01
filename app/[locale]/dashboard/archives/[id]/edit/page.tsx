@@ -274,7 +274,7 @@ export default function EditArchivePage() {
         <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
         <div className="text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Archive Data</h3>
-          <p className="text-gray-600">Please wait while we load the archive information for editing...</p>
+          <p className="text-muted-foreground">Please wait while we load the archive information for editing...</p>
         </div>
       </div>
     );
@@ -284,9 +284,9 @@ export default function EditArchivePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] space-y-6">
         <div className="text-center">
-          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Archive</h3>
-          <p className="text-gray-600 mb-6 max-w-md">{error}</p>
+          <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
           <div className="flex space-x-3 justify-center">
             <Button 
               onClick={handleRetry} 
@@ -321,7 +321,7 @@ export default function EditArchivePage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Edit Archive</h1>
-            <p className="text-gray-600">{formData.title}</p>
+            <p className="text-muted-foreground">{formData.title}</p>
           </div>
         </div>
         <Button 
@@ -654,7 +654,7 @@ export default function EditArchivePage() {
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="ml-2 hover:text-red-600"
+                        className="ml-2 hover:text-destructive"
                       >
                         <X className="h-3 w-3" />
                       </button>

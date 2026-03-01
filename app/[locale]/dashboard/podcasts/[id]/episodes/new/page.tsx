@@ -782,7 +782,7 @@ export default function NewEpisodePage() {
                             </SelectItem>
                             <SelectItem value="PUBLISHED">
                               <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500" />
+                                <div className="w-2 h-2 rounded-full bg-success" />
                                 Published
                               </div>
                             </SelectItem>

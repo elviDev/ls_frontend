@@ -427,12 +427,12 @@ export default function EventsManagePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'bg-green-100 text-green-800'
-      case 'SCHEDULED': return 'bg-blue-100 text-blue-800'
-      case 'DRAFT': return 'bg-yellow-100 text-yellow-800'
-      case 'COMPLETED': return 'bg-gray-100 text-gray-800'
+      case 'ACTIVE': return 'bg-success/10 text-success'
+      case 'SCHEDULED': return 'bg-info/10 text-info'
+      case 'DRAFT': return 'bg-warning/10 text-warning'
+      case 'COMPLETED': return 'bg-muted text-gray-800'
       case 'CANCELLED': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      default: return 'bg-muted text-gray-800'
     }
   }
 
@@ -443,7 +443,7 @@ export default function EventsManagePage() {
           <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Events</h3>
-            <p className="text-gray-600">Please wait while we fetch your events...</p>
+            <p className="text-muted-foreground">Please wait while we fetch your events...</p>
           </div>
         </div>
       </div>
@@ -454,10 +454,10 @@ export default function EventsManagePage() {
     return (
       <div className="p-6">
         <div className="flex flex-col items-center justify-center h-96 space-y-6">
-          <AlertCircle className="h-16 w-16 text-red-500" />
+          <AlertCircle className="h-16 w-16 text-destructive" />
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h3>
-            <p className="text-gray-600 mb-6 max-w-md">{error}</p>
+            <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
             <Button onClick={fetchEvents}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
@@ -1338,7 +1338,7 @@ export default function EventsManagePage() {
                                 <DropdownMenuItem 
                                   onClick={() => handleQuickPublish(event)}
                                   disabled={submitting}
-                                  className="text-green-600"
+                                  className="text-success"
                                 >
                                   <Send className="mr-2 h-4 w-4" />
                                   {submitting ? "Publishing..." : "Quick Publish"}
@@ -1347,7 +1347,7 @@ export default function EventsManagePage() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 onClick={() => setDeleteDialog({ isOpen: true, event })}
-                                className="text-red-600"
+                                className="text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete

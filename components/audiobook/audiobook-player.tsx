@@ -380,7 +380,7 @@ export function AudiobookPlayer({
                     variant="outline"
                     size="icon"
                     onClick={handleFavoriteToggle}
-                    className={cn(isFavorite && "text-red-500")}
+                    className={cn(isFavorite && "text-destructive")}
                   >
                     <Heart
                       className={cn("h-4 w-4", isFavorite && "fill-current")}

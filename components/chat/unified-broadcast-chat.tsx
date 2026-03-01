@@ -467,9 +467,9 @@ export function UnifiedBroadcastChat({
       case "moderator":
         return <Shield className="h-3 w-3 text-blue-500 dark:text-blue-400" />;
       case "announcement":
-        return <Megaphone className="h-3 w-3 text-red-500 dark:text-red-400" />;
+        return <Megaphone className="h-3 w-3 text-destructive dark:text-red-400" />;
       default:
-        return <User className="h-3 w-3 text-gray-500 dark:text-gray-400" />;
+        return <User className="h-3 w-3 text-muted-foreground dark:text-gray-400" />;
     }
   };
 
@@ -477,13 +477,13 @@ export function UnifiedBroadcastChat({
     switch (messageType) {
       case "host":
         return (
-          <Badge className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs">
+          <Badge className="bg-warning/10 dark:bg-yellow-900/50 text-warning dark:text-yellow-200 text-xs">
             {t('host')}
           </Badge>
         );
       case "moderator":
         return (
-          <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs">
+          <Badge className="bg-info/10 dark:bg-blue-900/50 text-info dark:text-blue-200 text-xs">
             {t('moderator')}
           </Badge>
         );
@@ -514,9 +514,9 @@ export function UnifiedBroadcastChat({
             <span>{t('liveChat')}</span>
             <div className="flex items-center gap-1">
               <div
-                className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500"}`}
+                className={`w-2 h-2 rounded-full ${isConnected ? "bg-success" : "bg-destructive"}`}
               />
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-muted-foreground dark:text-gray-400">
                 {onlineUsers} {t('online')}
               </span>
             </div>
@@ -528,14 +528,14 @@ export function UnifiedBroadcastChat({
           {/* Pinned Messages */}
           {pinnedMessages.length > 0 && (
             <div className="border-b bg-yellow-50 dark:bg-yellow-900/20 p-2">
-              <div className="text-xs font-medium text-yellow-800 dark:text-yellow-200 mb-1 flex items-center gap-1">
+              <div className="text-xs font-medium text-warning dark:text-yellow-200 mb-1 flex items-center gap-1">
                 <Pin className="h-3 w-3" />
                 {t('pinnedMessages')}
               </div>
               {pinnedMessages.map((message) => (
                 <div
                   key={`pinned-${message.id}`}
-                  className="text-sm p-1 bg-yellow-100 dark:bg-yellow-800/30 text-yellow-900 dark:text-yellow-100 rounded mb-1"
+                  className="text-sm p-1 bg-warning/10 dark:bg-yellow-800/30 text-yellow-900 dark:text-yellow-100 rounded mb-1"
                 >
                   <span className="font-medium">{message.username}:</span>{" "}
                   {message.content}
@@ -569,7 +569,7 @@ export function UnifiedBroadcastChat({
                       </span>
                       {getRoleIcon(message.messageType)}
                       {getRoleBadge(message.messageType)}
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-muted-foreground dark:text-gray-400">
                         {formatTime(message.timestamp)}
                       </span>
                     </div>
@@ -587,7 +587,7 @@ export function UnifiedBroadcastChat({
                         <Heart
                           className={`h-3 w-3 mr-1 ${
                             (message.likedBy || []).includes(user?.id || "")
-                              ? "fill-red-500 text-red-500"
+                              ? "fill-red-500 text-destructive"
                               : ""
                           }`}
                         />
@@ -637,14 +637,14 @@ export function UnifiedBroadcastChat({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => banUser(message.userId, undefined, 30)}
-                              className="text-red-600 focus:text-red-600"
+                              className="text-destructive focus:text-destructive"
                             >
                               <Ban className="h-4 w-4 mr-2" />
                               {t('ban30min')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => banUser(message.userId)}
-                              className="text-red-600 focus:text-red-600"
+                              className="text-destructive focus:text-destructive"
                             >
                               <Ban className="h-4 w-4 mr-2" />
                               {t('banPermanently')}

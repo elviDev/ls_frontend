@@ -91,7 +91,7 @@ export default function BroadcastsPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-            <p className="text-gray-500">Loading broadcasts...</p>
+            <p className="text-muted-foreground">Loading broadcasts...</p>
           </div>
         </div>
       </div>
@@ -103,12 +103,12 @@ export default function BroadcastsPage() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
-            <AlertTriangle className="h-8 w-8 text-red-500 mx-auto" />
+            <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
             <div>
-              <p className="text-red-600 font-medium">
+              <p className="text-destructive font-medium">
                 Failed to load broadcasts
               </p>
-              <p className="text-gray-500 text-sm">
+              <p className="text-muted-foreground text-sm">
                 {error?.message || String(error)}
               </p>
             </div>
@@ -128,7 +128,7 @@ export default function BroadcastsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold">Broadcasts</h1>
-          <p className="text-sm sm:text-base text-gray-600">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Manage your radio broadcasts and live shows
           </p>
         </div>
@@ -147,7 +147,7 @@ export default function BroadcastsPage() {
 
         {broadcasts.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
-            <p className="text-gray-500 text-sm sm:text-base mb-4">
+            <p className="text-muted-foreground text-sm sm:text-base mb-4">
               No broadcasts found
             </p>
             <Button

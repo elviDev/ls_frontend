@@ -62,7 +62,7 @@ export function DateTimePicker({
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <Label>{label}</Label>
-        {required && <span className="text-red-500">*</span>}
+        {required && <span className="text-destructive">*</span>}
       </div>
       
       <div className="grid grid-cols-3 gap-2">

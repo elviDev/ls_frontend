@@ -160,7 +160,7 @@ export default function AddStaffPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Add New Staff Member</h1>
-            <p className="text-slate-600 mt-1">Onboard a new team member with full details</p>
+            <p className="text-muted-foreground mt-1">Onboard a new team member with full details</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -186,7 +186,7 @@ export default function AddStaffPage() {
                   className={errors.firstName ? "border-red-500" : ""}
                 />
                 {errors.firstName && (
-                  <p className="text-sm text-red-600">{errors.firstName}</p>
+                  <p className="text-sm text-destructive">{errors.firstName}</p>
                 )}
               </div>
 
@@ -200,7 +200,7 @@ export default function AddStaffPage() {
                   className={errors.lastName ? "border-red-500" : ""}
                 />
                 {errors.lastName && (
-                  <p className="text-sm text-red-600">{errors.lastName}</p>
+                  <p className="text-sm text-destructive">{errors.lastName}</p>
                 )}
               </div>
 
@@ -215,7 +215,7 @@ export default function AddStaffPage() {
                   className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email}</p>
+                  <p className="text-sm text-destructive">{errors.email}</p>
                 )}
               </div>
 
@@ -270,7 +270,7 @@ export default function AddStaffPage() {
                   className={errors.username ? "border-red-500" : ""}
                 />
                 {errors.username && (
-                  <p className="text-sm text-red-600">{errors.username}</p>
+                  <p className="text-sm text-destructive">{errors.username}</p>
                 )}
               </div>
 
@@ -285,7 +285,7 @@ export default function AddStaffPage() {
                   className={errors.password ? "border-red-500" : ""}
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-600">{errors.password}</p>
+                  <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function AddStaffPage() {
                   </SelectContent>
                 </Select>
                 {errors.role && (
-                  <p className="text-sm text-red-600">{errors.role}</p>
+                  <p className="text-sm text-destructive">{errors.role}</p>
                 )}
               </div>
 

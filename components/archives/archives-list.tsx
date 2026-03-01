@@ -172,7 +172,7 @@ export function ArchivesList({
 
       {isLoading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           <p className="text-muted-foreground mt-2">Loading archives...</p>
         </div>
       ) : filteredArchives.length === 0 ? (
@@ -205,7 +205,7 @@ export function ArchivesList({
           <Button
             variant="outline"
             size="sm"
-            className="bg-brand-600 text-white hover:bg-brand-700"
+            className="bg-primary text-white hover:bg-primary"
           >
             1
           </Button>

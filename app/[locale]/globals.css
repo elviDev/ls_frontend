@@ -4,65 +4,108 @@
 
 @layer base {
   :root {
-    --background: 40 30% 98%;
-    --foreground: 20 10% 15%;
+    /* Base colors */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
 
-    --card: 40 30% 98%;
-    --card-foreground: 20 10% 15%;
+    /* Card colors */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 40 30% 98%;
-    --popover-foreground: 20 10% 15%;
+    /* Popover colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 175 70% 25%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary brand colors (Teal) */
+    --primary: 180 100% 20%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 20 20% 90%;
-    --secondary-foreground: 20 10% 15%;
+    /* Secondary colors */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 20 10% 96%;
-    --muted-foreground: 20 10% 40%;
+    /* Muted colors */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 20 20% 90%;
-    --accent-foreground: 20 10% 15%;
+    /* Accent colors */
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive colors (Red) */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 20 10% 90%;
-    --input: 20 10% 90%;
-    --ring: 175 100% 20%;
+    /* Success colors (Green) */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
 
+    /* Warning colors (Yellow) */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Info colors (Blue) */
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    /* Border and input */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 180 100% 20%;
+
+    /* Radius */
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222 84% 4.9%;
+    /* Base colors - #0F172A (slate-900) */
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
-    --card: 222 84% 6%;
+    /* Card colors */
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 84% 6%;
+    /* Popover colors */
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 175 60% 45%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary brand colors (darkTeam #0F172A for dark mode) */
+    --primary: 222 87% 8%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 217 32.6% 17.5%;
+    /* Secondary colors */
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 32.6% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Muted colors */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 217 32.6% 17.5%;
+    /* Accent colors */
+    --accent: 217 33% 17%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 72% 51%;
+    /* Destructive colors (Lighter Red for dark mode) */
+    --destructive: 0 63% 50%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 32.6% 17.5%;
-    --input: 217 32.6% 17.5%;
-    --ring: 175 80% 35%;
+    /* Success colors (Lighter Green for dark mode) */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning colors (Lighter Yellow for dark mode) */
+    --warning: 38 92% 60%;
+    --warning-foreground: 222 47% 11%;
+
+    /* Info colors (Lighter Blue for dark mode) */
+    --info: 217 91% 70%;
+    --info-foreground: 222 47% 11%;
+
+    /* Border and input */
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 180 100% 35%;
   }
 }
 
@@ -72,7 +115,9 @@
   }
   body {
     @apply bg-background text-foreground transition-colors duration-300;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
   h1,
   h2,
@@ -83,12 +128,11 @@
     @apply font-serif;
   }
 
-  /* Dark mode specific improvements */
   .dark {
     color-scheme: dark;
   }
 
-  .dark img {
+  .dark img:not([src*="logo"]) {
     @apply opacity-90;
   }
 
@@ -97,10 +141,9 @@
   }
 }
 
-/* Custom components */
 @layer components {
   .hero-gradient {
-    @apply bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500;
+    @apply bg-gradient-to-r from-primary via-primary/90 to-primary/80;
   }
 
   .section-padding {
@@ -119,33 +162,26 @@
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
 
-  /* Dark mode enhancements */
-  .dark .hero-gradient {
-    @apply bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600;
-  }
-
   .dark .card-hover:hover {
-    @apply shadow-2xl shadow-slate-900/50;
+    @apply shadow-2xl shadow-black/50;
   }
 
-  /* Enhanced scrollbars for dark mode */
   .dark ::-webkit-scrollbar {
     @apply w-2;
   }
 
   .dark ::-webkit-scrollbar-track {
-    @apply bg-slate-800;
+    @apply bg-muted;
   }
 
   .dark ::-webkit-scrollbar-thumb {
-    @apply bg-slate-600 rounded-full;
+    @apply bg-muted-foreground/50 rounded-full;
   }
 
   .dark ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-500;
+    @apply bg-muted-foreground/70;
   }
 
-  /* Custom slider styling for mobile */
   .slider::-webkit-slider-thumb {
     @apply appearance-none w-5 h-5 bg-white rounded-full shadow-lg border-2 border-primary cursor-pointer;
   }
@@ -155,18 +191,16 @@
     border: none;
   }
 
-  /* Mobile touch improvements */
   @media (max-width: 640px) {
     .slider::-webkit-slider-thumb {
       @apply w-6 h-6;
     }
-    
+
     .slider::-moz-range-thumb {
       @apply w-6 h-6;
     }
   }
 
-  /* Line clamp utilities */
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;

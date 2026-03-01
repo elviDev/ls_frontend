@@ -170,7 +170,7 @@ export function AudiobookCard({
             variant="ghost"
             className={cn(
               "absolute bottom-3 right-3 rounded-full bg-white/80 hover:bg-white",
-              isFavorite && "text-red-500 hover:text-red-600"
+              isFavorite && "text-destructive hover:text-destructive"
             )}
             disabled={isLoading}
             onClick={handleFavoriteClick}

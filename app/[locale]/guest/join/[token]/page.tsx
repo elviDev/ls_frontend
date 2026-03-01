@@ -197,7 +197,7 @@ export default function GuestJoinPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <XCircle className="h-16 w-16 text-red-500 mb-4" />
+            <XCircle className="h-16 w-16 text-destructive mb-4" />
             <h2 className="text-xl font-semibold mb-2">Invalid Invitation</h2>
             <p className="text-muted-foreground text-center mb-6">
               This invitation link is invalid or has expired.
@@ -295,10 +295,10 @@ export default function GuestJoinPage() {
               {/* Invitation Status */}
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium text-green-800">You're Invited!</span>
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  <span className="font-medium text-success">You're Invited!</span>
                 </div>
-                <p className="text-sm text-green-700">
+                <p className="text-sm text-success">
                   Hello <strong>{invitation.guestName}</strong>, you've been invited to participate as a guest in this podcast episode.
                 </p>
               </div>

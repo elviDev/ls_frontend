@@ -212,7 +212,7 @@ export default function BroadcastDetailPage() {
         return (
           <Badge
             variant="outline"
-            className="bg-slate-50 text-slate-700 border-slate-200"
+            className="bg-muted text-slate-700 border"
           >
             <Activity className="h-4 w-4 mr-2" />
             Ended
@@ -243,7 +243,7 @@ export default function BroadcastDetailPage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Broadcast Not Found
             </h2>
-            <p className="text-slate-500 text-center mb-6">
+            <p className="text-muted-foreground text-center mb-6">
               The broadcast you're looking for doesn't exist or has been
               removed.
             </p>
@@ -278,7 +278,7 @@ export default function BroadcastDetailPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold">Broadcast Details</h1>
-              <p className="text-slate-500 mt-1">
+              <p className="text-muted-foreground mt-1">
                 Manage and monitor your broadcast
               </p>
             </div>
@@ -289,7 +289,7 @@ export default function BroadcastDetailPage() {
               <Button
                 onClick={handleStartBroadcast}
                 disabled={startBroadcastMutation.isPending}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-success hover:bg-success"
               >
                 {startBroadcastMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -307,7 +307,7 @@ export default function BroadcastDetailPage() {
                       `/dashboard/broadcasts/${(broadcast as any).slug}/studio`
                     )
                   }
-                  className="bg-red-600 hover:bg-red-700"
+                  className="bg-destructive hover:bg-destructive"
                 >
                   <Radio className="h-4 w-4 mr-2" />
                   Enter Studio
@@ -343,7 +343,7 @@ export default function BroadcastDetailPage() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleDeleteBroadcast}
-                  className="text-red-600"
+                  className="text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
@@ -356,7 +356,7 @@ export default function BroadcastDetailPage() {
         {/* Hero Section */}
         <Card className="mb-8 overflow-hidden">
           {(broadcast as any).banner && (
-            <div className="aspect-video w-full bg-gray-100">
+            <div className="aspect-video w-full bg-muted">
               <img
                 src={(broadcast as any).banner.url}
                 alt={(broadcast as any).title}
@@ -374,12 +374,12 @@ export default function BroadcastDetailPage() {
                 <h1 className="text-4xl font-bold text-slate-900 mb-4">
                   {(broadcast as any).title || "Untitled Broadcast"}
                 </h1>
-                <p className="text-lg text-slate-600 mb-6">
+                <p className="text-lg text-muted-foreground mb-6">
                   {(broadcast as any).description || "No description available"}
                 </p>
 
                 {/* Host Info */}
-                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
+                <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-purple-500 text-white">
                       {(broadcast as any).hostUser
@@ -453,7 +453,7 @@ export default function BroadcastDetailPage() {
                 <CardTitle>Stream Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600">
+                <p className="text-muted-foreground">
                   Stream details and configuration will appear here.
                 </p>
               </CardContent>
@@ -472,7 +472,7 @@ export default function BroadcastDetailPage() {
                     {(broadcast as any).staff?.map((staffMember: any) => (
                       <div
                         key={staffMember.id}
-                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"
+                        className="flex items-center gap-3 p-3 bg-muted rounded-lg"
                       >
                         <Avatar>
                           <AvatarFallback>
@@ -523,13 +523,13 @@ export default function BroadcastDetailPage() {
                       >
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarFallback className="bg-green-500 text-white">
+                            <AvatarFallback className="bg-success text-white">
                               {guest.name.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-medium">{guest.name}</p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted-foreground">
                               {guest.role}
                             </p>
                           </div>
@@ -540,13 +540,13 @@ export default function BroadcastDetailPage() {
                           onClick={() => handleRemoveGuest(guest.id)}
                           disabled={removeGuestMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 text-red-600" />
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     ))}
                     {(!(broadcast as any).guests ||
                       (broadcast as any).guests.length === 0) && (
-                      <p className="text-slate-500 text-center py-8">
+                      <p className="text-muted-foreground text-center py-8">
                         No guests added
                       </p>
                     )}
@@ -562,7 +562,7 @@ export default function BroadcastDetailPage() {
                 <CardTitle>Analytics</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600">
+                <p className="text-muted-foreground">
                   Analytics data will appear here.
                 </p>
               </CardContent>
@@ -592,7 +592,7 @@ export default function BroadcastDetailPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Auto-Record</p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Automatically save broadcast recording
                       </p>
                     </div>
@@ -609,7 +609,7 @@ export default function BroadcastDetailPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Enable Chat</p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Allow viewers to chat during broadcast
                       </p>
                     </div>
@@ -629,7 +629,7 @@ export default function BroadcastDetailPage() {
               <Card>
                 <CardContent className="text-center py-12">
                   <Settings className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500">Settings not available</p>
+                  <p className="text-muted-foreground">Settings not available</p>
                 </CardContent>
               </Card>
             )}

@@ -57,7 +57,7 @@ export default function AdminLayout({
   return (
     <DashboardAuthWrapper>
       <DashboardSettingsProvider>
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-muted">
           {/* Desktop Sidebar */}
           <aside
             className={cn(
@@ -65,7 +65,7 @@ export default function AdminLayout({
               sidebarCollapsed ? "lg:w-30" : "lg:w-72",
             )}
           >
-            <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-200 bg-white px-6 pb-4">
+            <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border bg-white px-6 pb-4">
               <div className="flex h-20 shrink-0 items-center">
                 <Link
                   href="/"
@@ -109,8 +109,8 @@ export default function AdminLayout({
                               className={cn(
                                 "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 transition-colors",
                                 isActive
-                                  ? "bg-brand-50 text-brand-600"
-                                  : "text-slate-700 hover:bg-slate-50 hover:text-brand-600",
+                                  ? "bg-primary/5 text-primary"
+                                  : "text-slate-700 hover:bg-muted hover:text-primary",
                                 sidebarCollapsed ? "justify-center" : "",
                               )}
                               title={sidebarCollapsed ? item.name : undefined}
@@ -138,8 +138,8 @@ export default function AdminLayout({
                               className={cn(
                                 "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 transition-colors",
                                 isActive
-                                  ? "bg-brand-50 text-brand-600"
-                                  : "text-slate-700 hover:bg-slate-50 hover:text-brand-600",
+                                  ? "bg-primary/5 text-primary"
+                                  : "text-slate-700 hover:bg-muted hover:text-primary",
                                 sidebarCollapsed ? "justify-center" : "",
                               )}
                               title={sidebarCollapsed ? item.name : undefined}
@@ -173,7 +173,7 @@ export default function AdminLayout({
             </main>
 
             {/* Footer */}
-            <footer className="bg-brand-800 text-white mt-auto">
+            <footer className="bg-primary text-white mt-auto">
               <div className="px-4 py-8 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-c  ols-2 lg:grid-cols-4 gap-8 mb-8">
                   <div>
@@ -186,7 +186,7 @@ export default function AdminLayout({
                         className="h-16 w-16"
                       />
                     </div>
-                    <p className="text-brand-100 mb-4">
+                    <p className="text-primary/10 mb-4">
                       Your premier destination for podcasts, audiobooks, and
                       live broadcasts that inspire, entertain, and connect.
                     </p>
@@ -262,7 +262,7 @@ export default function AdminLayout({
                     <h3 className="font-semibold text-white text-lg mb-4">
                       Subscribe
                     </h3>
-                    <p className="text-brand-100 mb-4">
+                    <p className="text-primary/10 mb-4">
                       Subscribe to our newsletter for updates on new content and
                       events.
                     </p>
@@ -270,7 +270,7 @@ export default function AdminLayout({
                       <input
                         type="email"
                         placeholder="Your email address"
-                        className="w-full px-3 py-2 bg-brand-700 border border-brand-600 text-white placeholder:text-brand-200 rounded"
+                        className="w-full px-3 py-2 bg-primary border border-primary text-white placeholder:text-primary/20 rounded"
                       />
                       <button className="w-full bg-white py-2 px-4 rounded text-teal-800">
                         Subscribe
@@ -279,27 +279,27 @@ export default function AdminLayout({
                   </div>
                 </div>
 
-                <div className="border-t border-brand-700 pt-6 flex flex-col md:flex-row justify-between items-center">
-                  <p className="text-brand-200 text-sm">
+                <div className="border-t border-primary pt-6 flex flex-col md:flex-row justify-between items-center">
+                  <p className="text-primary/20 text-sm">
                     © {new Date().getFullYear()} CBStudio Radio. All rights
                     reserved.
                   </p>
                   <div className="flex space-x-4 mt-4 md:mt-0">
                     <Link
                       href="/privacy"
-                      className="text-brand-200 hover:text-amber-200 text-sm transition-colors"
+                      className="text-primary/20 hover:text-amber-200 text-sm transition-colors"
                     >
                       Privacy
                     </Link>
                     <Link
                       href="/terms"
-                      className="text-brand-200 hover:text-amber-200 text-sm transition-colors"
+                      className="text-primary/20 hover:text-amber-200 text-sm transition-colors"
                     >
                       Terms
                     </Link>
                     <Link
                       href="/cookies"
-                      className="text-brand-200 hover:text-amber-200 text-sm transition-colors"
+                      className="text-primary/20 hover:text-amber-200 text-sm transition-colors"
                     >
                       Cookies
                     </Link>

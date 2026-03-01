@@ -95,19 +95,19 @@ export function PodcastCard({
               className="rounded-full bg-white hover:bg-white/90 h-12 w-12"
               onClick={handlePlayClick}
             >
-              <Play className="h-5 w-5 text-brand-700 fill-current" />
+              <Play className="h-5 w-5 text-primary fill-current" />
               <span className="sr-only">Play {title}</span>
             </Button>
           </div>
 
           {category && (
-            <div className="absolute top-3 left-3 bg-brand-600 text-white text-xs font-medium px-2 py-1 rounded-full">
+            <div className="absolute top-3 left-3 bg-primary text-white text-xs font-medium px-2 py-1 rounded-full">
               {category}
             </div>
           )}
 
           {explicit && (
-            <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+            <div className="absolute top-3 right-3 bg-destructive text-white text-xs font-medium px-2 py-1 rounded-full">
               E
             </div>
           )}
@@ -117,7 +117,7 @@ export function PodcastCard({
             variant="ghost"
             className={cn(
               "absolute bottom-3 right-3 rounded-full bg-white/80 hover:bg-white",
-              isFavorite && "text-red-500 hover:text-red-600"
+              isFavorite && "text-destructive hover:text-destructive"
             )}
             disabled={isLoading}
             onClick={handleFavoriteClick}

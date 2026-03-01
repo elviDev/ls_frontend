@@ -100,7 +100,7 @@ function getTimeAgo(date: Date): string {
 function getNotificationIcon(type: string) {
   switch (type) {
     case "success":
-      return "bg-green-500";
+      return "bg-success";
     case "warning":
       return "bg-yellow-500";
     case "error":

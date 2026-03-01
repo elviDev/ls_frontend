@@ -139,7 +139,7 @@ export default function EditChapterPage() {
           <h2 className="text-lg font-semibold mb-2">
             Loading chapter data...
           </h2>
-          <p className="text-slate-500">
+          <p className="text-muted-foreground">
             Please wait while we fetch the chapter information.
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function EditChapterPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-lg font-semibold mb-2">Chapter not found</h2>
-          <p className="text-slate-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             The chapter you're looking for doesn't exist or has been deleted.
           </p>
           <Button
@@ -173,7 +173,7 @@ export default function EditChapterPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Edit Chapter</h1>
-            <p className="text-slate-500 mt-1">
+            <p className="text-muted-foreground mt-1">
               Update chapter details and audio
             </p>
           </div>
@@ -230,7 +230,7 @@ export default function EditChapterPage() {
                     onCheckedChange={setIsDraft}
                   />
                 </div>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   {isDraft
                     ? "Chapter will be saved as a draft"
                     : "Chapter will be published immediately"}
@@ -251,7 +251,7 @@ export default function EditChapterPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed border rounded-lg p-6 text-center">
                 <input
                   type="file"
                   id="audioFile"
@@ -266,7 +266,7 @@ export default function EditChapterPage() {
                       <Upload className="h-10 w-10 text-slate-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500 mb-2">
+                      <p className="text-sm text-muted-foreground mb-2">
                         Drag and drop your audio file here, or click to browse
                       </p>
                       <Button
@@ -338,7 +338,7 @@ export default function EditChapterPage() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-6">
-                <p className="text-sm text-slate-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Add or edit the transcript for better accessibility and
                   searchability
                 </p>

@@ -52,7 +52,7 @@ export default function AudiobooksPage() {
           </p>
         </div>
         <div className="text-center py-12">
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 p-6 rounded-lg max-w-md mx-auto">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-warning dark:text-yellow-200 p-6 rounded-lg max-w-md mx-auto">
             <h2 className="text-lg font-semibold mb-2">No Audiobooks Available</h2>
             <p className="mb-4">No published audiobooks have been created yet.</p>
           </div>

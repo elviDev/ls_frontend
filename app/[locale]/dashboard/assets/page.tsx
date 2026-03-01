@@ -132,10 +132,10 @@ export default function AssetsPage() {
 
   const getAssetTypeColor = (type: string) => {
     switch (type) {
-      case "IMAGE": return "bg-green-100 text-green-800 border-green-200"
-      case "AUDIO": return "bg-blue-100 text-blue-800 border-blue-200"
+      case "IMAGE": return "bg-success/10 text-success border-green-200"
+      case "AUDIO": return "bg-info/10 text-info border-blue-200"
       case "VIDEO": return "bg-purple-100 text-purple-800 border-purple-200"
-      default: return "bg-gray-100 text-gray-800 border-gray-200"
+      default: return "bg-muted text-gray-800 border"
     }
   }
 
@@ -160,7 +160,7 @@ export default function AssetsPage() {
     return (
       <div className="p-6">
         <div className="text-center py-12">
-          <p className="text-red-600">Failed to load assets</p>
+          <p className="text-destructive">Failed to load assets</p>
           <Button onClick={() => window.location.reload()} className="mt-4">
             Retry
           </Button>
@@ -175,7 +175,7 @@ export default function AssetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Asset Management</h1>
-          <p className="text-slate-500 mt-1">Manage images, audio files, and other assets for broadcasting</p>
+          <p className="text-muted-foreground mt-1">Manage images, audio files, and other assets for broadcasting</p>
         </div>
         <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
           <DialogTrigger asChild>
@@ -201,10 +201,10 @@ export default function AssetsPage() {
                 />
                 {uploadForm.files.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm text-gray-600">{uploadForm.files.length} file(s) selected:</p>
+                    <p className="text-sm text-muted-foreground">{uploadForm.files.length} file(s) selected:</p>
                     <div className="max-h-32 overflow-y-auto space-y-1">
                       {uploadForm.files.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                        <div key={index} className="flex items-center justify-between bg-muted p-2 rounded">
                           <span className="text-sm truncate">{file.name}</span>
                           <Button
                             type="button"
@@ -307,7 +307,7 @@ export default function AssetsPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
-                      <Icon className="h-5 w-5 text-gray-600" />
+                      <Icon className="h-5 w-5 text-muted-foreground" />
                       <Badge className={`text-xs ${getAssetTypeColor(asset.type)}`}>
                         {asset.type}
                       </Badge>
@@ -329,7 +329,7 @@ export default function AssetsPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDelete(asset)}
-                          className="text-red-600"
+                          className="text-destructive"
                           disabled={(asset._count?.broadcasts || 0) > 0}
                         >
                           <Trash className="h-4 w-4 mr-2" />
@@ -346,7 +346,7 @@ export default function AssetsPage() {
                   <div className="space-y-3">
                     {/* Preview */}
                     {asset.type === "IMAGE" && (
-                      <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                      <div className="aspect-video bg-muted rounded-lg overflow-hidden">
                         <img 
                           src={asset.url} 
                           alt={asset.originalName}
@@ -356,26 +356,26 @@ export default function AssetsPage() {
                     )}
                     
                     {asset.type === "AUDIO" && (
-                      <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                         <Music className="h-12 w-12 text-gray-400" />
                       </div>
                     )}
                     
                     {asset.type === "VIDEO" && (
-                      <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                         <Video className="h-12 w-12 text-gray-400" />
                       </div>
                     )}
                     
                     {asset.type === "DOCUMENT" && (
-                      <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                         <File className="h-12 w-12 text-gray-400" />
                       </div>
                     )}
 
                     {/* Description */}
                     {asset.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {asset.description}
                       </p>
                     )}
@@ -397,7 +397,7 @@ export default function AssetsPage() {
                     )}
 
                     {/* Metadata */}
-                    <div className="space-y-1 text-xs text-gray-500">
+                    <div className="space-y-1 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <User className="h-3 w-3" />
                         <span>{asset.uploadedBy.firstName} {asset.uploadedBy.lastName}</span>
@@ -428,7 +428,7 @@ export default function AssetsPage() {
         <div className="text-center py-12">
           <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No assets found</h3>
-          <p className="text-gray-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             {filters.search || filters.type !== 'all' 
               ? 'Try adjusting your filters or search terms'
               : 'Upload your first asset to get started'

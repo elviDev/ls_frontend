@@ -117,7 +117,7 @@ export default function TranscriptPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-800">Chapter Transcript</h1>
-            <p className="text-slate-500 mt-1">{chapterTitle}</p>
+            <p className="text-muted-foreground mt-1">{chapterTitle}</p>
           </div>
           <Button variant="outline" onClick={() => router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)}>
             Back to Chapters
@@ -153,7 +153,7 @@ export default function TranscriptPage() {
                   </TabsContent>
 
                   <TabsContent value="upload" className="space-y-4">
-                    <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center">
+                    <div className="border-2 border-dashed border rounded-lg p-6 text-center">
                       <input
                         type="file"
                         id="transcriptFile"
@@ -168,7 +168,7 @@ export default function TranscriptPage() {
                             <Upload className="h-10 w-10 text-slate-400" />
                           </div>
                           <div>
-                            <p className="text-sm text-slate-500 mb-2">Upload a transcript file (.txt, .srt, .vtt)</p>
+                            <p className="text-sm text-muted-foreground mb-2">Upload a transcript file (.txt, .srt, .vtt)</p>
                             <Button
                               variant="outline"
                               onClick={() => document.getElementById("transcriptFile")?.click()}
@@ -200,7 +200,7 @@ export default function TranscriptPage() {
                     {transcriptFile && (
                       <div className="mt-4">
                         <h3 className="text-sm font-medium mb-2">Preview:</h3>
-                        <div className="bg-slate-50 p-4 rounded-md border border-slate-200 max-h-[300px] overflow-y-auto">
+                        <div className="bg-muted p-4 rounded-md border border max-h-[300px] overflow-y-auto">
                           <pre className="text-sm whitespace-pre-wrap">{transcriptText}</pre>
                         </div>
                       </div>
@@ -213,7 +213,7 @@ export default function TranscriptPage() {
                     <Label htmlFor="isPublished">Publish Transcript</Label>
                     <Switch id="isPublished" checked={isPublished} onCheckedChange={setIsPublished} />
                   </div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted-foreground">
                     {isPublished
                       ? "Transcript will be published and available to users"
                       : "Transcript will be saved as a draft"}

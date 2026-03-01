@@ -95,7 +95,7 @@ function ResetPasswordContent() {
         <div className="w-full max-w-md">
           <div className="flex items-center justify-center mb-8">
             <Link href="/" className="flex items-center space-x-2">
-              <Radio className="h-8 w-8 text-brand-600" />
+              <Radio className="h-8 w-8 text-primary" />
               <span className="font-bold text-2xl">WaveStream</span>
             </Link>
           </div>
@@ -103,7 +103,7 @@ function ResetPasswordContent() {
           <Card>
             <CardHeader className="space-y-1 text-center">
               <div className="flex justify-center mb-4">
-                <CheckCircle className="h-12 w-12 text-green-600" />
+                <CheckCircle className="h-12 w-12 text-success" />
               </div>
               <CardTitle className="text-2xl font-bold">Password Reset</CardTitle>
               <CardDescription>
@@ -116,7 +116,7 @@ function ResetPasswordContent() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button asChild className="w-full bg-brand-600 hover:bg-brand-700">
+              <Button asChild className="w-full bg-primary hover:bg-primary">
                 <Link href="/signin">
                   Sign In
                 </Link>
@@ -141,7 +141,7 @@ function ResetPasswordContent() {
             </CardHeader>
             <CardFooter>
               <div className="flex flex-col w-full space-y-2">
-                <Button asChild className="w-full bg-brand-600 hover:bg-brand-700">
+                <Button asChild className="w-full bg-primary hover:bg-primary">
                   <Link href="/forgot-password">
                     Request New Reset Link
                   </Link>
@@ -165,7 +165,7 @@ function ResetPasswordContent() {
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <Link href="/" className="flex items-center space-x-2">
-            <Radio className="h-8 w-8 text-brand-600" />
+            <Radio className="h-8 w-8 text-primary" />
             <span className="font-bold text-2xl">WaveStream</span>
           </Link>
         </div>
@@ -211,7 +211,7 @@ function ResetPasswordContent() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-brand-600 hover:bg-brand-700"
+                  className="w-full bg-primary hover:bg-primary"
                   disabled={isLoading}
                 >
                   {isLoading ? "Updating..." : "Update Password"}

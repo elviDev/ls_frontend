@@ -96,7 +96,8 @@
     "filter": "Filter",
     "sort": "Sort",
     "refresh": "Refresh",
-    "retry": "Retry"
+    "retry": "Retry",
+    "contact": "Contact"
   },
 
   "home": {

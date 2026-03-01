@@ -41,11 +41,11 @@ import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal"
 const categoryColors = {
   TALK_SHOW: "bg-emerald-100 text-emerald-800",
   MUSIC: "bg-amber-100 text-amber-800",
-  TECHNOLOGY: "bg-green-100 text-green-800",
-  BUSINESS: "bg-yellow-100 text-yellow-800",
+  TECHNOLOGY: "bg-success/10 text-success",
+  BUSINESS: "bg-warning/10 text-warning",
   INTERVIEW: "bg-teal-100 text-teal-800",
   SPORTS: "bg-lime-100 text-lime-800",
-  NEWS: "bg-gray-100 text-gray-800",
+  NEWS: "bg-muted text-gray-800",
   ENTERTAINMENT: "bg-amber-100 text-amber-800",
   EDUCATION: "bg-emerald-100 text-emerald-800",
 };
@@ -53,7 +53,7 @@ const categoryColors = {
 const statusColors = {
   ACTIVE: "bg-emerald-100 text-emerald-800",
   INACTIVE: "bg-amber-100 text-amber-800",
-  ARCHIVED: "bg-gray-100 text-gray-800",
+  ARCHIVED: "bg-muted text-gray-800",
 };
 
 export default function ProgramsPage() {
@@ -283,20 +283,20 @@ export default function ProgramsPage() {
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                   {program.description}
                 </p>
 
                 {/* Host and Schedule Info */}
                 <div className="space-y-2 pt-2 border-t border-gray-100">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <User className="h-4 w-4 text-emerald-600" />
                     <span className="font-medium">
                       {program.host.firstName} {program.host.lastName}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4 text-emerald-600" />
                     <span>{program.schedule}</span>
                   </div>
@@ -304,7 +304,7 @@ export default function ProgramsPage() {
 
                 {/* Stats */}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Radio className="h-3 w-3" />
                       <span>{program._count.episodes} episodes</span>
@@ -331,7 +331,7 @@ export default function ProgramsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs hover:bg-red-50 hover:text-red-700"
+                      className="h-7 px-2 text-xs hover:bg-red-50 hover:text-destructive"
                       onClick={() => setDeleteDialog({ isOpen: true, program })}
                     >
                       <Trash2 className="h-3 w-3" />

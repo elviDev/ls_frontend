@@ -143,7 +143,7 @@ export default function UsersManagePage() {
       );
     }
     return (
-      <Badge variant="default" className="bg-green-100 text-green-800 gap-1">
+      <Badge variant="default" className="bg-success/10 text-success gap-1">
         <CheckCircle className="h-3 w-3" />
         Active
       </Badge>
@@ -165,7 +165,7 @@ export default function UsersManagePage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <p className="text-red-600">Error loading users</p>
+          <p className="text-destructive">Error loading users</p>
         </div>
       </div>
     );
@@ -207,7 +207,7 @@ export default function UsersManagePage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Email Verified</CardTitle>
-              <Mail className="h-4 w-4 text-green-600" />
+              <Mail className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.verified}</div>
@@ -359,7 +359,7 @@ export default function UsersManagePage() {
                       variant={user.emailVerified ? "default" : "destructive"}
                       className={
                         user.emailVerified
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-success/10 text-success"
                           : "bg-red-100 text-red-800"
                       }
                     >
@@ -431,7 +431,7 @@ export default function UsersManagePage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => setDeleteDialog({ isOpen: true, user })}
-                          className="text-red-600 focus:text-red-600"
+                          className="text-destructive focus:text-destructive"
                           disabled={!isAdmin}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />

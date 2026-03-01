@@ -48,7 +48,7 @@ async function ArchiveContent({ id }: { id: string }) {
 
             <div className="md:col-span-2 space-y-4">
               <div>
-                <Badge className="mb-2 bg-brand-600 text-white">
+                <Badge className="mb-2 bg-primary text-primary-foreground">
                   {archive.category}
                 </Badge>
                 <h1 className="text-3xl font-bold mb-2">{archive.title}</h1>
@@ -87,7 +87,7 @@ async function ArchiveContent({ id }: { id: string }) {
               </p>
 
               <div className="flex flex-wrap gap-2">
-                <Button className="bg-brand-600 hover:bg-brand-700">
+                <Button>
                   Play Archive
                 </Button>
                 {archive.isDownloadable && (

@@ -278,7 +278,7 @@ export default function EditStaffPage() {
                   className={errors.firstName ? "border-red-500" : ""}
                 />
                 {errors.firstName && (
-                  <p className="text-sm text-red-600">{errors.firstName}</p>
+                  <p className="text-sm text-destructive">{errors.firstName}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -290,7 +290,7 @@ export default function EditStaffPage() {
                   className={errors.lastName ? "border-red-500" : ""}
                 />
                 {errors.lastName && (
-                  <p className="text-sm text-red-600">{errors.lastName}</p>
+                  <p className="text-sm text-destructive">{errors.lastName}</p>
                 )}
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function EditStaffPage() {
                   className={errors.username ? "border-red-500" : ""}
                 />
                 {errors.username && (
-                  <p className="text-sm text-red-600">{errors.username}</p>
+                  <p className="text-sm text-destructive">{errors.username}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -318,7 +318,7 @@ export default function EditStaffPage() {
                   className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email}</p>
+                  <p className="text-sm text-destructive">{errors.email}</p>
                 )}
               </div>
             </div>
@@ -364,7 +364,7 @@ export default function EditStaffPage() {
                   </SelectContent>
                 </Select>
                 {errors.role && (
-                  <p className="text-sm text-red-600">{errors.role}</p>
+                  <p className="text-sm text-destructive">{errors.role}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -470,7 +470,7 @@ export default function EditStaffPage() {
                       className={errors.salary ? "border-red-500" : ""}
                     />
                     {errors.salary && (
-                      <p className="text-sm text-red-600">{errors.salary}</p>
+                      <p className="text-sm text-destructive">{errors.salary}</p>
                     )}
                   </div>
 

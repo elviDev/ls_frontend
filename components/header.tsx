@@ -51,8 +51,8 @@ export default function Header() {
       className={cn(
         "sticky top-0 z-40 w-full transition-all duration-200",
         isScrolled
-          ? "bg-background/95 backdrop-blur-md shadow-sm"
-          : "bg-transparent",
+          ? "bg-background/95 dark:bg-darkTeam/95 backdrop-blur-md shadow-sm"
+          : "bg-transparent dark:bg-darkTeam/50",
       )}
     >
       <div className="container flex items-center justify-between h-16 px-4 mx-auto">

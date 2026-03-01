@@ -66,15 +66,15 @@ import { useProgramStore, ProgramEpisode } from "@/stores/program-store";
 import { useBroadcastStore } from "@/stores/broadcast-store";
 
 const statusColors = {
-  ACTIVE: "bg-green-100 text-green-800",
-  INACTIVE: "bg-yellow-100 text-yellow-800",
-  ARCHIVED: "bg-gray-100 text-gray-800",
+  ACTIVE: "bg-success/10 text-success",
+  INACTIVE: "bg-warning/10 text-warning",
+  ARCHIVED: "bg-muted text-gray-800",
 };
 
 const broadcastStatusColors = {
-  SCHEDULED: "bg-blue-100 text-blue-800",
+  SCHEDULED: "bg-info/10 text-info",
   LIVE: "bg-red-100 text-red-800",
-  ENDED: "bg-gray-100 text-gray-800",
+  ENDED: "bg-muted text-gray-800",
 };
 
 export default function ProgramDetailPage() {
@@ -315,7 +315,7 @@ export default function ProgramDetailPage() {
                 <div>
                   <CardTitle className="text-xl">{program.title}</CardTitle>
                   <CardDescription className="flex items-center gap-2 mt-2">
-                    <Badge className="bg-blue-100 text-blue-800">
+                    <Badge className="bg-info/10 text-info">
                       {formatCategory(program.category)}
                     </Badge>
                     <Badge

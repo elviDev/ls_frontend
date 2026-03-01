@@ -143,15 +143,15 @@ export default function PodcastDetailPage({
               fill
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent flex items-end p-6">
               <div>
-                <div className="text-sm font-medium text-brand-300 mb-2">
+                <div className="text-sm font-medium text-primary mb-2">
                   {podcast.genre?.name}
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">
                   {podcast.title}
                 </h1>
-                <p className="text-white/80">
+                <p className="text-muted-foreground">
                   with {podcast.author.firstName} {podcast.author.lastName}
                 </p>
               </div>
@@ -196,7 +196,7 @@ export default function PodcastDetailPage({
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={podcast?.isFavorited ? "text-red-500" : ""}
+                  className={podcast?.isFavorited ? "text-destructive" : ""}
                 >
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l11 11z" />
                 </svg>
@@ -309,7 +309,7 @@ export default function PodcastDetailPage({
                           />
                         </div>
                         <div>
-                          <p className="font-medium group-hover:text-brand-600 transition-colors">
+                          <p className="font-medium group-hover:text-primary transition-colors">
                             {related.title}
                           </p>
                           <p className="text-sm text-muted-foreground">

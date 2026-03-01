@@ -147,13 +147,13 @@ export function ArchiveCard({
   const getTypeColor = (type: string) => {
     switch (type) {
       case "podcast":
-        return "bg-blue-600";
+        return "bg-info";
       case "broadcast":
-        return "bg-green-600";
+        return "bg-success";
       case "audiobook":
         return "bg-purple-600";
       default:
-        return "bg-brand-600";
+        return "bg-primary";
     }
   };
 
@@ -233,7 +233,7 @@ export function ArchiveCard({
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className="bg-brand-600 hover:bg-brand-700"
+                  className="bg-primary hover:bg-primary"
                   onClick={handlePlay}
                 >
                   <Play className="h-4 w-4 mr-2" /> Play
@@ -252,7 +252,7 @@ export function ArchiveCard({
                   <Heart
                     className={cn(
                       "h-4 w-4",
-                      isFavorite && "fill-current text-red-500"
+                      isFavorite && "fill-current text-destructive"
                     )}
                   />
                 </Button>
@@ -289,7 +289,7 @@ export function ArchiveCard({
               </div>
             </div>
             <CardContent className="p-6 w-2/3">
-              <div className="text-xs font-medium text-brand-600 dark:text-brand-400 mb-1">
+              <div className="text-xs font-medium text-primary dark:text-primary/40 mb-1">
                 {archive.category}
               </div>
               <h3 className="font-semibold text-lg mb-1 line-clamp-1">
@@ -314,7 +314,7 @@ export function ArchiveCard({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="flex-1 bg-brand-600 hover:bg-brand-700"
+                  className="flex-1 bg-primary hover:bg-primary"
                   onClick={handlePlay}
                 >
                   <Play className="h-3 w-3 mr-1" /> Listen
@@ -328,7 +328,7 @@ export function ArchiveCard({
                   <Heart
                     className={cn(
                       "h-3 w-3",
-                      isFavorite && "fill-current text-red-500"
+                      isFavorite && "fill-current text-destructive"
                     )}
                   />
                 </Button>
@@ -386,7 +386,7 @@ export function ArchiveCard({
               <Heart
                 className={cn(
                   "h-4 w-4",
-                  isFavorite && "fill-current text-red-500"
+                  isFavorite && "fill-current text-destructive"
                 )}
               />
             </Button>
@@ -401,7 +401,7 @@ export function ArchiveCard({
           </div>
         </div>
         <CardContent className="p-4">
-          <div className="text-xs font-medium text-brand-600 dark:text-brand-400 mb-1">
+          <div className="text-xs font-medium text-primary dark:text-primary/40 mb-1">
             {archive.category}
           </div>
           <h3 className="font-semibold text-lg mb-1 line-clamp-1">

@@ -253,7 +253,7 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Event Not Found</h1>
           <p className="text-muted-foreground mb-6">The event you're looking for doesn't exist or has been removed.</p>
           <Button onClick={() => router.push('/events')}>
@@ -487,7 +487,7 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
                       <div className="flex gap-2">
                         {event.facebookEvent && (
                           <a href={event.facebookEvent} target="_blank" rel="noopener noreferrer" 
-                             className="text-blue-600 hover:text-blue-800">
+                             className="text-blue-600 hover:text-info">
                             <Facebook className="h-5 w-5" />
                           </a>
                         )}
@@ -585,7 +585,7 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
 
                 {event.isRegistered ? (
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 text-green-600 mb-2">
+                    <div className="flex items-center justify-center gap-2 text-success mb-2">
                       <CheckCircle className="h-5 w-5" />
                       <span className="font-medium">You're registered!</span>
                     </div>

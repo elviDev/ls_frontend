@@ -144,7 +144,7 @@ const scheduleTypes = [
     label: "Marketing Campaign", 
     icon: Megaphone, 
     description: "Promotional campaigns, brand activations",
-    color: "bg-green-500"
+    color: "bg-success"
   },
   { 
     value: "ADVERTISEMENT", 
@@ -158,7 +158,7 @@ const scheduleTypes = [
     label: "Live Broadcast", 
     icon: Music, 
     description: "Live shows, streaming sessions",
-    color: "bg-red-500"
+    color: "bg-destructive"
   },
   { 
     value: "ANNOUNCEMENT", 
@@ -172,7 +172,7 @@ const scheduleTypes = [
     label: "Maintenance", 
     icon: Users, 
     description: "System maintenance, technical tasks",
-    color: "bg-gray-500"
+    color: "bg-muted0"
   }
 ]
 

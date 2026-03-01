@@ -125,16 +125,16 @@ export function StaffRegisterForm() {
       <div className="mx-auto max-w-md space-y-6">
         <Card className="border-green-200 bg-green-50">
           <CardHeader className="text-center">
-            <CheckCircle2 className="h-16 w-16 mx-auto text-green-600 mb-4" />
-            <CardTitle className="text-green-800">Registration Submitted!</CardTitle>
+            <CheckCircle2 className="h-16 w-16 mx-auto text-success mb-4" />
+            <CardTitle className="text-success">Registration Submitted!</CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-green-700">
+            <p className="text-success">
               Your staff registration has been submitted successfully. Your account is now pending admin approval.
             </p>
             <div className="bg-white rounded-lg p-4 border border-green-200">
-              <h4 className="font-semibold text-green-800 mb-2">What happens next?</h4>
-              <ul className="text-sm text-green-700 space-y-1 text-left">
+              <h4 className="font-semibold text-success mb-2">What happens next?</h4>
+              <ul className="text-sm text-success space-y-1 text-left">
                 <li>• An administrator will review your application</li>
                 <li>• You'll receive an email notification once approved</li>
                 <li>• Until then, you can sign in with limited user privileges</li>
@@ -167,7 +167,7 @@ export function StaffRegisterForm() {
       <div className="space-y-2 text-center">
         <User className="h-12 w-12 mx-auto text-blue-600" />
         <h1 className="text-3xl font-bold">Staff Registration</h1>
-        <p className="text-gray-500 dark:text-gray-400">
+        <p className="text-muted-foreground dark:text-gray-400">
           Apply to join our team. Your application will be reviewed by an administrator.
         </p>
       </div>
@@ -355,12 +355,12 @@ export function StaffRegisterForm() {
         </Button>
       </form>
 
-      <div className="text-center text-sm text-gray-500">
+      <div className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <button
           type="button"
           onClick={() => router.push("/signin")}
-          className="underline text-blue-600 hover:text-blue-800"
+          className="underline text-blue-600 hover:text-info"
         >
           Sign in
         </button>

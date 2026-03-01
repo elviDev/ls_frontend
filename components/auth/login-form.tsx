@@ -92,27 +92,27 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto dark:bg-slate-900 dark:border-gray-700">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">{t('signInTitle')}</CardTitle>
-        <CardDescription className="text-center">
+        <CardTitle className="text-2xl font-bold text-center dark:text-white">{t('signInTitle')}</CardTitle>
+        <CardDescription className="text-center dark:text-gray-400">
           {t('signInDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {/* Verification Status Alert */}
         {verified === 'true' && (
-          <Alert className="mb-4 border-green-500 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <Alert className="mb-4 border-green-500 bg-green-50 dark:bg-green-500/20 dark:border-green-600">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <AlertDescription className="text-success">
               {tAlerts('emailVerifiedSuccess')}
             </AlertDescription>
           </Alert>
         )}
         {verified === 'false' && (
-          <Alert className="mb-4 border-red-500 bg-red-50">
-            <XCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
+          <Alert className="mb-4 border-red-500 bg-red-50 dark:bg-red-500/20 dark:border-red-600">
+            <XCircle className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-red-800 dark:text-red-300">
               {error ? decodeURIComponent(error) : tAlerts('emailVerificationFailed')}
             </AlertDescription>
           </Alert>
@@ -120,9 +120,9 @@ export function LoginForm() {
 
         {/* Unverified Email Alert with Resend Button */}
         {unverifiedEmail && (
-          <Alert className="mb-4 border-yellow-500 bg-yellow-50">
+          <Alert className="mb-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-500/20 dark:border-yellow-600">
             <Mail className="h-4 w-4 text-yellow-600" />
-            <AlertDescription className="text-yellow-800">
+            <AlertDescription className="text-warning dark:text-yellow-300">
               <p className="mb-2">{tAlerts('emailNotVerified')}</p>
               <Button
                 type="button"
@@ -130,7 +130,7 @@ export function LoginForm() {
                 variant="outline"
                 onClick={handleResendVerification}
                 disabled={isResending}
-                className="mt-2"
+                className="mt-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-slate-800"
               >
                 {isResending ? tAlerts('sending') : tAlerts('resendVerification')}
               </Button>
@@ -140,34 +140,34 @@ export function LoginForm() {
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">{t('email')}</Label>
+            <Label htmlFor="email" className="dark:text-gray-300">{t('email')}</Label>
             <Input
               id="email"
               type="email"
               placeholder={t('enterEmail')}
               {...register('email')}
-              className={errors.email ? 'border-red-500' : ''}
+              className={`dark:bg-slate-800 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-500 ${errors.email ? 'border-red-500' : ''}`}
             />
             {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
+              <p className="text-sm text-destructive dark:text-red-400">{errors.email.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">{t('password')}</Label>
+            <Label htmlFor="password" className="dark:text-gray-300">{t('password')}</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder={t('enterPassword')}
                 {...register('password')}
-                className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
+                className={`dark:bg-slate-800 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-500 ${errors.password ? 'border-red-500 pr-10' : 'pr-10'}`}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent dark:hover:bg-transparent dark:text-gray-400"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
@@ -178,7 +178,7 @@ export function LoginForm() {
               </Button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
           </div>
 

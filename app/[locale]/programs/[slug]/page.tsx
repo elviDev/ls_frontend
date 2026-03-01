@@ -99,7 +99,7 @@ export default function ProgramDetailPage() {
               className="object-cover"
             />
             <div className="absolute top-4 left-4">
-              <Badge className="bg-brand-600 hover:bg-brand-700">
+              <Badge className="bg-primary hover:bg-primary">
                 {formatCategory(program.category)}
               </Badge>
             </div>

@@ -69,7 +69,7 @@ export default function PublicBroadcastPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-slate-900 mx-auto mb-4"></div>
-          <p className="text-slate-500">Loading broadcast...</p>
+          <p className="text-muted-foreground">Loading broadcast...</p>
         </div>
       </div>
     )
@@ -80,7 +80,7 @@ export default function PublicBroadcastPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Broadcast Not Found</h1>
-          <p className="text-gray-600">The broadcast you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground">The broadcast you're looking for doesn't exist.</p>
         </div>
       </div>
     )

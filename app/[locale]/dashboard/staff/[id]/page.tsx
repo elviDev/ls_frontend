@@ -203,14 +203,14 @@ export default function StaffDetailPage() {
   const getRoleBadgeColor = (role: string) => {
     const colors: Record<string, string> = {
       ADMIN: "bg-red-100 text-red-800",
-      HOST: "bg-blue-100 text-blue-800",
+      HOST: "bg-info/10 text-info",
       CO_HOST: "bg-indigo-100 text-indigo-800",
       PRODUCER: "bg-purple-100 text-purple-800",
-      SOUND_ENGINEER: "bg-green-100 text-green-800",
+      SOUND_ENGINEER: "bg-success/10 text-success",
       CONTENT_MANAGER: "bg-orange-100 text-orange-800",
-      TECHNICAL_SUPPORT: "bg-gray-100 text-gray-800",
+      TECHNICAL_SUPPORT: "bg-muted text-gray-800",
     };
-    return colors[role] || "bg-gray-100 text-gray-800";
+    return colors[role] || "bg-muted text-gray-800";
   };
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -237,11 +237,11 @@ export default function StaffDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const statusColors: Record<string, string> = {
-      SCHEDULED: "bg-blue-100 text-blue-800",
-      LIVE: "bg-green-100 text-green-800",
-      ENDED: "bg-gray-100 text-gray-800",
+      SCHEDULED: "bg-info/10 text-info",
+      LIVE: "bg-success/10 text-success",
+      ENDED: "bg-muted text-gray-800",
     };
-    return statusColors[status] || "bg-gray-100 text-gray-800";
+    return statusColors[status] || "bg-muted text-gray-800";
   };
 
   if (loading) {
@@ -290,7 +290,7 @@ export default function StaffDetailPage() {
             <Button
               variant="outline"
               onClick={handleToggleActive}
-              className={staff.isActive ? "text-red-600" : "text-green-600"}
+              className={staff.isActive ? "text-destructive" : "text-success"}
             >
               {staff.isActive ? (
                 <>
@@ -309,7 +309,7 @@ export default function StaffDetailPage() {
             <Button
               variant="outline"
               onClick={handleDeleteStaff}
-              className="text-red-600 hover:text-red-700"
+              className="text-destructive hover:text-destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
@@ -340,14 +340,14 @@ export default function StaffDetailPage() {
                     variant={staff.isActive ? "default" : "secondary"}
                     className={
                       staff.isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
+                        ? "bg-success/10 text-success"
+                        : "bg-muted text-gray-800"
                     }
                   >
                     {staff.isActive ? "Active" : "Inactive"}
                   </Badge>
                   {staff.emailVerified && (
-                    <Badge className="bg-blue-100 text-blue-800">
+                    <Badge className="bg-info/10 text-info">
                       Verified
                     </Badge>
                   )}

@@ -291,8 +291,8 @@ export default function NewArchivePage() {
                   required
                 />
                 {errors.title && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <span className="text-red-500">⚠</span>
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <span className="text-destructive">⚠</span>
                     {errors.title}
                   </p>
                 )}
@@ -313,8 +313,8 @@ export default function NewArchivePage() {
                   required
                 />
                 {errors.host && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <span className="text-red-500">⚠</span>
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <span className="text-destructive">⚠</span>
                     {errors.host}
                   </p>
                 )}
@@ -338,8 +338,8 @@ export default function NewArchivePage() {
                 required
               />
               {errors.description && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
-                  <span className="text-red-500">⚠</span>
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <span className="text-destructive">⚠</span>
                   {errors.description}
                 </p>
               )}
@@ -383,8 +383,8 @@ export default function NewArchivePage() {
                   </SelectContent>
                 </Select>
                 {errors.category && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <span className="text-red-500">⚠</span>
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <span className="text-destructive">⚠</span>
                     {errors.category}
                   </p>
                 )}
@@ -448,8 +448,8 @@ export default function NewArchivePage() {
               className={errors.audioFile ? 'border-red-500' : ''}
             />
             {errors.audioFile && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <span className="text-red-500">⚠</span>
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <span className="text-destructive">⚠</span>
                 {errors.audioFile}
               </p>
             )}
@@ -464,8 +464,8 @@ export default function NewArchivePage() {
               className={errors.coverImage ? 'border-red-500' : ''}
             />
             {errors.coverImage && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <span className="text-red-500">⚠</span>
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <span className="text-destructive">⚠</span>
                 {errors.coverImage}
               </p>
             )}
@@ -483,9 +483,9 @@ export default function NewArchivePage() {
                     <span>{uploadStage || 'Processing...'}</span>
                     <span>{Math.round(uploadProgress)}%</span>
                   </div>
-                  <div className="w-full bg-blue-100 rounded-full h-2">
+                  <div className="w-full bg-info/10 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-info h-2 rounded-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
@@ -604,7 +604,7 @@ export default function NewArchivePage() {
           <Button
             type="submit"
             disabled={isUploading}
-            className="bg-brand-600 hover:bg-brand-700"
+            className="bg-primary hover:bg-primary"
           >
             {isUploading ? (
               <>

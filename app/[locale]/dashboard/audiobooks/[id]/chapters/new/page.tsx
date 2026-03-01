@@ -185,7 +185,7 @@ export default function NewChapterPage() {
             <h1 className="text-3xl font-bold text-slate-800">
               Add New Chapter
             </h1>
-            <p className="text-slate-500 mt-1">
+            <p className="text-muted-foreground mt-1">
               Create a new chapter for your audiobook with transcript
             </p>
           </div>
@@ -235,7 +235,7 @@ export default function NewChapterPage() {
                   }
                 />
                 {!isLoadingNextTrackNumber && (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Suggested next track number: {trackNumber}
                   </p>
                 )}
@@ -250,7 +250,7 @@ export default function NewChapterPage() {
                     onCheckedChange={setIsDraft}
                   />
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   {isDraft
                     ? "Chapter will be saved as draft"
                     : "Chapter will be published immediately"}
@@ -270,7 +270,7 @@ export default function NewChapterPage() {
                     <audio ref={audioRef} controls className="w-full">
                       <source src={audioPreview} />
                     </audio>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Duration: {formatDuration(duration)}
                     </p>
                   </div>
@@ -339,7 +339,7 @@ export default function NewChapterPage() {
                       <span className="text-lg font-medium text-slate-700">
                         Upload Transcript File
                       </span>
-                      <p className="text-slate-500 mt-1">
+                      <p className="text-muted-foreground mt-1">
                         Supports .txt, .srt, .vtt files
                       </p>
                     </Label>
@@ -353,11 +353,11 @@ export default function NewChapterPage() {
                   </div>
 
                   {transcriptFile && (
-                    <div className="bg-slate-50 p-4 rounded-lg">
+                    <div className="bg-muted p-4 rounded-lg">
                       <p className="font-medium text-slate-700">
                         Uploaded: {transcriptFile.name}
                       </p>
-                      <p className="text-slate-500 text-sm">
+                      <p className="text-muted-foreground text-sm">
                         File content loaded into transcript editor
                       </p>
                     </div>
@@ -366,7 +366,7 @@ export default function NewChapterPage() {
                   {transcriptText && (
                     <div className="space-y-2">
                       <Label>Preview</Label>
-                      <div className="bg-slate-50 p-4 rounded-lg max-h-40 overflow-y-auto">
+                      <div className="bg-muted p-4 rounded-lg max-h-40 overflow-y-auto">
                         <pre className="text-sm text-slate-700 whitespace-pre-wrap">
                           {transcriptText}
                         </pre>

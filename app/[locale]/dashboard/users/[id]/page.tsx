@@ -161,7 +161,7 @@ export default function UserDetailPage() {
       )
     }
     return (
-      <Badge variant="default" className="bg-green-100 text-green-800 gap-1">
+      <Badge variant="default" className="bg-success/10 text-success gap-1">
         <CheckCircle className="h-3 w-3" />
         Active
       </Badge>
@@ -277,7 +277,7 @@ export default function UserDetailPage() {
                     variant={user.emailVerified ? "default" : "destructive"}
                     className={
                       user.emailVerified
-                        ? "bg-green-100 text-green-800"
+                        ? "bg-success/10 text-success"
                         : "bg-red-100 text-red-800"
                     }
                   >
@@ -289,7 +289,7 @@ export default function UserDetailPage() {
                 {user.isSuspended && user.suspendedReason && (
                   <div className="w-full p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-800 font-medium">Suspension Reason:</p>
-                    <p className="text-sm text-red-700">{user.suspendedReason}</p>
+                    <p className="text-sm text-destructive">{user.suspendedReason}</p>
                   </div>
                 )}
               </div>
@@ -354,7 +354,7 @@ export default function UserDetailPage() {
                 </div>
                 {user.emailVerifiedAt && (
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Email Verified</label>
                       <p className="text-sm">{new Date(user.emailVerifiedAt).toLocaleDateString()}</p>
@@ -363,7 +363,7 @@ export default function UserDetailPage() {
                 )}
                 {user.suspendedAt && (
                   <div className="flex items-center gap-2">
-                    <ShieldAlert className="h-4 w-4 text-red-600" />
+                    <ShieldAlert className="h-4 w-4 text-destructive" />
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Suspended</label>
                       <p className="text-sm">{new Date(user.suspendedAt).toLocaleDateString()}</p>

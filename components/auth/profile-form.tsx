@@ -144,7 +144,7 @@ export function ProfileForm() {
             )}
 
             {profileSuccess && (
-              <Alert className="bg-green-50 text-green-800 border-green-200">
+              <Alert className="bg-green-50 text-success border-green-200">
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>{profileSuccess}</AlertDescription>
               </Alert>
@@ -187,7 +187,7 @@ export function ProfileForm() {
             )}
 
             {passwordSuccess && (
-              <Alert className="bg-green-50 text-green-800 border-green-200">
+              <Alert className="bg-green-50 text-success border-green-200">
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>{passwordSuccess}</AlertDescription>
               </Alert>

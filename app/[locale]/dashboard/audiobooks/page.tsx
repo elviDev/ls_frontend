@@ -148,13 +148,13 @@ export default function AudiobooksPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-success/10 text-success border-green-200";
       case "DRAFT":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-warning/10 text-warning border-yellow-200";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-gray-800 border";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-gray-800 border";
     }
   };
 
@@ -383,7 +383,7 @@ export default function AudiobooksPage() {
                       <span className="font-semibold text-gray-900 dark:text-white">
                         {audiobook.averageRating.toFixed(1)}
                       </span>
-                      <span className="text-gray-600 dark:text-gray-400 text-xs">
+                      <span className="text-muted-foreground dark:text-gray-400 text-xs">
                         ({audiobook._count.reviews})
                       </span>
                     </div>
@@ -485,7 +485,7 @@ export default function AudiobooksPage() {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => setDeleteDialog({ isOpen: true, audiobook })}
-                        className="text-red-600 focus:text-red-600"
+                        className="text-destructive focus:text-destructive"
                       >
                         <Trash className="h-4 w-4 mr-2" />
                         Delete
@@ -507,14 +507,14 @@ export default function AudiobooksPage() {
                         by {audiobook.author}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground dark:text-gray-400">
                       Narrated by {audiobook.narrator}
                     </p>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                <p className="text-sm text-muted-foreground dark:text-gray-400 line-clamp-2 leading-relaxed">
                   {audiobook.description}
                 </p>
 
@@ -534,7 +534,7 @@ export default function AudiobooksPage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
                       {audiobook._count.chapters}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground dark:text-gray-400">
                       Chapters
                     </p>
                   </div>
@@ -542,7 +542,7 @@ export default function AudiobooksPage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
                       {formatDuration(audiobook.duration)}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground dark:text-gray-400">
                       Duration
                     </p>
                   </div>
@@ -550,7 +550,7 @@ export default function AudiobooksPage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
                       {formatNumber(audiobook.playCount)}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground dark:text-gray-400">
                       Plays
                     </p>
                   </div>
@@ -586,7 +586,7 @@ export default function AudiobooksPage() {
                 </div>
 
                 {/* Created Info */}
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-800">
                   <span>
                     Created by {audiobook.createdBy?.firstName}{" "}
                     {audiobook.createdBy?.lastName}

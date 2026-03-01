@@ -15,16 +15,16 @@ export default function UserProfilePage() {
             <Image src="/placeholder.svg?height=400&width=1200" alt="Profile banner" fill className="object-cover" />
           </div>
           <div className="absolute -bottom-12 left-6 flex items-end">
-            <Avatar className="h-24 w-24 border-4 border-white">
+            <Avatar className="h-24 w-24 border-4 border-background">
               <AvatarImage src="/placeholder.svg?height=200&width=200" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
           </div>
           <div className="absolute top-4 right-4 flex gap-2">
-            <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm">
+            <Button variant="outline" size="sm" className="bg-background/80 backdrop-blur-sm">
               <Settings className="h-4 w-4 mr-2" /> Settings
             </Button>
-            <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm">
+            <Button variant="outline" size="sm" className="bg-background/80 backdrop-blur-sm">
               <Edit className="h-4 w-4 mr-2" /> Edit Profile
             </Button>
           </div>
@@ -115,12 +115,12 @@ export default function UserProfilePage() {
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent flex items-end p-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-white">
+                        <h3 className="text-lg font-semibold">
                           {["My Favorites", "Tech Collection", "Relaxing Podcasts"][item - 1]}
                         </h3>
-                        <p className="text-sm text-white/80">{(item + 2) * 3} episodes</p>
+                        <p className="text-sm text-muted-foreground">{(item + 2) * 3} episodes</p>
                       </div>
                     </div>
                   </div>

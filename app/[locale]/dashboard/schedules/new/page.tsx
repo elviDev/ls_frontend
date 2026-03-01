@@ -82,7 +82,7 @@ const scheduleTypes = [
     label: "Live Show", 
     icon: Music, 
     description: "Live radio shows, talk shows, music programs",
-    color: "bg-red-500"
+    color: "bg-destructive"
   },
   { 
     value: "EVENT", 
@@ -103,7 +103,7 @@ const scheduleTypes = [
     label: "Promotion Campaign", 
     icon: Megaphone, 
     description: "Station promotions, listener drives, contests",
-    color: "bg-green-500"
+    color: "bg-success"
   },
   { 
     value: "ANNOUNCEMENT", 
@@ -117,7 +117,7 @@ const scheduleTypes = [
     label: "Technical Break", 
     icon: Users, 
     description: "Equipment maintenance, system updates, downtime",
-    color: "bg-gray-500"
+    color: "bg-muted0"
   }
 ]
 

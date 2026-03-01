@@ -252,7 +252,7 @@ export function FileUpload({
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-center gap-2">
         <Label>{label}</Label>
-        {required && <span className="text-red-500">*</span>}
+        {required && <span className="text-destructive">*</span>}
       </div>
       
       {description && (

@@ -80,7 +80,7 @@ function ListenerControls({
               <Button onClick={startAudio} variant="default" size="lg">
                 🔊 Enable Audio to Join
               </Button>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Remote participants: {room?.remoteParticipants.size || 0}
                 <br />
                 Audio tracks: {audioTracks.length}/{allTracks.length}
@@ -89,7 +89,7 @@ function ListenerControls({
           ) : (
             <div className="space-y-2">
               <ControlBar variation="minimal" saveUserChoices={true} />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Listening to {audioTracks.length} audio source(s) from{" "}
                 {room?.remoteParticipants.size || 0} participants
               </p>
@@ -212,7 +212,7 @@ export function LiveKitListener({
     return (
       <div className="fixed bottom-4 right-4 z-50">
         <div className="bg-background border rounded-lg p-3 shadow-lg">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="w-2 h-2 bg-gray-400 rounded-full" />
             Ready to join
           </div>

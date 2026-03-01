@@ -1284,7 +1284,7 @@ export default function NewPodcastPage() {
                             </SelectItem>
                             <SelectItem value="published">
                               <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500" />
+                                <div className="w-2 h-2 rounded-full bg-success" />
                                 Published
                               </div>
                             </SelectItem>

@@ -163,14 +163,14 @@ export default function PendingStaffPage() {
 
   const getRoleBadgeColor = (role: string) => {
     const colors: { [key: string]: string } = {
-      HOST: "bg-blue-100 text-blue-800",
-      CO_HOST: "bg-green-100 text-green-800",
+      HOST: "bg-info/10 text-info",
+      CO_HOST: "bg-success/10 text-success",
       PRODUCER: "bg-purple-100 text-purple-800",
       SOUND_ENGINEER: "bg-orange-100 text-orange-800",
       CONTENT_MANAGER: "bg-pink-100 text-pink-800",
-      TECHNICAL_SUPPORT: "bg-gray-100 text-gray-800",
+      TECHNICAL_SUPPORT: "bg-muted text-gray-800",
     };
-    return colors[role] || "bg-gray-100 text-gray-800";
+    return colors[role] || "bg-muted text-gray-800";
   };
 
   const formatRole = (role: string) => {
@@ -205,7 +205,7 @@ export default function PendingStaffPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Pending Staff Applications</h1>
-            <p className="text-slate-600 mt-1">Review and approve staff registration requests</p>
+            <p className="text-muted-foreground mt-1">Review and approve staff registration requests</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -219,9 +219,9 @@ export default function PendingStaffPage() {
       {pendingStaff.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <CheckCircle className="h-16 w-16 mx-auto text-green-600 mb-4" />
+            <CheckCircle className="h-16 w-16 mx-auto text-success mb-4" />
             <h3 className="text-xl font-semibold text-slate-900 mb-2">All Caught Up!</h3>
-            <p className="text-slate-600">
+            <p className="text-muted-foreground">
               No pending staff applications to review at this time.
             </p>
           </CardContent>
@@ -247,14 +247,14 @@ export default function PendingStaffPage() {
                   <TableRow key={staff.id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-info/10 rounded-full flex items-center justify-center">
                           <User className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
                           <div className="font-medium">
                             {staff.firstName} {staff.lastName}
                           </div>
-                          <div className="text-sm text-gray-500">@{staff.username}</div>
+                          <div className="text-sm text-muted-foreground">@{staff.username}</div>
                         </div>
                       </div>
                     </TableCell>
@@ -327,7 +327,7 @@ export default function PendingStaffPage() {
                                 {selectedStaff.bio && (
                                   <div>
                                     <strong>Bio/Experience:</strong>
-                                    <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                                    <p className="mt-1 text-sm text-muted-foreground bg-muted p-3 rounded">
                                       {selectedStaff.bio}
                                     </p>
                                   </div>
@@ -342,7 +342,7 @@ export default function PendingStaffPage() {
                                 <>
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                      <Button variant="outline" className="text-red-600 border-red-600 hover:bg-red-50">
+                                      <Button variant="outline" className="text-destructive border-red-600 hover:bg-red-50">
                                         <XCircle className="h-4 w-4 mr-2" />
                                         Reject
                                       </Button>
@@ -359,7 +359,7 @@ export default function PendingStaffPage() {
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() => selectedStaff && handleRejectStaff(selectedStaff.id)}
-                                      className="bg-red-600 hover:bg-red-700"
+                                      className="bg-destructive hover:bg-destructive"
                                     >
                                       Reject Application
                                     </AlertDialogAction>
@@ -369,7 +369,7 @@ export default function PendingStaffPage() {
                                   
                                   <Button
                                     onClick={() => selectedStaff && handleApproveStaff(selectedStaff.id)}
-                                    className="bg-green-600 hover:bg-green-700"
+                                    className="bg-success hover:bg-success"
                                   >
                                     <CheckCircle className="h-4 w-4 mr-2" />
                                     Approve
@@ -385,7 +385,7 @@ export default function PendingStaffPage() {
                             <Button
                               size="sm"
                               onClick={() => handleApproveStaff(staff.id)}
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-success hover:bg-success"
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
                               Approve
@@ -396,7 +396,7 @@ export default function PendingStaffPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="text-red-600 border-red-600 hover:bg-red-50"
+                                  className="text-destructive border-red-600 hover:bg-red-50"
                                 >
                                   <XCircle className="h-4 w-4 mr-1" />
                                   Reject
@@ -414,7 +414,7 @@ export default function PendingStaffPage() {
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => handleRejectStaff(staff.id)}
-                                    className="bg-red-600 hover:bg-red-700"
+                                    className="bg-destructive hover:bg-destructive"
                                   >
                                     Reject Application
                                   </AlertDialogAction>

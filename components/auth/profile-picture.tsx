@@ -102,7 +102,7 @@ export function ProfilePicture() {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-2 text-red-500 hover:text-red-600"
+            className="flex items-center gap-2 text-destructive hover:text-destructive"
             onClick={handleDeleteClick}
             disabled={isUploading || isDeleting}
           >
@@ -133,7 +133,7 @@ export function ProfilePicture() {
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={isDeleting}
-              className="bg-red-500 hover:bg-red-600 text-white"
+              className="bg-destructive hover:bg-destructive text-white"
             >
               {isDeleting ? (
                 <>

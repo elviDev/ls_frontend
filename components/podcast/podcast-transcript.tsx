@@ -64,7 +64,7 @@ export function PodcastTranscript({ segments, onJumpToTimestamp, isLoading = fal
       <div className="space-y-4">
         {isLoading ? (
           <div className="text-center py-4">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-brand-600"></div>
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
             <p className="text-muted-foreground mt-2">Loading transcript...</p>
           </div>
         ) : displaySegments.length === 0 ? (

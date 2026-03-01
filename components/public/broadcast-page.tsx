@@ -123,7 +123,7 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                     </div>
                   </div>
                   
-                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     {broadcast.description}
                   </p>
 
@@ -139,7 +139,7 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                       <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
                         {broadcast.hostUser.firstName} {broadcast.hostUser.lastName}
                       </p>
-                      <p className="text-xs sm:text-sm text-gray-500">Radio Host</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Radio Host</p>
                     </div>
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                      <div className="w-3 h-3 bg-destructive rounded-full animate-pulse" />
                       <Radio className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <span className="text-base sm:text-lg">Live Audio Stream</span>
@@ -174,7 +174,7 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                     </Button>
                   </div>
 
-                  <div className="flex items-center gap-3 sm:gap-4 bg-slate-50 p-3 sm:p-4 rounded-lg">
+                  <div className="flex items-center gap-3 sm:gap-4 bg-muted p-3 sm:p-4 rounded-lg">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -203,7 +203,7 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
                         }}
                       />
                     </div>
-                    <span className="text-xs sm:text-sm text-gray-500 w-8 sm:w-12 text-right font-medium">
+                    <span className="text-xs sm:text-sm text-muted-foreground w-8 sm:w-12 text-right font-medium">
                       {isMuted ? 0 : volume}%
                     </span>
                   </div>
@@ -247,14 +247,14 @@ export function BroadcastPage({ broadcast, userId, username }: BroadcastPageProp
               <CardContent className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
                   <span className="text-sm text-blue-700 font-medium">Listeners</span>
-                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                  <Badge variant="outline" className="bg-info/10 text-info border-blue-200">
                     <Users className="h-3 w-3 mr-1" />
                     {broadcast.currentListeners}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
-                  <span className="text-sm text-green-700 font-medium">Started</span>
-                  <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                  <span className="text-sm text-success font-medium">Started</span>
+                  <Badge variant="outline" className="bg-success/10 text-success border-green-200">
                     <Calendar className="h-3 w-3 mr-1" />
                     {formatTime(broadcast.startTime)}
                   </Badge>

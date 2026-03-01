@@ -41,7 +41,7 @@ export function AudioMixer({
                   <span className="font-medium text-sm">{channel.name}</span>
                 </div>
                 <div className={`w-2 h-2 rounded-full mx-auto ${
-                  channel.isActive ? 'bg-green-500' : 'bg-gray-300'
+                  channel.isActive ? 'bg-success' : 'bg-gray-300'
                 }`} />
               </div>
               
@@ -68,7 +68,7 @@ export function AudioMixer({
           ))}
           
           {/* Master Volume */}
-          <div className="space-y-3 p-3 border rounded-lg bg-slate-50">
+          <div className="space-y-3 p-3 border rounded-lg bg-muted">
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Volume2 className="h-4 w-4" />

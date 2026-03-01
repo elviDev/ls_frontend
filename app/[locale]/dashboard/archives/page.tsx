@@ -236,28 +236,28 @@ export default function ArchivesManagePage() {
       case "FEATURED":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
       case "ACTIVE":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        return "bg-success/10 text-success dark:bg-green-900 dark:text-green-200";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-muted text-gray-800 dark:bg-gray-900 dark:text-gray-200";
       case "DRAFT":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "bg-warning/10 text-warning dark:bg-yellow-900 dark:text-yellow-200";
       case "HIDDEN":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-muted text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
       case "PODCAST":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        return "bg-info/10 text-info dark:bg-blue-900 dark:text-blue-200";
       case "BROADCAST":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        return "bg-success/10 text-success dark:bg-green-900 dark:text-green-200";
       case "AUDIOBOOK":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
       case "SHOW":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "bg-warning/10 text-warning dark:bg-yellow-900 dark:text-yellow-200";
       case "MUSIC":
         return "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200";
       case "DOCUMENTARY":
@@ -267,7 +267,7 @@ export default function ArchivesManagePage() {
       case "NEWS":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-muted text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
 
@@ -364,7 +364,7 @@ export default function ArchivesManagePage() {
           <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Archives</h3>
-            <p className="text-gray-600">Please wait while we fetch your archives...</p>
+            <p className="text-muted-foreground">Please wait while we fetch your archives...</p>
           </div>
         </div>
       </div>
@@ -377,9 +377,9 @@ export default function ArchivesManagePage() {
       <div className="p-6">
         <div className="flex flex-col items-center justify-center h-96 space-y-6">
           <div className="text-center">
-            <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h3>
-            <p className="text-gray-600 mb-6 max-w-md">{error}</p>
+            <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
             <div className="flex space-x-3 justify-center">
               <Button 
                 onClick={handleRetry} 
@@ -413,7 +413,7 @@ export default function ArchivesManagePage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleCreateArchive} className="bg-brand-600 hover:bg-brand-700">
+          <Button onClick={handleCreateArchive} className="bg-primary hover:bg-primary">
             <Plus className="h-4 w-4 mr-2" />
             Add Archive
           </Button>
@@ -500,7 +500,7 @@ export default function ArchivesManagePage() {
                 <div className="text-center py-8">
                   <Database className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h4 className="text-lg font-medium text-gray-900 mb-2">No archives to display</h4>
-                  <p className="text-gray-600 mb-4">Create your first archive to see it here.</p>
+                  <p className="text-muted-foreground mb-4">Create your first archive to see it here.</p>
                   <Button onClick={handleCreateArchive} size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Archive
@@ -509,7 +509,7 @@ export default function ArchivesManagePage() {
               ) : (
                 <div className="space-y-4">
                   {filteredArchives.slice(0, 5).map((archive) => (
-                    <div key={archive.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div key={archive.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                           {archive.coverImage ? (
@@ -519,7 +519,7 @@ export default function ArchivesManagePage() {
                               className="w-full h-full object-cover rounded-lg"
                             />
                           ) : (
-                            <Play className="h-6 w-6 text-gray-600" />
+                            <Play className="h-6 w-6 text-muted-foreground" />
                           )}
                         </div>
                         <div>
@@ -618,7 +618,7 @@ export default function ArchivesManagePage() {
                               <Search className="h-12 w-12 text-gray-400" />
                               <div className="text-center">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No archives found</h3>
-                                <p className="text-gray-600 mb-4">No archives match your current filters. Try adjusting your search criteria.</p>
+                                <p className="text-muted-foreground mb-4">No archives match your current filters. Try adjusting your search criteria.</p>
                                 <Button 
                                   variant="outline" 
                                   onClick={() => {
@@ -636,7 +636,7 @@ export default function ArchivesManagePage() {
                               <FileX className="h-12 w-12 text-gray-400" />
                               <div className="text-center">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No archives yet</h3>
-                                <p className="text-gray-600 mb-4">Get started by creating your first audio archive.</p>
+                                <p className="text-muted-foreground mb-4">Get started by creating your first audio archive.</p>
                                 <Button onClick={handleCreateArchive}>
                                   <Plus className="h-4 w-4 mr-2" />
                                   Create First Archive
@@ -704,7 +704,7 @@ export default function ArchivesManagePage() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 onClick={() => handleDeleteArchive(archive.id)}
-                                className="text-red-600"
+                                className="text-destructive"
                                 disabled={deletingId === archive.id}
                               >
                                 {deletingId === archive.id ? (

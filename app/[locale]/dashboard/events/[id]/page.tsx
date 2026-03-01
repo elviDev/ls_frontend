@@ -213,19 +213,19 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'bg-green-100 text-green-800'
-      case 'SCHEDULED': return 'bg-blue-100 text-blue-800'
-      case 'DRAFT': return 'bg-yellow-100 text-yellow-800'
-      case 'COMPLETED': return 'bg-gray-100 text-gray-800'
+      case 'ACTIVE': return 'bg-success/10 text-success'
+      case 'SCHEDULED': return 'bg-info/10 text-info'
+      case 'DRAFT': return 'bg-warning/10 text-warning'
+      case 'COMPLETED': return 'bg-muted text-gray-800'
       case 'CANCELLED': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      default: return 'bg-muted text-gray-800'
     }
   }
 
   const getPaymentStatusIcon = (status?: string) => {
     switch (status) {
-      case 'COMPLETED': return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'FAILED': return <XCircle className="h-4 w-4 text-red-600" />
+      case 'COMPLETED': return <CheckCircle className="h-4 w-4 text-success" />
+      case 'FAILED': return <XCircle className="h-4 w-4 text-destructive" />
       default: return <AlertCircle className="h-4 w-4 text-yellow-600" />
     }
   }
@@ -395,7 +395,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Event Details</h3>
-            <p className="text-gray-600">Please wait while we fetch the event information...</p>
+            <p className="text-muted-foreground">Please wait while we fetch the event information...</p>
           </div>
         </div>
       </div>
@@ -406,10 +406,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="p-6">
         <div className="flex flex-col items-center justify-center h-96 space-y-6">
-          <AlertCircle className="h-16 w-16 text-red-500" />
+          <AlertCircle className="h-16 w-16 text-destructive" />
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Event Not Found</h3>
-            <p className="text-gray-600 mb-6 max-w-md">{error || "The event you're looking for doesn't exist."}</p>
+            <p className="text-muted-foreground mb-6 max-w-md">{error || "The event you're looking for doesn't exist."}</p>
             <Button onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
@@ -445,7 +445,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 size="sm" 
                 onClick={handleQuickPublish}
                 disabled={actionLoading === 'publish'}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-success hover:bg-success"
               >
                 {actionLoading === 'publish' ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -668,7 +668,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="flex gap-2 mt-1">
                       {event.facebookEvent && (
                         <a href={event.facebookEvent} target="_blank" rel="noopener noreferrer" 
-                           className="text-blue-600 hover:text-blue-800">
+                           className="text-blue-600 hover:text-info">
                           <Facebook className="h-4 w-4" />
                         </a>
                       )}

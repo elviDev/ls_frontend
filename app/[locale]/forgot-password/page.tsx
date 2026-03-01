@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-md">
           <div className="flex items-center justify-center mb-8">
             <Link href="/" className="flex items-center space-x-2">
-              <Radio className="h-8 w-8 text-brand-600" />
+              <Radio className="h-8 w-8 text-primary" />
               <span className="font-bold text-2xl">WaveStream</span>
             </Link>
           </div>
@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
           <Card>
             <CardHeader className="space-y-1 text-center">
               <div className="flex justify-center mb-4">
-                <CheckCircle className="h-12 w-12 text-green-600" />
+                <CheckCircle className="h-12 w-12 text-success" />
               </div>
               <CardTitle className="text-2xl font-bold">Check Your Email</CardTitle>
               <CardDescription>
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <Link href="/" className="flex items-center space-x-2">
-            <Radio className="h-8 w-8 text-brand-600" />
+            <Radio className="h-8 w-8 text-primary" />
             <span className="font-bold text-2xl">WaveStream</span>
           </Link>
         </div>
@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-brand-600 hover:bg-brand-700"
+                  className="w-full bg-primary hover:bg-primary"
                   disabled={isLoading}
                 >
                   {isLoading ? "Sending..." : "Send Reset Link"}
@@ -156,7 +156,7 @@ export default function ForgotPasswordPage() {
                 Don't have an account?{" "}
                 <Link
                   href="/register"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-primary hover:text-primary font-medium"
                 >
                   Sign up
                 </Link>

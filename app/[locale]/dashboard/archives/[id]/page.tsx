@@ -192,28 +192,28 @@ export default function ArchiveDetailPage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
-        return "bg-green-100 text-green-800";
+        return "bg-success/10 text-success";
       case "archived":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-gray-800";
       case "featured":
-        return "bg-blue-100 text-blue-800";
+        return "bg-info/10 text-info";
       case "draft":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-warning/10 text-warning";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-gray-800";
     }
   };
 
   const getAccessLevelColor = (level: string) => {
     switch (level.toLowerCase()) {
       case "public":
-        return "bg-green-100 text-green-800";
+        return "bg-success/10 text-success";
       case "members_only":
         return "bg-orange-100 text-orange-800";
       case "staff_only":
         return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-gray-800";
     }
   };
 
@@ -223,7 +223,7 @@ export default function ArchiveDetailPage() {
         <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
         <div className="text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Archive Details</h3>
-          <p className="text-gray-600">Please wait while we fetch the archive information...</p>
+          <p className="text-muted-foreground">Please wait while we fetch the archive information...</p>
         </div>
       </div>
     );
@@ -233,9 +233,9 @@ export default function ArchiveDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] space-y-6">
         <div className="text-center">
-          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Archive</h3>
-          <p className="text-gray-600 mb-6 max-w-md">{error}</p>
+          <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
           <div className="flex space-x-3 justify-center">
             <Button 
               onClick={handleRetry} 
@@ -261,7 +261,7 @@ export default function ArchiveDetailPage() {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Archive Not Found</h1>
-        <p className="text-gray-600 mb-6">The requested archive could not be found.</p>
+        <p className="text-muted-foreground mb-6">The requested archive could not be found.</p>
         <Link href="/dashboard/archives">
           <Button>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -285,7 +285,7 @@ export default function ArchiveDetailPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{archive.title}</h1>
-            <p className="text-gray-600">Archive Details</p>
+            <p className="text-muted-foreground">Archive Details</p>
           </div>
         </div>
         <div className="flex space-x-2">
@@ -315,7 +315,7 @@ export default function ArchiveDetailPage() {
                 <AlertDialogAction
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="bg-red-600 hover:bg-red-700 flex items-center space-x-2"
+                  className="bg-destructive hover:bg-destructive flex items-center space-x-2"
                 >
                   {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>{deleting ? "Deleting..." : "Delete"}</span>
@@ -352,7 +352,7 @@ export default function ArchiveDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {archive.coverImage && (
-                <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                <div className="w-full h-48 bg-muted rounded-lg overflow-hidden">
                   <img
                     src={archive.coverImage}
                     alt={archive.title}
@@ -369,21 +369,21 @@ export default function ArchiveDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Host</h4>
-                  <p className="text-gray-600">{archive.host}</p>
+                  <p className="text-muted-foreground">{archive.host}</p>
                 </div>
                 {archive.guests && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-1">Guests</h4>
-                    <p className="text-gray-600">{archive.guests}</p>
+                    <p className="text-muted-foreground">{archive.guests}</p>
                   </div>
                 )}
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Category</h4>
-                  <p className="text-gray-600">{archive.category}</p>
+                  <p className="text-muted-foreground">{archive.category}</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Type</h4>
-                  <p className="text-gray-600">{archive.type}</p>
+                  <p className="text-muted-foreground">{archive.type}</p>
                 </div>
               </div>
 
@@ -427,7 +427,7 @@ export default function ArchiveDetailPage() {
                       </pre>
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">No transcript available</p>
+                    <p className="text-muted-foreground italic">No transcript available</p>
                   )}
                   {archive.transcriptFile && (
                     <div className="mt-4">
@@ -456,7 +456,7 @@ export default function ArchiveDetailPage() {
                         <div key={index} className="border-b pb-4 last:border-b-0">
                           <div className="flex items-center justify-between mb-2">
                             <p className="font-medium">{comment.user?.name || "Anonymous"}</p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               {new Date(comment.createdAt).toLocaleDateString()}
                             </p>
                           </div>
@@ -465,7 +465,7 @@ export default function ArchiveDetailPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">No comments yet</p>
+                    <p className="text-muted-foreground italic">No comments yet</p>
                   )}
                 </CardContent>
               </Card>
@@ -487,14 +487,14 @@ export default function ArchiveDetailPage() {
                           <p className="font-medium">
                             {favorite.user?.name || favorite.staff?.firstName + " " + favorite.staff?.lastName}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {new Date(favorite.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">No favorites yet</p>
+                    <p className="text-muted-foreground italic">No favorites yet</p>
                   )}
                 </CardContent>
               </Card>
@@ -522,19 +522,19 @@ export default function ArchiveDetailPage() {
               
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Duration</span>
+                  <span className="text-sm text-muted-foreground">Duration</span>
                   <span className="text-sm font-medium">
                     {formatDuration(archive.duration)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">File Size</span>
+                  <span className="text-sm text-muted-foreground">File Size</span>
                   <span className="text-sm font-medium">
                     {formatFileSize(archive.fileSize)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Downloadable</span>
+                  <span className="text-sm text-muted-foreground">Downloadable</span>
                   <span className="text-sm font-medium">
                     {archive.isDownloadable ? "Yes" : "No"}
                   </span>
@@ -560,31 +560,31 @@ export default function ArchiveDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Plays</span>
+                <span className="text-sm text-muted-foreground">Plays</span>
                 <span className="text-sm font-medium">{archive.playCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Downloads</span>
+                <span className="text-sm text-muted-foreground">Downloads</span>
                 <span className="text-sm font-medium">{archive.downloadCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Likes</span>
+                <span className="text-sm text-muted-foreground">Likes</span>
                 <span className="text-sm font-medium">{archive.likeCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Shares</span>
+                <span className="text-sm text-muted-foreground">Shares</span>
                 <span className="text-sm font-medium">{archive.shareCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Comments</span>
+                <span className="text-sm text-muted-foreground">Comments</span>
                 <span className="text-sm font-medium">{archive.stats.commentsCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Favorites</span>
+                <span className="text-sm text-muted-foreground">Favorites</span>
                 <span className="text-sm font-medium">{archive.stats.favoritesCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Progress Tracking</span>
+                <span className="text-sm text-muted-foreground">Progress Tracking</span>
                 <span className="text-sm font-medium">{archive.stats.progressCount}</span>
               </div>
             </CardContent>
@@ -601,41 +601,41 @@ export default function ArchiveDetailPage() {
             <CardContent className="space-y-3">
               {archive.originalAirDate && (
                 <div>
-                  <span className="text-sm text-gray-600">Original Air Date</span>
+                  <span className="text-sm text-muted-foreground">Original Air Date</span>
                   <p className="text-sm font-medium">
                     {new Date(archive.originalAirDate).toLocaleDateString()}
                   </p>
                 </div>
               )}
               <div>
-                <span className="text-sm text-gray-600">Archived Date</span>
+                <span className="text-sm text-muted-foreground">Archived Date</span>
                 <p className="text-sm font-medium">
                   {new Date(archive.archivedDate).toLocaleDateString()}
                 </p>
               </div>
               <div>
-                <span className="text-sm text-gray-600">Created</span>
+                <span className="text-sm text-muted-foreground">Created</span>
                 <p className="text-sm font-medium">
                   {new Date(archive.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <div>
-                <span className="text-sm text-gray-600">Last Updated</span>
+                <span className="text-sm text-muted-foreground">Last Updated</span>
                 <p className="text-sm font-medium">
                   {new Date(archive.updatedAt).toLocaleDateString()}
                 </p>
               </div>
               <Separator />
               <div>
-                <span className="text-sm text-gray-600">Created By</span>
+                <span className="text-sm text-muted-foreground">Created By</span>
                 <p className="text-sm font-medium">
                   {archive.createdBy.firstName} {archive.createdBy.lastName}
                 </p>
-                <p className="text-xs text-gray-500">{archive.createdBy.email}</p>
+                <p className="text-xs text-muted-foreground">{archive.createdBy.email}</p>
               </div>
               {archive.curatedBy && (
                 <div>
-                  <span className="text-sm text-gray-600">Curated By</span>
+                  <span className="text-sm text-muted-foreground">Curated By</span>
                   <p className="text-sm font-medium">
                     {archive.curatedBy.firstName} {archive.curatedBy.lastName}
                   </p>

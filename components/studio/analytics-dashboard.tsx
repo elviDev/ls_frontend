@@ -151,13 +151,13 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
   const getConnectionQualityColor = (quality: string) => {
     switch (quality) {
       case "excellent":
-        return "text-green-600";
+        return "text-success";
       case "good":
         return "text-blue-600";
       case "poor":
         return "text-yellow-600";
       default:
-        return "text-red-600";
+        return "text-destructive";
     }
   };
 
@@ -180,7 +180,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
               <Users className="h-8 w-8 text-blue-600" />
               <div>
                 <div className="text-2xl font-bold">{listenerCount}</div>
-                <div className="text-xs text-gray-500">Live Listeners</div>
+                <div className="text-xs text-muted-foreground">Live Listeners</div>
               </div>
             </div>
             <div className="mt-2 flex items-center text-xs">
@@ -195,10 +195,10 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Clock className="h-8 w-8 text-green-600" />
+              <Clock className="h-8 w-8 text-success" />
               <div>
                 <div className="text-2xl font-bold">{sessionDuration}</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   Session Duration (min)
                 </div>
               </div>
@@ -218,7 +218,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
               <MessageSquare className="h-8 w-8 text-purple-600" />
               <div>
                 <div className="text-2xl font-bold">{chatMessages.length}</div>
-                <div className="text-xs text-gray-500">Chat Messages</div>
+                <div className="text-xs text-muted-foreground">Chat Messages</div>
               </div>
             </div>
             <div className="mt-2 flex items-center text-xs">
@@ -238,7 +238,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                 <div className="text-2xl font-bold">
                   {room?.state || "Unknown"}
                 </div>
-                <div className="text-xs text-gray-500">Room Status</div>
+                <div className="text-xs text-muted-foreground">Room Status</div>
               </div>
             </div>
             <div className="mt-2 flex items-center text-xs">
@@ -279,23 +279,23 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                     return (
                       <div
                         key={participant.identity}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
                       >
                         <div className="flex items-center space-x-3">
                           <div className="relative">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium">
+                            <div className="w-8 h-8 bg-info/10 rounded-full flex items-center justify-center text-sm font-medium">
                               {participant.name?.charAt(0) ||
                                 participant.identity.charAt(0)}
                             </div>
                             <div
                               className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
                                 participant.connectionQuality === "excellent"
-                                  ? "bg-green-500"
+                                  ? "bg-success"
                                   : participant.connectionQuality === "good"
                                     ? "bg-blue-500"
                                     : participant.connectionQuality === "poor"
                                       ? "bg-yellow-500"
-                                      : "bg-red-500"
+                                      : "bg-destructive"
                               }`}
                             />
                           </div>
@@ -303,7 +303,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                             <div className="font-medium text-sm">
                               {participant.name || participant.identity}
                             </div>
-                            <div className="text-xs text-gray-500 flex items-center gap-2">
+                            <div className="text-xs text-muted-foreground flex items-center gap-2">
                               {hasAudio && (
                                 <Volume2 className="h-3 w-3 text-green-500" />
                               )}
@@ -325,7 +325,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                                 ? "Moderator"
                                 : "Listener"}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted-foreground">
                             {participant.joinedAt
                               ? formatDuration(
                                   Math.floor(
@@ -342,7 +342,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                     );
                   })}
                   {participants.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       No participants connected
                     </div>
                   )}
@@ -373,7 +373,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                                 ? "bg-purple-500"
                                 : role === "moderator"
                                   ? "bg-blue-500"
-                                  : "bg-green-500"
+                                  : "bg-success"
                             }`}
                           />
                           <span className="font-medium capitalize">
@@ -381,8 +381,8 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">{count}</span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-sm text-muted-foreground">{count}</span>
+                          <span className="text-xs text-muted-foreground">
                             (
                             {participants.length > 0
                               ? ((count / participants.length) * 100).toFixed(1)
@@ -403,7 +403,7 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                   )
                 )}
                 {Object.keys(participantAnalytics.byRole).length === 0 && (
-                  <div className="text-center py-4 text-gray-500">
+                  <div className="text-center py-4 text-muted-foreground">
                     No role data available
                   </div>
                 )}
@@ -439,10 +439,10 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-muted-foreground">
                               {count}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               (
                               {participants.length > 0
                                 ? ((count / participants.length) * 100).toFixed(
@@ -471,10 +471,10 @@ export function AnalyticsDashboard({ isLive }: AnalyticsDashboardProps) {
                   <div className="flex items-center justify-between">
                     <span className="font-medium">Participants with Audio</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         {participantAnalytics.withAudio}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         of {participants.length} total
                       </span>
                     </div>

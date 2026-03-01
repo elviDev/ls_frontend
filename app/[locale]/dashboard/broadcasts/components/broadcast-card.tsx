@@ -23,7 +23,7 @@ export function BroadcastCard({ broadcast, onEdit, onView, onDelete, onViewStudi
     switch (status) {
       case "LIVE": 
         return { 
-          color: "bg-red-500 text-white", 
+          color: "bg-destructive text-white", 
           icon: Radio, 
           animate: true,
           gradient: "from-red-500 to-red-600"
@@ -37,21 +37,21 @@ export function BroadcastCard({ broadcast, onEdit, onView, onDelete, onViewStudi
         }
       case "READY": 
         return { 
-          color: "bg-green-500 text-white", 
+          color: "bg-success text-white", 
           icon: Mic, 
           animate: false,
           gradient: "from-green-500 to-green-600"
         }
       case "ENDED": 
         return { 
-          color: "bg-gray-500 text-white", 
+          color: "bg-muted0 text-white", 
           icon: Clock, 
           animate: false,
           gradient: "from-gray-500 to-gray-600"
         }
       default: 
         return { 
-          color: "bg-gray-500 text-white", 
+          color: "bg-muted0 text-white", 
           icon: Clock, 
           animate: false,
           gradient: "from-gray-500 to-gray-600"
@@ -110,7 +110,7 @@ export function BroadcastCard({ broadcast, onEdit, onView, onDelete, onViewStudi
         {/* Live Indicator */}
         {broadcast.status === "LIVE" && (
           <div className="absolute top-3 left-3">
-            <div className="flex items-center gap-2 bg-red-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
+            <div className="flex items-center gap-2 bg-destructive/90 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
               LIVE
             </div>
@@ -138,7 +138,7 @@ export function BroadcastCard({ broadcast, onEdit, onView, onDelete, onViewStudi
               )}
               <DropdownMenuItem
                 onClick={() => onDelete(broadcast)}
-                className="text-red-600 focus:text-red-600"
+                className="text-destructive focus:text-destructive"
               >
                 <Trash className="h-4 w-4 mr-2" />
                 Delete

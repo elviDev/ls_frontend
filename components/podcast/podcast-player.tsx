@@ -249,7 +249,7 @@ export function PodcastPlayer({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AuthRequiredAction onAction={onFavoriteToggle!}>
-                    <Button variant="outline" size="icon" className={cn(isFavorite && "text-red-500")}>
+                    <Button variant="outline" size="icon" className={cn(isFavorite && "text-destructive")}>
                       <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
                       <span className="sr-only">{isFavorite ? "Remove from favorites" : "Add to favorites"}</span>
                     </Button>
@@ -325,7 +325,7 @@ export function PodcastPlayer({
 
             <Button
               size="icon"
-              className="rounded-full bg-brand-600 hover:bg-brand-700 h-12 w-12"
+              className="rounded-full bg-primary hover:bg-primary h-12 w-12"
               onClick={togglePlayPause}
               disabled={isLoading || !!error}
             >

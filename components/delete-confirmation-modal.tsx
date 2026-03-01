@@ -59,7 +59,7 @@ export function DeleteConfirmationModal({
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={deleting || isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-destructive hover:bg-destructive"
             onSelect={(e) => e.preventDefault()}
           >
             {deleting || isLoading ? (

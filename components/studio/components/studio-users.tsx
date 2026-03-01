@@ -80,7 +80,7 @@ export function StudioUsers() {
   const getRoleColor = (identity: string) => {
     if (identity.includes('host')) return 'bg-purple-500';
     if (identity.includes('broadcaster')) return 'bg-blue-500';
-    return 'bg-green-500';
+    return 'bg-success';
   };
 
   const getRole = (identity: string) => {
@@ -113,7 +113,7 @@ export function StudioUsers() {
               <div key={participant.identity} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${
-                    participant.connectionQuality !== 'unknown' ? 'bg-green-500' : 'bg-gray-300'
+                    participant.connectionQuality !== 'unknown' ? 'bg-success' : 'bg-gray-300'
                   }`} />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">

@@ -37,6 +37,18 @@ const config = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -53,31 +65,7 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom theme colors
-        brand: {
-          50: "#e6f0f0",
-          100: "#cce1e1",
-          200: "#99c3c3",
-          300: "#66a5a5",
-          400: "#338787",
-          500: "#006969", // Main brand color (teal)
-          600: "#005454",
-          700: "#004040",
-          800: "#002b2b",
-          900: "#001515",
-        },
-        warmgray: {
-          50: "#f9f7f5",
-          100: "#f3efeb",
-          200: "#e7dfd7",
-          300: "#d5c8bc",
-          400: "#bba795",
-          500: "#a58c77",
-          600: "#8c7361",
-          700: "#735c4e",
-          800: "#5c4a3f",
-          900: "#3d3128",
-        },
+        darkTeam: "#0F172A",
       },
       borderRadius: {
         lg: "var(--radius)",

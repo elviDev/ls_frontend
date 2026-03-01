@@ -202,7 +202,7 @@ function BroadcastControls({ broadcastId }: { broadcastId: string }) {
             <div className="flex items-center gap-3">
               <div
                 className={`w-3 h-3 rounded-full ${
-                  isPublishing ? "bg-red-500 animate-pulse" : "bg-gray-400"
+                  isPublishing ? "bg-destructive animate-pulse" : "bg-gray-400"
                 }`}
               />
               <span className="font-medium">
@@ -324,7 +324,7 @@ function RoomContextWrapper({
           <CardContent className="flex items-center justify-center py-12">
             <div className="text-center space-y-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {connectionState === ConnectionState.Connecting
                   ? "Connecting to studio..."
                   : "Waiting for connection..."}
@@ -345,7 +345,7 @@ function RoomContextWrapper({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{stationName}</h1>
-          <p className="text-gray-600">Broadcast ID: {broadcastId}</p>
+          <p className="text-muted-foreground">Broadcast ID: {broadcastId}</p>
         </div>
       </div>
 
@@ -391,7 +391,7 @@ function RoomContextWrapper({
               <CardTitle>Studio Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Studio settings will be available here.
               </p>
             </CardContent>

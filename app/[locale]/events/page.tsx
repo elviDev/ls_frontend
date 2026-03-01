@@ -332,7 +332,7 @@ export default function EventsPage() {
                     {(event.facebookEvent || event.twitterEvent || event.linkedinEvent || event.contactEmail || event.contactPhone) && (
                       <div className="flex items-center gap-2 text-sm mt-2 pt-2 border-t">
                         {event.facebookEvent && (
-                          <a href={event.facebookEvent} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                          <a href={event.facebookEvent} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-info">
                             <Facebook className="h-4 w-4" />
                           </a>
                         )}
@@ -347,12 +347,12 @@ export default function EventsPage() {
                           </a>
                         )}
                         {event.contactEmail && (
-                          <a href={`mailto:${event.contactEmail}`} className="text-gray-600 hover:text-gray-800">
+                          <a href={`mailto:${event.contactEmail}`} className="text-muted-foreground hover:text-gray-800">
                             <Mail className="h-4 w-4" />
                           </a>
                         )}
                         {event.contactPhone && (
-                          <a href={`tel:${event.contactPhone}`} className="text-gray-600 hover:text-gray-800">
+                          <a href={`tel:${event.contactPhone}`} className="text-muted-foreground hover:text-gray-800">
                             <Phone className="h-4 w-4" />
                           </a>
                         )}
@@ -367,7 +367,7 @@ export default function EventsPage() {
                       View Details
                     </Button>
                     {event.isRegistered && (
-                      <Badge variant="outline" className="text-green-600 border-green-600 px-3 py-1">
+                      <Badge variant="outline" className="text-success border-green-600 px-3 py-1">
                         <Heart className="h-3 w-3 mr-1 fill-current" />
                         Registered
                       </Badge>
@@ -407,7 +407,7 @@ export default function EventsPage() {
                       {getEventTypeLabel(event.eventType)}
                     </Badge>
                     {event.isRegistered && (
-                      <Badge variant="outline" className="text-green-600 border-green-600">
+                      <Badge variant="outline" className="text-success border-green-600">
                         <Heart className="h-3 w-3 mr-1 fill-current" />
                         Registered
                       </Badge>
@@ -461,7 +461,7 @@ export default function EventsPage() {
                     {(event.facebookEvent || event.twitterEvent || event.linkedinEvent || event.contactEmail || event.contactPhone) && (
                       <div className="flex items-center gap-2 text-sm mt-2 pt-2 border-t">
                         {event.facebookEvent && (
-                          <a href={event.facebookEvent} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                          <a href={event.facebookEvent} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-info">
                             <Facebook className="h-4 w-4" />
                           </a>
                         )}
@@ -476,12 +476,12 @@ export default function EventsPage() {
                           </a>
                         )}
                         {event.contactEmail && (
-                          <a href={`mailto:${event.contactEmail}`} className="text-gray-600 hover:text-gray-800">
+                          <a href={`mailto:${event.contactEmail}`} className="text-muted-foreground hover:text-gray-800">
                             <Mail className="h-4 w-4" />
                           </a>
                         )}
                         {event.contactPhone && (
-                          <a href={`tel:${event.contactPhone}`} className="text-gray-600 hover:text-gray-800">
+                          <a href={`tel:${event.contactPhone}`} className="text-muted-foreground hover:text-gray-800">
                             <Phone className="h-4 w-4" />
                           </a>
                         )}
@@ -496,7 +496,7 @@ export default function EventsPage() {
                       View Details
                     </Button>
                     {event.isRegistered && (
-                      <Badge variant="outline" className="text-green-600 border-green-600 px-3 py-1">
+                      <Badge variant="outline" className="text-success border-green-600 px-3 py-1">
                         <Heart className="h-3 w-3 mr-1 fill-current" />
                         Registered
                       </Badge>

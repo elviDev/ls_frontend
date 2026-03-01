@@ -196,7 +196,7 @@ export function ArchivePlayer({ archive }: ArchivePlayerProps) {
   if (hasError) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6">
-        <div className="text-center text-red-600 dark:text-red-400">
+        <div className="text-center text-destructive dark:text-red-400">
           <p className="font-medium">Audio Error</p>
           <p className="text-sm mt-1">{errorMessage}</p>
           <p className="text-xs mt-2 opacity-75">
@@ -217,7 +217,7 @@ export function ArchivePlayer({ archive }: ArchivePlayerProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+      <div className="bg-muted dark:bg-gray-900 rounded-lg p-6">
         <div className="text-center text-muted-foreground">
           <p>Loading audio player...</p>
           <p className="text-xs mt-1 opacity-75">
@@ -229,7 +229,7 @@ export function ArchivePlayer({ archive }: ArchivePlayerProps) {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+    <div className="bg-muted dark:bg-gray-900 rounded-lg p-6">
       <div className="space-y-4">
         {/* Audio element */}
         <audio
@@ -272,7 +272,7 @@ export function ArchivePlayer({ archive }: ArchivePlayerProps) {
 
             <Button
               onClick={togglePlayPause}
-              className="h-12 w-12 rounded-full bg-brand-600 hover:bg-brand-700"
+              className="h-12 w-12 rounded-full bg-primary hover:bg-primary"
             >
               {isPlaying ? (
                 <Pause className="h-5 w-5 text-white" />

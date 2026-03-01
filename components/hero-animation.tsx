@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 
 export default function HeroAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,11 +26,18 @@ export default function HeroAnimation() {
     // Audio wave animation
     const waves: any[] = [];
     const waveCount = 5;
-    const waveColors = [
-      "rgba(255, 255, 255, 0.1)",
-      "rgba(255, 255, 255, 0.07)",
-      "rgba(255, 255, 255, 0.05)",
-    ];
+    const isDark = theme === "dark";
+    const waveColors = isDark
+      ? [
+          "rgba(34, 211, 238, 0.25)",
+          "rgba(34, 211, 238, 0.18)",
+          "rgba(34, 211, 238, 0.12)",
+        ]
+      : [
+          "rgba(255, 255, 255, 0.1)",
+          "rgba(255, 255, 255, 0.07)",
+          "rgba(255, 255, 255, 0.05)",
+        ];
 
     for (let i = 0; i < waveCount; i++) {
       waves.push({
@@ -76,7 +85,7 @@ export default function HeroAnimation() {
       window.removeEventListener("resize", setCanvasDimensions);
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [theme]);
 
   return <canvas ref={canvasRef} className="w-full h-full" />;
 }

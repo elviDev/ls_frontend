@@ -102,11 +102,11 @@ export default function ChapterDetailPage() {
       case "PUBLISHED":
         return "bg-purple-100 text-purple-800 border-purple-200";
       case "DRAFT":
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-muted text-gray-700 border";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-600 border-gray-200";
+        return "bg-muted text-muted-foreground border";
       default:
-        return "bg-gray-100 text-gray-600 border-gray-200";
+        return "bg-muted text-muted-foreground border";
     }
   };
 
@@ -142,11 +142,11 @@ export default function ChapterDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted">
       <div className="container mx-auto px-6 py-8 space-y-8">
         {/* Header Section */}
         <div className="relative">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
+          <div className="bg-white rounded-2xl border border shadow-lg p-8">
             <div className="flex items-start gap-6">
               <Button
                 variant="ghost"
@@ -176,7 +176,7 @@ export default function ChapterDetailPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <div className="w-2 h-2 bg-primary rounded-full" />
                   <span className="font-medium">
                     {audiobook?.title || "Loading..."}
@@ -216,7 +216,7 @@ export default function ChapterDetailPage() {
                     variant="outline"
                     onClick={() => handleStatusChange("ARCHIVED")}
                     disabled={updateChapter.isPending}
-                    className="border-gray-200 hover:bg-gray-50"
+                    className="border hover:bg-muted"
                   >
                     <Pause className="h-4 w-4 mr-2" />
                     Archive
@@ -227,7 +227,7 @@ export default function ChapterDetailPage() {
                   <AlertDialogTrigger asChild>
                     <Button
                       variant="outline"
-                      className="border-red-200 hover:bg-red-50 text-red-600"
+                      className="border-red-200 hover:bg-red-50 text-destructive"
                     >
                       <Trash className="h-4 w-4 mr-2" />
                       Delete
@@ -246,7 +246,7 @@ export default function ChapterDetailPage() {
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDelete}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="bg-destructive hover:bg-destructive"
                       >
                         Delete
                       </AlertDialogAction>
@@ -262,7 +262,7 @@ export default function ChapterDetailPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Audio Player Section */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border border-gray-200 shadow-lg bg-white">
+            <Card className="border border shadow-lg bg-white">
               <CardContent className="p-8">
                 <div className="space-y-6">
                   <div>
@@ -270,7 +270,7 @@ export default function ChapterDetailPage() {
                       Chapter {chapter.trackNumber}: {chapter.title}
                     </h2>
                     {chapter.description && (
-                      <p className="text-gray-600 leading-relaxed">
+                      <p className="text-muted-foreground leading-relaxed">
                         {chapter.description}
                       </p>
                     )}
@@ -286,13 +286,13 @@ export default function ChapterDetailPage() {
 
                   {/* Stats Row */}
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div className="bg-muted rounded-xl p-4 border border-gray-100">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                           <Clock className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600">Duration</p>
+                          <p className="text-sm text-muted-foreground">Duration</p>
                           <p className="font-semibold text-gray-900">
                             {formatDuration(chapter.duration)}
                           </p>
@@ -300,13 +300,13 @@ export default function ChapterDetailPage() {
                       </div>
                     </div>
 
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div className="bg-muted rounded-xl p-4 border border-gray-100">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                           <Play className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600">Plays</p>
+                          <p className="text-sm text-muted-foreground">Plays</p>
                           <p className="font-semibold text-gray-900">
                             {chapter.playCount}
                           </p>
@@ -314,13 +314,13 @@ export default function ChapterDetailPage() {
                       </div>
                     </div>
 
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div className="bg-muted rounded-xl p-4 border border-gray-100">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                           <Calendar className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600">Created</p>
+                          <p className="text-sm text-muted-foreground">Created</p>
                           <p className="font-semibold text-gray-900">
                             {new Date(chapter.createdAt).toLocaleDateString()}
                           </p>
@@ -334,7 +334,7 @@ export default function ChapterDetailPage() {
 
             {/* Transcript Section */}
             {chapter.transcript && (
-              <Card className="border border-gray-200 shadow-lg bg-white">
+              <Card className="border border shadow-lg bg-white">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -344,7 +344,7 @@ export default function ChapterDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                  <div className="bg-muted rounded-xl p-6 border border-gray-100">
                     <pre className="whitespace-pre-wrap text-gray-700 leading-relaxed font-sans">
                       {chapter.transcript}
                     </pre>
@@ -357,36 +357,36 @@ export default function ChapterDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Chapter Info */}
-            <Card className="border border-gray-200 shadow-lg bg-white">
+            <Card className="border border shadow-lg bg-white">
               <CardHeader>
                 <CardTitle className="text-lg">Chapter Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Track Number</span>
+                  <span className="text-muted-foreground">Track Number</span>
                   <span className="font-semibold">{chapter.trackNumber}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Status</span>
+                  <span className="text-muted-foreground">Status</span>
                   <Badge className={getStatusColor(chapter.status)}>
                     {chapter.status}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Duration</span>
+                  <span className="text-muted-foreground">Duration</span>
                   <span className="font-semibold">
                     {formatDuration(chapter.duration)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-600">Play Count</span>
+                  <span className="text-muted-foreground">Play Count</span>
                   <span className="font-semibold">{chapter.playCount}</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Quick Actions */}
-            <Card className="border border-gray-200 shadow-lg bg-white">
+            <Card className="border border shadow-lg bg-white">
               <CardHeader>
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
@@ -405,7 +405,7 @@ export default function ChapterDetailPage() {
 
                 <Button
                   variant="outline"
-                  className="w-full justify-start border-gray-200 hover:bg-gray-50"
+                  className="w-full justify-start border hover:bg-muted"
                   onClick={() =>
                     router.push(
                       `/dashboard/audiobooks/${audiobookId}/chapters/${chapterId}/transcript/edit`
@@ -418,7 +418,7 @@ export default function ChapterDetailPage() {
 
                 <Button
                   variant="outline"
-                  className="w-full justify-start border-gray-200 hover:bg-gray-50"
+                  className="w-full justify-start border hover:bg-muted"
                   onClick={() =>
                     router.push(`/dashboard/audiobooks/${audiobookId}/chapters`)
                   }
