@@ -247,13 +247,13 @@
   },
   "homepage": {
     "hero": {
-      "title": "Creadores de Audiolibros",
-      "subtitle": "Tu Universo de Sonido",
+      "title": "CBStudio Radio",
+      "subtitle": "De libros a tus oídos",
       "features": {
-        "ost": "★ Compositor de Banda Sonora Original (OST)",
-        "narrators": "★ Narradores Profesionales",
-        "sound": "★ Sonido FX HD",
-        "multilanguage": "★ Traducciones Multilingües"
+        "ost": "Compositor de Banda Sonora Original (OST)",
+        "narrators": "Narradores Profesionales",
+        "sound": "Sonido FX HD",
+        "multilanguage": "Traducciones Multilingües"
       },
       "listenNow": "Escuchar Ahora",
       "startProject": "Iniciar Proyecto"

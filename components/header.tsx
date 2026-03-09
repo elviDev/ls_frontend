@@ -86,26 +86,39 @@ export default function Header() {
                       <li className="row-span-3">
                         <NavigationMenuLink asChild>
                           <a
-                            className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-primary to-primary/80 p-6 no-underline outline-none focus:shadow-md"
+                            className="flex h-full w-full select-none flex-col justify-end rounded-md overflow-hidden relative p-6 no-underline outline-none focus:shadow-md"
                             href="/live"
                           >
-                            <div className="mt-4 mb-2 text-lg font-medium text-primary-foreground">
-                              {t("liveNow")}
-                            </div>
-                            <p className="text-sm leading-tight text-primary-foreground/90">
-                              {t("liveNow")}
-                            </p>
+                            <Image
+                              src="/en-vivo.gif"
+                              alt="Live Now"
+                              fill
+                              className="object-contain"
+                              unoptimized
+                            />
                           </a>
                         </NavigationMenuLink>
                       </li>
-                      <ListItem href="/podcasts" title={t("podcasts")}>
-                        {t("podcasts")}
+                      <ListItem
+                        href="http://www.youtube.com/@CBStudioRadio"
+                        title="YouTube"
+                        target="_blank"
+                      >
+                        YouTube
                       </ListItem>
-                      <ListItem href="/audiobooks" title={t("audiobooks")}>
-                        {t("audiobooks")}
+                      <ListItem
+                        href="https://www.twitch.tv/cbstudioradio1"
+                        title="Twitch"
+                        target="_blank"
+                      >
+                        Twitch
                       </ListItem>
-                      <ListItem href="/archives" title={t("archives")}>
-                        {t("archives")}
+                      <ListItem
+                        href="https://kick.com/cbstudioradio"
+                        title="Kick"
+                        target="_blank"
+                      >
+                        Kick
                       </ListItem>
                     </ul>
                   </NavigationMenuContent>

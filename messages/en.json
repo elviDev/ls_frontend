@@ -247,13 +247,13 @@
   },
   "homepage": {
     "hero": {
-      "title": "Audiobook Creators",
-      "subtitle": "Your Sound Universe",
+      "title": "CBStudio Radio",
+      "subtitle": "From books to your ears",
       "features": {
-        "ost": "★ Original Soundtrack (OST) Composer",
-        "narrators": "★ Professional Narrators",
-        "sound": "★ FX HD Sound",
-        "multilanguage": "★ Multilanguage Translations"
+        "ost": "Original Soundtrack (OST) Composer",
+        "narrators": "Professional Narrators",
+        "sound": "FX HD Sound",
+        "multilanguage": "Multilanguage Translations"
       },
       "listenNow": "Listen Now",
       "startProject": "Start Project"

@@ -96,7 +96,7 @@ function ResetPasswordContent() {
           <div className="flex items-center justify-center mb-8">
             <Link href="/" className="flex items-center space-x-2">
               <Radio className="h-8 w-8 text-primary" />
-              <span className="font-bold text-2xl">WaveStream</span>
+              <span className="font-bold text-2xl">CBStudio Radio</span>
             </Link>
           </div>
 
@@ -166,7 +166,7 @@ function ResetPasswordContent() {
         <div className="flex items-center justify-center mb-8">
           <Link href="/" className="flex items-center space-x-2">
             <Radio className="h-8 w-8 text-primary" />
-            <span className="font-bold text-2xl">WaveStream</span>
+            <span className="font-bold text-2xl">CBStudio Radio</span>
           </Link>
         </div>
 

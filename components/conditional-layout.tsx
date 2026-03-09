@@ -12,7 +12,7 @@ export default function ConditionalLayout({
 }) {
   const pathname = usePathname();
   // Check if path contains /dashboard/ (with locale prefix like /en/dashboard or /es/dashboard)
-  const isDashboardPage = pathname?.match(/\/[a-z]{2}\/dashboard/)?.length > 0;
+  const isDashboardPage = pathname?.match(/\/[a-z]{2}\/dashboard/) !== null;
 
   // Listen for broadcast events via SSE globally
   useBroadcastSSE();

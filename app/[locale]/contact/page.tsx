@@ -63,7 +63,7 @@ export default function ContactPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        <Card className="dark:bg-slate-900 dark:border-gray-700">
+        {/* <Card className="dark:bg-slate-900 dark:border-gray-700">
           <CardContent className="p-6 flex flex-col items-center text-center">
             <div className="rounded-full bg-primary/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <Phone className="h-6 w-6 text-primary dark:text-cyan-400" />
@@ -76,7 +76,7 @@ export default function ContactPage() {
             </p>
             <p className="font-medium dark:text-white">+1 (555) 123-4567</p>
           </CardContent>
-        </Card>
+        </Card> */}
         <Card className="dark:bg-slate-900 dark:border-gray-700">
           <CardContent className="p-6 flex flex-col items-center text-center">
             <div className="rounded-full bg-primary/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
@@ -89,11 +89,11 @@ export default function ContactPage() {
               {t("responseTime")}
             </p>
             <p className="font-medium dark:text-white">
-              contact@wavestream.example
+              contact@cbstudioradio.com
             </p>
           </CardContent>
         </Card>
-        <Card className="dark:bg-slate-900 dark:border-gray-700">
+        {/* <Card className="dark:bg-slate-900 dark:border-gray-700">
           <CardContent className="p-6 flex flex-col items-center text-center">
             <div className="rounded-full bg-primary/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <MapPin className="h-6 w-6 text-primary dark:text-cyan-400" />
@@ -110,7 +110,7 @@ export default function ContactPage() {
               Media City, CA 90210
             </p>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
@@ -517,7 +517,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="rounded-xl overflow-hidden h-[400px] relative">
+      {/* <div className="rounded-xl overflow-hidden h-[400px] relative">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3305.7152203627526!2d-118.35845492424365!3d34.0764938726045!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c2b8d3b1e0287d%3A0x9cc32be17df028b8!2sCBS%20Television%20City!5e0!3m2!1sen!2sus!4v1682458335242!5m2!1sen!2sus"
           width="100%"
@@ -526,10 +526,10 @@ export default function ContactPage() {
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title="WaveStream Location"
+          title="CBStudio Radio Location"
           className="absolute inset-0"
         ></iframe>
-      </div>
+      </div> */}
     </div>
   );
 }

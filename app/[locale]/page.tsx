@@ -41,9 +41,9 @@ export default async function Home() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20 dark:from-darkTeam/80 dark:to-darkTeam/60"></div>
         </div>
-        <div className="absolute inset-0 z-0">
+        {/* <div className="absolute inset-0 z-0">
           <HeroAnimation />
-        </div>
+        </div> */}
         <div className="container relative z-10 flex flex-col items-center justify-center h-full px-4 mx-auto text-center text-primary-foreground">
           <h1 className="font-serif text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl mb-6 animate-fade-in dark:text-white">
             <span className="block">{t("hero.title")}</span>
