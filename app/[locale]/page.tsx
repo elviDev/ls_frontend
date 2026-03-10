@@ -194,7 +194,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <Image
-                src="/placeholder.svg?height=600&width=600&text=Team+Image"
+                src="/cbstudio.png"
                 alt="Professional Team"
                 width={600}
                 height={600}
@@ -208,50 +208,12 @@ export default async function Home() {
               <p className="text-lg mb-6 dark:text-gray-300">
                 {t("professionalTeam.description1")}
               </p>
-              <p className="text-lg mb-8 dark:text-gray-300">
-                {t("professionalTeam.description2")}
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="text-primary dark:text-cyan-400 mr-2">•</div>
-                  <p className="dark:text-gray-300">
-                    {t("professionalTeam.feature1")}
-                  </p>
-                </div>
-                <div className="flex items-start">
-                  <div className="text-primary dark:text-cyan-400 mr-2">•</div>
-                  <p className="dark:text-gray-300">
-                    {t("professionalTeam.feature2")}
-                  </p>
-                </div>
-                <div className="flex items-start">
-                  <div className="text-primary dark:text-cyan-400 mr-2">•</div>
-                  <p className="dark:text-gray-300">
-                    {t("professionalTeam.feature3")}
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Newsletter Section */}
-      <section className="section-padding bg-primary dark:bg-darkTeam text-primary-foreground dark:text-white">
-        <div className="container px-4 mx-auto text-center">
-          <h2 className="text-3xl font-serif font-bold mb-4 dark:text-white">
-            {t("professionalTeam.title")}
-          </h2>
-          <p className="max-w-[600px] mx-auto mb-8 text-primary-foreground/80 dark:text-gray-300">
-            {t("professionalTeam.description2")}
-          </p>
-          <Link href="/contact">
-            <Button className="bg-background text-foreground hover:bg-muted dark:bg-white dark:text-[#0F172A] dark:hover:bg-gray-100 px-8 py-6 text-lg font-semibold">
-              {tCommon("contact")}
-            </Button>
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

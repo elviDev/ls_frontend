@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  /* Montserrat is loaded via next/font and applied on <body> via className;
+     include as fallback here in case the font fails to load */
+  font-family: "Montserrat", Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {
