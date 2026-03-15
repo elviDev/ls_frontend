@@ -248,7 +248,7 @@
   "homepage": {
     "hero": {
       "title": "CBStudio Radio",
-      "subtitle": "From books to your ears",
+      "subtitle": "From the book to your ears",
       "features": {
         "ost": "Original Soundtrack (OST) Composer",
         "narrators": "Professional Narrators",
@@ -279,12 +279,8 @@
     "viewAllEvents": "View All Events →",
     "viewAllPrograms": "View All Programs →",
     "professionalTeam": {
-      "title": "Professional Team",
-      "description1": "CBStudio Radio Studio is a dual partnership. Ours is the objective of creating distinct Audiobooks. Your book can have just one narrator or several voice readers with optional FX sounds, or an original soundtrack, much like a film.",
-      "description2": "We give personalized study to your project, to elevate the excellence of your Audiobook.",
-      "feature1": "The Raven (A Poem by Edgar Allan Poe)",
-      "feature2": "A Fragment of the Hanging Gardens of Babylon in Spanish",
-      "feature3": "Custom productions tailored to your vision"
+      "title": "CBStudio Radio",
+      "description1": "It's a radio station and podcast for the Spanish-speaking public worldwide, and for everyone learning this beautiful language. Join us and expand your knowledge of astronomy, art, biology, history, and archaeology, as well as discover interesting facts, news, and much more. Live every Wednesday."
     }
   },
   "about": {

@@ -248,7 +248,7 @@
   "homepage": {
     "hero": {
       "title": "CBStudio Radio",
-      "subtitle": "De libros a tus oídos",
+      "subtitle": "Del libro a tus oídos",
       "features": {
         "ost": "Compositor de Banda Sonora Original (OST)",
         "narrators": "Narradores Profesionales",
@@ -279,12 +279,8 @@
     "viewAllEvents": "Ver Todos los Eventos →",
     "viewAllPrograms": "Ver Todos los Programas →",
     "professionalTeam": {
-      "title": "Equipo Profesional",
-      "description1": "CBStudio Radio Studio es una asociación dual. Nuestro objetivo es crear Audiolibros distintivos. Tu libro puede tener solo un narrador o varios lectores de voz con efectos de sonido opcionales, o una banda sonora original, muy parecido a una película.",
-      "description2": "Damos estudio personalizado a tu proyecto, para elevar la excelencia de tu Audiolibro.",
-      "feature1": "El Cuervo (Un Poema de Edgar Allan Poe)",
-      "feature2": "Un Fragmento de los Jardines Colgantes de Babilonia en Español",
-      "feature3": "Producciones personalizadas adaptadas a tu visión"
+      "title": "CBStudio Radio",
+      "description1": "Es una estación de radio y podcast para el público hispanohablante de todo el mundo y para todos los que aprenden este hermoso idioma. Únete y amplía tus conocimientos de astronomía, arte, biología, historia y arqueología, además de descubrir datos interesantes, noticias y mucho más. En vivo todos los miércoles."
     }
   },
   "about": {

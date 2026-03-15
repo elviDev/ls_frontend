@@ -89,7 +89,7 @@ export default function ContactPage() {
               {t("responseTime")}
             </p>
             <p className="font-medium dark:text-white">
-              contact@cbstudioradio.com
+              contact@cbs-radio.com
             </p>
           </CardContent>
         </Card>
