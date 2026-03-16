@@ -141,13 +141,12 @@ export function UnifiedBroadcastChat({
       console.log("[Chat] New message received:", message);
 
       setMessages((prev) => {
-        // Remove any temporary message with same content and replace with real message
+        // Remove any temporary message with same content from same user
         const withoutTemp = prev.filter(
           (m) =>
             !(
               m.id.startsWith("temp-") &&
-              m.content === message.content &&
-              m.userId === message.userId
+              m.content.trim() === message.content.trim()
             )
         );
 
