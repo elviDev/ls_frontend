@@ -249,7 +249,7 @@
     "hero": {
       "title": "CBStudio Radio",
       "subtitle": "Del libro a tus oídos",
-      "features": {
+      "_features": {
         "ost": "Compositor de Banda Sonora Original (OST)",
         "narrators": "Narradores Profesionales",
         "sound": "Sonido FX HD",

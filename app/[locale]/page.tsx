@@ -52,6 +52,7 @@ export default async function Home() {
             </span>
           </h1>
           <div className="max-w-3xl mx-auto space-y-6 animate-fade-in-delay dark:text-gray-200">
+            {/*
             <p className="text-xl md:text-2xl">{t("hero.features.ost")}</p>
             <p className="text-xl md:text-2xl">
               {t("hero.features.narrators")}
@@ -60,6 +61,7 @@ export default async function Home() {
             <p className="text-xl md:text-2xl">
               {t("hero.features.multilanguage")}
             </p>
+            */}
           </div>
           <div className="flex flex-wrap justify-center gap-4 mt-8 animate-fade-in-delay-2">
             <Link href="/podcasts">
