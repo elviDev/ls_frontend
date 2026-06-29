@@ -94,6 +94,7 @@ const podcastSchema = z.object({
   genreId: z.string().min(1, "Genre is required"),
   releaseDate: z.string().min(1, "Release date is required"),
   tags: z.string().optional(),
+  youtubePlaylistUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   status: z.enum(["draft", "published"]).default("draft"),
 });
 
@@ -205,6 +206,7 @@ export default function NewPodcastPage() {
       genreId: "",
       releaseDate: new Date().toISOString().split("T")[0],
       tags: "",
+      youtubePlaylistUrl: "",
       status: "draft",
     },
   });
@@ -233,6 +235,7 @@ export default function NewPodcastPage() {
           ? new Date(existingPodcast.releaseDate).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
         tags: existingPodcast.tags || "",
+        youtubePlaylistUrl: (existingPodcast as any).youtubePlaylistUrl || "",
         status: (existingPodcast.status?.toLowerCase() === "published"
           ? "published"
           : "draft") as "draft" | "published",
@@ -1248,6 +1251,25 @@ export default function NewPodcastPage() {
                       </div>
                     )}
                   </div>
+                  <FormField
+                    control={form.control}
+                    name="youtubePlaylistUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>YouTube Playlist URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://www.youtube.com/playlist?list=..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Link to the full YouTube playlist for this podcast
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 
