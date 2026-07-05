@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 class ApiClient {
   private baseURL: string;
@@ -69,7 +70,7 @@ class ApiClient {
         .catch(() => ({ error: "Network error" }));
       throw new Error(error.error || `HTTP ${response.status}`);
     }
-
+    // console.log(response);
     return response.json();
   }
 
@@ -124,7 +125,7 @@ class ApiClient {
   podcasts = {
     getAll: (params?: any) =>
       this.request(
-        `/podcasts${params ? "?" + new URLSearchParams(params) : ""}`
+        `/podcasts${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     getById: (id: string) => this.request(`/podcasts/${id}`),
     create: (data: any) =>
@@ -149,7 +150,7 @@ class ApiClient {
   audiobooks = {
     getAll: (params?: any) =>
       this.request(
-        `/audiobooks${params ? "?" + new URLSearchParams(params) : ""}`
+        `/audiobooks${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     getById: (id: string) => this.request(`/audiobooks/${id}`),
     create: (data: any) =>
@@ -171,7 +172,7 @@ class ApiClient {
   broadcasts = {
     getAll: (params?: any) =>
       this.request(
-        `/broadcasts${params ? "?" + new URLSearchParams(params) : ""}`
+        `/broadcasts${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     getCurrent: () => this.request("/broadcasts/current"),
     getEvents: () => this.request("/broadcasts/events"),
@@ -203,7 +204,7 @@ class ApiClient {
   programs = {
     getAll: (params?: any) =>
       this.request(
-        `/programs${params ? "?" + new URLSearchParams(params) : ""}`
+        `/programs${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     getById: (id: string) => this.request(`/programs/${id}`),
     create: (data: any) =>
@@ -255,19 +256,19 @@ class ApiClient {
       this.request(`/assets${params ? "?" + new URLSearchParams(params) : ""}`),
     archives: (params?: any) =>
       this.request(
-        `/archives${params ? "?" + new URLSearchParams(params) : ""}`
+        `/archives${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     podcasts: (params?: any) =>
       this.request(
-        `/podcasts${params ? "?" + new URLSearchParams(params) : ""}`
+        `/podcasts${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     audiobooks: (params?: any) =>
       this.request(
-        `/audiobooks${params ? "?" + new URLSearchParams(params) : ""}`
+        `/audiobooks${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     schedules: (params?: any) =>
       this.request(
-        `/schedules${params ? "?" + new URLSearchParams(params) : ""}`
+        `/schedules${params ? "?" + new URLSearchParams(params) : ""}`,
       ),
     events: (params?: any) =>
       this.request(`/events${params ? "?" + new URLSearchParams(params) : ""}`),

@@ -187,14 +187,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     if (!eventId) return
     try {
       setLoading(true)
-      const response = await apiClient.request(`/events/${eventId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setEvent(data)
-      } else {
-        const errorData = await response.json().catch(() => ({ error: "Failed to fetch event" }))
-        throw new Error(errorData.error)
-      }
+      const data = await apiClient.request<any>(`/events/${eventId}`)
+      setEvent(data)
     } catch (error: any) {
       setError(error.message)
       toast({
@@ -245,17 +239,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     if (!event) return
     setActionLoading('publish')
     try {
-      const response = await apiClient.request(`/events/${event.id}`, {
+      await apiClient.request(`/events/${event.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'SCHEDULED' })
       })
-      if (response.ok) {
-        toast({ title: "Success", description: "Event published successfully" })
-        fetchEventDetail()
-      } else {
-        throw new Error("Failed to publish event")
-      }
+      toast({ title: "Success", description: "Event published successfully" })
+      fetchEventDetail()
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" })
     } finally {
@@ -360,23 +349,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : undefined
       }
 
-      const response = await apiClient.request(`/events/${eventId}`, {
+      await apiClient.request(`/events/${eventId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Event updated successfully"
-        })
-        setShowEditDialog(false)
-        fetchEventDetail()
-      } else {
-        const errorData = await response.json().catch(() => ({ error: "Failed to update event" }))
-        throw new Error(errorData.error)
-      }
+      toast({
+        title: "Success",
+        description: "Event updated successfully"
+      })
+      setShowEditDialog(false)
+      fetchEventDetail()
     } catch (error: any) {
       toast({
         title: "Update Failed",

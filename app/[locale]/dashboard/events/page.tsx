@@ -174,7 +174,7 @@ export default function EventsManagePage() {
   const fetchEvents = async () => {
     try {
       setLoading(true)
-      const params = {
+      const params: Record<string, string> = {
         page: page.toString(),
         perPage: "10"
       }
@@ -184,8 +184,8 @@ export default function EventsManagePage() {
       if (searchTerm.trim()) {
         params.search = searchTerm.trim()
       }
-      
-      const data = await apiClient.events.getAll(params)
+
+      const data = await apiClient.events.getAll(params) as any
       setEvents(data.events || [])
       setTotalPages(data.pagination?.totalPages || 1)
     } catch (error: any) {
@@ -300,25 +300,19 @@ export default function EventsManagePage() {
         maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : undefined
       }
 
-      const response = await apiClient.request(`/events/${editingEvent.id}`, {
+      await apiClient.request(`/events/${editingEvent.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Event updated successfully"
-        })
-        setShowEditDialog(false)
-        setEditingEvent(null)
-        resetForm()
-        fetchEvents()
-      } else {
-        const errorData = await response.json().catch(() => ({ error: "Failed to update event" }))
-        throw new Error(errorData.error)
-      }
+      toast({
+        title: "Success",
+        description: "Event updated successfully"
+      })
+      setShowEditDialog(false)
+      setEditingEvent(null)
+      resetForm()
+      fetchEvents()
     } catch (error: any) {
       toast({
         title: "Update Failed",
@@ -333,21 +327,16 @@ export default function EventsManagePage() {
   const handleQuickPublish = async (event: Event) => {
     setSubmitting(true)
     try {
-      const response = await apiClient.request(`/events/${event.id}`, {
+      await apiClient.request(`/events/${event.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'SCHEDULED' })
       })
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Event published successfully"
-        })
-        fetchEvents()
-      } else {
-        throw new Error("Failed to publish event")
-      }
+      toast({
+        title: "Success",
+        description: "Event published successfully"
+      })
+      fetchEvents()
     } catch (error: any) {
       toast({
         title: "Publish Failed",
@@ -363,20 +352,16 @@ export default function EventsManagePage() {
     if (!deleteDialog.event) return
 
     try {
-      const response = await apiClient.request(`/events/${deleteDialog.event.id}`, {
+      await apiClient.request(`/events/${deleteDialog.event.id}`, {
         method: 'DELETE'
       })
 
-      if (response.ok) {
-        setEvents(events.filter(e => e.id !== deleteDialog.event!.id))
-        toast({
-          title: "Success",
-          description: "Event deleted successfully"
-        })
-        setDeleteDialog({ isOpen: false, event: null })
-      } else {
-        throw new Error("Failed to delete event")
-      }
+      setEvents(events.filter(e => e.id !== deleteDialog.event!.id))
+      toast({
+        title: "Success",
+        description: "Event deleted successfully"
+      })
+      setDeleteDialog({ isOpen: false, event: null })
     } catch (error: any) {
       toast({
         title: "Deletion Failed",

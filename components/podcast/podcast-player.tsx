@@ -24,10 +24,9 @@ export function PodcastPlayer({
   title,
   artist,
   audioUrl,
-  image,
   onFavoriteToggle,
   isFavorite = false,
-  className,
+  className
 }: PodcastPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [duration, setDuration] = useState(0)
@@ -57,7 +56,9 @@ export function PodcastPlayer({
     const handleEnded = () => {
       setIsPlaying(false)
       setCurrentTime(0)
-      cancelAnimationFrame(animationRef.current!)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
     }
 
     const handleError = () => {
@@ -65,13 +66,11 @@ export function PodcastPlayer({
       setIsLoading(false)
     }
 
-    // Event listeners
     audio.addEventListener("loadeddata", setAudioData)
     audio.addEventListener("timeupdate", setAudioTime)
     audio.addEventListener("ended", handleEnded)
     audio.addEventListener("error", handleError)
 
-    // Set initial volume
     audio.volume = volume / 100
 
     return () => {
@@ -80,7 +79,9 @@ export function PodcastPlayer({
       audio.removeEventListener("timeupdate", setAudioTime)
       audio.removeEventListener("ended", handleEnded)
       audio.removeEventListener("error", handleError)
-      cancelAnimationFrame(animationRef.current!)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
     }
   }, [audioUrl])
 
@@ -95,6 +96,13 @@ export function PodcastPlayer({
       audioRef.current.volume = isMuted ? 0 : volume / 100
     }
   }, [volume, isMuted])
+
+  const whilePlaying = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime)
+      animationRef.current = requestAnimationFrame(whilePlaying)
+    }
+  }
 
   const togglePlayPause = () => {
     if (!audioRef.current) return
@@ -116,16 +124,8 @@ export function PodcastPlayer({
     setIsPlaying(!isPlaying)
   }
 
-  const whilePlaying = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime)
-      animationRef.current = requestAnimationFrame(whilePlaying)
-    }
-  }
-
   const changeRange = (values: number[]) => {
     if (!audioRef.current) return
-
     audioRef.current.currentTime = values[0]
     setCurrentTime(values[0])
   }
@@ -137,9 +137,7 @@ export function PodcastPlayer({
     }
   }
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted)
-  }
+  const toggleMute = () => setIsMuted(!isMuted)
 
   const skipForward = () => {
     if (!audioRef.current) return
@@ -162,40 +160,18 @@ export function PodcastPlayer({
 
   const handleShare = async () => {
     try {
-      // Check if Web Share API is supported and available
       if (navigator.share && window.isSecureContext) {
-        await navigator.share({
-          title: title,
-          text: `Listen to ${title} by ${artist}`,
-          url: window.location.href,
-        })
+        await navigator.share({ title, text: `Listen to ${title} by ${artist}`, url: window.location.href })
       } else {
-        // Fallback for browsers that don't support Web Share API
         await navigator.clipboard.writeText(window.location.href)
-        toast({
-          title: "Link copied",
-          description: "Podcast link copied to clipboard",
-          duration: 3000,
-        })
+        toast({ title: "Link copied", description: "Podcast link copied to clipboard", duration: 3000 })
       }
-    } catch (error) {
-      console.error("Error sharing:", error)
-
-      // Fallback if sharing or clipboard fails
+    } catch {
       try {
         await navigator.clipboard.writeText(window.location.href)
-        toast({
-          title: "Link copied",
-          description: "Podcast link copied to clipboard",
-          duration: 3000,
-        })
-      } catch (clipboardError) {
-        toast({
-          title: "Sharing failed",
-          description: "Please manually copy the URL from your browser's address bar",
-          variant: "destructive",
-          duration: 3000,
-        })
+        toast({ title: "Link copied", description: "Podcast link copied to clipboard", duration: 3000 })
+      } catch {
+        toast({ title: "Sharing failed", description: "Please manually copy the URL from your browser's address bar", variant: "destructive", duration: 3000 })
       }
     }
   }
@@ -225,9 +201,7 @@ export function PodcastPlayer({
                     <span className="sr-only">Download</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Download episode</p>
-                </TooltipContent>
+                <TooltipContent><p>Download episode</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -239,9 +213,7 @@ export function PodcastPlayer({
                     <span className="sr-only">Share</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Share episode</p>
-                </TooltipContent>
+                <TooltipContent><p>Share episode</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -255,9 +227,7 @@ export function PodcastPlayer({
                     </Button>
                   </AuthRequiredAction>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>{isFavorite ? "Remove from favorites" : "Add to favorites"}</p>
-                </TooltipContent>
+                <TooltipContent><p>{isFavorite ? "Remove from favorites" : "Add to favorites"}</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -287,9 +257,7 @@ export function PodcastPlayer({
                     <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>{isMuted ? "Unmute" : "Mute"}</p>
-                </TooltipContent>
+                <TooltipContent><p>{isMuted ? "Unmute" : "Mute"}</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <Slider
@@ -306,20 +274,12 @@ export function PodcastPlayer({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={skipBackward}
-                    disabled={isLoading || !!error}
-                  >
+                  <Button variant="outline" size="icon" className="rounded-full" onClick={skipBackward} disabled={isLoading || !!error}>
                     <Rewind className="h-4 w-4" />
                     <span className="sr-only">Rewind 10 seconds</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Rewind 10 seconds</p>
-                </TooltipContent>
+                <TooltipContent><p>Rewind 10 seconds</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -342,20 +302,12 @@ export function PodcastPlayer({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={skipForward}
-                    disabled={isLoading || !!error}
-                  >
+                  <Button variant="outline" size="icon" className="rounded-full" onClick={skipForward} disabled={isLoading || !!error}>
                     <FastForward className="h-4 w-4" />
                     <span className="sr-only">Forward 30 seconds</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Forward 30 seconds</p>
-                </TooltipContent>
+                <TooltipContent><p>Forward 30 seconds</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -371,8 +323,7 @@ export function PodcastPlayer({
                       setPlaybackRate((prev) => {
                         const rates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
                         const currentIndex = rates.indexOf(prev)
-                        const nextIndex = (currentIndex + 1) % rates.length
-                        return rates[nextIndex]
+                        return rates[(currentIndex + 1) % rates.length]
                       })
                     }
                     disabled={isLoading || !!error}
@@ -380,9 +331,7 @@ export function PodcastPlayer({
                     {playbackRate}x
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Change playback speed</p>
-                </TooltipContent>
+                <TooltipContent><p>Change playback speed</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>

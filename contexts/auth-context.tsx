@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -40,15 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const router = useRouter();
   const { toast } = useToast();
+  const userRef = useRef<User | null>(null);
 
-  // Check authentication on mount
+  // Keep ref in sync with latest user state (no effect re-trigger)
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  // Check auth once on mount and set up unauthorized handler
   useEffect(() => {
     checkAuth();
-    
-    // Set up unauthorized handler
+
     apiClient.setUnauthorizedHandler(() => {
-      // Only show toast and redirect if user was actually logged in
-      if (user) {
+      if (userRef.current) {
         setUser(null);
         setIsAuthenticated(false);
         router.push("/signin");
@@ -59,7 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
     });
-  }, [user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const checkAuth = async () => {
     try {

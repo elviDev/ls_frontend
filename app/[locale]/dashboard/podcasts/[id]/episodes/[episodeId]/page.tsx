@@ -459,6 +459,15 @@ export default function EpisodeDetailPage() {
               Archive
             </Button>
           )}
+          {episode.status === "ARCHIVED" && (
+            <Button
+              variant="outline"
+              onClick={() => handleStatusChange("PUBLISHED")}
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Republish
+            </Button>
+          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">

@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PodcastPlayer } from "@/components/podcast/podcast-player";
+import { AudiobookPlayer } from "@/components/audiobook/audiobook-player";
 import { EpisodeList } from "@/components/podcast/episode-list";
 import { CommentSection } from "@/components/audiobook/comment-section";
 import { PodcastTranscript } from "@/components/podcast/podcast-transcript";
 import { ReviewSection } from "@/components/audiobook/review-section";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Download, Share2 } from "lucide-react";
 import {
   usePodcast,
   usePodcasts,
@@ -21,6 +22,7 @@ import {
 } from "@/hooks/use-podcasts";
 import { usePodcastStore } from "@/stores/podcast-store";
 import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api-client";
 
 export default function PodcastDetailPage({
   params,
@@ -74,13 +76,62 @@ export default function PodcastDetailPage({
     if (!podcastId) return;
     try {
       await toggleFavoriteMutation.mutateAsync(podcastId);
-      // The mutation will automatically invalidate and refetch the podcast data
     } catch (error) {
-      // Error is handled by the mutation
+      // handled by mutation
     }
   };
 
-  console.log("podcast", podcast);
+  const handleDownload = async () => {
+    if (!currentEpisode?.audioFile || !currentEpisode.audioFile.startsWith("http")) {
+      toast({ title: "Download unavailable", description: "No audio file available for this episode.", variant: "destructive" });
+      return;
+    }
+    try {
+      // Track download stat (fire-and-forget)
+      apiClient.request(`/podcasts/${podcastId}/episodes/${currentEpisode.id}/download`, { method: "POST" }).catch(() => {});
+
+      // Blob fetch so the browser downloads instead of navigating (cross-origin Cloudinary URLs)
+      const response = await fetch(currentEpisode.audioFile);
+      if (!response.ok) throw new Error("Failed to fetch audio file");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(currentEpisode.title || "episode").replace(/\s+/g, "-").toLowerCase()}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({ title: "Download failed", description: "Unable to download this episode right now.", variant: "destructive" });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!currentEpisode) return;
+    // Track share stat (fire-and-forget)
+    apiClient.request(`/podcasts/${podcastId}/episodes/${currentEpisode.id}/share`, { method: "POST" }).catch(() => {});
+
+    try {
+      if (navigator.share && window.isSecureContext) {
+        await navigator.share({
+          title: currentEpisode.title || "Podcast Episode",
+          text: `Listen to ${currentEpisode.title} on ${podcast?.title}`,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({ title: "Link copied", description: "Episode link copied to clipboard." });
+      }
+    } catch {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({ title: "Link copied", description: "Episode link copied to clipboard." });
+      } catch {
+        toast({ title: "Share failed", description: "Please copy the URL from your browser's address bar.", variant: "destructive" });
+      }
+    }
+  };
 
   const { data: relatedPodcasts = [] } = usePodcasts({
     genreId: podcast?.genre?.id,
@@ -214,16 +265,54 @@ export default function PodcastDetailPage({
           </div>
 
           <div id="podcast-player" className="mb-8">
-            {currentEpisode && (
-              <PodcastPlayer
-                title={currentEpisode.title || "Unknown Episode"}
-                artist={`${podcast.author.firstName} ${podcast.author.lastName}`}
-                audioUrl={currentEpisode.audioFile || ""}
-                image={podcast.image || podcast.coverImage}
-                onFavoriteToggle={handleFavoriteToggle}
-                isFavorite={podcast?.isFavorited || false}
-              />
-            )}
+            {currentEpisode && (() => {
+              const audioUrl = currentEpisode.audioFile || ""
+              const isValidUrl = audioUrl.startsWith("http")
+              if (!isValidUrl) {
+                return (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-xl">
+                    Audio file is not available for this episode. Please re-upload the episode audio.
+                  </div>
+                )
+              }
+              const episodeAsChapter = {
+                id: currentEpisode.id,
+                title: currentEpisode.title || "Unknown Episode",
+                audioFile: audioUrl,
+                duration: currentEpisode.duration || 0,
+                trackNumber: currentEpisode.episodeNumber || 1,
+                status: (currentEpisode.status || "PUBLISHED") as "DRAFT" | "PUBLISHED" | "ARCHIVED",
+                playCount: 0,
+                audiobookId: podcastId || "",
+                createdAt: currentEpisode.createdAt || "",
+                updatedAt: currentEpisode.updatedAt || "",
+              }
+              return (
+                <div className="space-y-3">
+                  <AudiobookPlayer
+                    title={currentEpisode.title || "Unknown Episode"}
+                    author={`${podcast.author.firstName} ${podcast.author.lastName}`}
+                    audioUrl={audioUrl}
+                    chapters={[episodeAsChapter]}
+                    currentChapter={0}
+                    onChapterChange={() => {}}
+                    audiobookId={podcastId || ""}
+                    onFavoriteToggle={handleFavoriteToggle}
+                    isFavorite={podcast?.isFavorited || false}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="outline" size="sm" onClick={handleDownload}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleShare}>
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+                </div>
+              )
+            })()}
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">

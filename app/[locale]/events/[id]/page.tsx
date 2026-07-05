@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Calendar, Clock, MapPin, Users, DollarSign, ExternalLink, Loader2, AlertCircle, CheckCircle, Heart, Facebook, Twitter, Linkedin, Phone, Mail, User, Building2, Share2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
+import { apiClient } from "@/lib/api-client"
 
 interface EventDetail {
   id: string
@@ -78,13 +79,10 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await fetch('/api/auth/me')
-      if (response.ok) {
-        const data = await response.json()
-        setCurrentUser(data.user)
-      }
-    } catch (error) {
-      console.error('Error fetching current user:', error)
+      const data = await apiClient.auth.me() as any
+      setCurrentUser(data.user)
+    } catch {
+      // not logged in — ok
     }
   }
 
@@ -92,13 +90,8 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
     if (!eventId) return
     try {
       setLoading(true)
-      const response = await fetch(`/api/events/${eventId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setEvent(data)
-      } else {
-        throw new Error("Event not found")
-      }
+      const data = await apiClient.events.getById(eventId) as EventDetail
+      setEvent(data)
     } catch (error: any) {
       toast({
         title: "Failed to Load Event",
@@ -125,29 +118,16 @@ export default function PublicEventDetailPage({ params }: { params: Promise<{ id
 
     setRegistering(true)
     try {
-      const response = await fetch(`/api/events/${event.id}/register`, {
-        method: 'POST'
-      })
-      
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Successfully registered for event!"
-        })
-        // Refresh event data to update registration status and count
-        fetchEventDetail()
-      } else {
-        const error = await response.json()
-        toast({
-          title: "Registration Failed",
-          description: error.error || "Failed to register for event",
-          variant: "destructive"
-        })
-      }
-    } catch (error) {
+      await apiClient.request(`/events/${event.id}/register`, { method: 'POST' })
       toast({
-        title: "Error",
-        description: "Failed to register for event",
+        title: "Success",
+        description: "Successfully registered for event!"
+      })
+      fetchEventDetail()
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Failed to register for event",
         variant: "destructive"
       })
     } finally {
