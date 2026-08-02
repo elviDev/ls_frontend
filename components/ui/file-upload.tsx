@@ -23,6 +23,7 @@ import {
   Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { apiClient, API_BASE_URL } from "@/lib/api-client";
 
 interface Asset {
   id: string;
@@ -139,10 +140,10 @@ export function FileUpload({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("type", type);
+      formData.append("type", type === "audio" ? "AUDIO" : "IMAGE");
 
       const xhr = new XMLHttpRequest();
-      
+
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
           const percentComplete = (e.loaded / e.total) * 100;
@@ -152,7 +153,7 @@ export function FileUpload({
 
       const uploadPromise = new Promise((resolve, reject) => {
         xhr.onload = () => {
-          if (xhr.status === 200) {
+          if (xhr.status >= 200 && xhr.status < 300) {
             resolve(JSON.parse(xhr.responseText));
           } else {
             reject(new Error(`Upload failed: ${xhr.status}`));
@@ -161,17 +162,21 @@ export function FileUpload({
         xhr.onerror = () => reject(new Error("Upload failed"));
       });
 
-      xhr.open("POST", "/api/admin/archives/upload");
+      xhr.open("POST", `${API_BASE_URL}/assets/upload`);
+      const token = apiClient.getToken();
+      if (token) {
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      }
       xhr.send(formData);
 
       const response: any = await uploadPromise;
-      
-      onChange(response.file.url, {
-        name: response.file.originalName,
-        size: response.file.size,
-        type: response.file.type,
-        url: response.file.url,
-        metadata: response.file.metadata,
+
+      onChange(response.url, {
+        name: response.originalName,
+        size: response.size,
+        type: response.type,
+        url: response.url,
+        id: response.id,
       });
 
       toast.success("File uploaded successfully");
@@ -189,14 +194,10 @@ export function FileUpload({
     setAssetsLoading(true);
     try {
       const assetType = type === "audio" ? "AUDIO" : "IMAGE";
-      const response = await fetch(`/api/admin/assets?type=${assetType}&limit=100`);
-      if (response.ok) {
-        const data = await response.json();
-        setAssets(data.assets || []);
-      } else {
-        console.error("Failed to load assets:", response.status, response.statusText);
-        toast.error("Failed to load assets");
-      }
+      const data = await apiClient.request<{ assets: Asset[] }>(
+        `/assets?type=${assetType}&limit=100`
+      );
+      setAssets(data.assets || []);
     } catch (error) {
       console.error("Error loading assets:", error);
       toast.error("Failed to load assets");
