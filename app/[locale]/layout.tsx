@@ -6,6 +6,7 @@ import { AuthProvider as ZustandAuthProvider } from "@/components/auth/auth-prov
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
+import { NotificationsProvider } from "@/providers/notifications-provider";
 import { GlobalLiveKitProvider } from "@/providers/global-livekit-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
@@ -53,11 +54,13 @@ export default async function LocaleLayout({
               <QueryProvider>
                 <ZustandAuthProvider>
                   <AuthProvider>
-                    <GlobalLiveKitProvider>
-                      <GlobalAudioProvider>
-                        <ConditionalLayout>{children}</ConditionalLayout>
-                      </GlobalAudioProvider>
-                    </GlobalLiveKitProvider>
+                    <NotificationsProvider>
+                      <GlobalLiveKitProvider>
+                        <GlobalAudioProvider>
+                          <ConditionalLayout>{children}</ConditionalLayout>
+                        </GlobalAudioProvider>
+                      </GlobalLiveKitProvider>
+                    </NotificationsProvider>
                     <Toaster />
                     <SonnerToaster position="top-right" />
                   </AuthProvider>

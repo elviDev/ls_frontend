@@ -26,6 +26,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthNav } from "@/components/auth/auth-nav";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -172,6 +173,7 @@ export default function Header() {
                 />
               </form>
               <ThemeToggle />
+              {user && <NotificationBell />}
               <AuthNav />
             </div>
           </>
@@ -274,7 +276,10 @@ export default function Header() {
                   </nav>
                   <div className="border-t border-border pt-4">
                     {user ? (
-                      <AuthNav />
+                      <div className="flex items-center gap-2">
+                        <NotificationBell />
+                        <AuthNav />
+                      </div>
                     ) : (
                       <div className="flex flex-col gap-2 w-full">
                         <SheetClose asChild>
