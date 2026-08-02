@@ -103,13 +103,8 @@ export default function ScheduleDetailPage() {
   const fetchSchedule = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.request(`/schedules/${params.id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSchedule(data)
-      } else {
-        throw new Error("Failed to fetch schedule")
-      }
+      const data = await apiClient.request<Schedule>(`/schedules/${params.id}`)
+      setSchedule(data)
     } catch (error) {
       console.error("Failed to fetch schedule:", error)
       toast({
@@ -126,19 +121,15 @@ export default function ScheduleDetailPage() {
     if (!confirm("Are you sure you want to delete this schedule?")) return
 
     try {
-      const response = await apiClient.request(`/schedules/${params.id}`, {
+      await apiClient.request(`/schedules/${params.id}`, {
         method: "DELETE"
       })
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Schedule deleted successfully"
-        })
-        router.push("/dashboard/schedules")
-      } else {
-        throw new Error("Failed to delete")
-      }
+      toast({
+        title: "Success",
+        description: "Schedule deleted successfully"
+      })
+      router.push("/dashboard/schedules")
     } catch (error) {
       toast({
         title: "Error",
@@ -150,25 +141,18 @@ export default function ScheduleDetailPage() {
 
   const handleStatusToggle = async (newStatus: string) => {
     try {
-      const response = await apiClient.request(`/schedules/${params.id}`, {
+      await apiClient.request(`/schedules/${params.id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
           status: newStatus
         })
       })
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Schedule ${newStatus.toLowerCase()} successfully`
-        })
-        fetchSchedule() // Refresh the schedule data
-      } else {
-        throw new Error("Failed to update status")
-      }
+      toast({
+        title: "Success",
+        description: `Schedule ${newStatus.toLowerCase()} successfully`
+      })
+      fetchSchedule() // Refresh the schedule data
     } catch (error) {
       toast({
         title: "Error",

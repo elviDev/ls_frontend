@@ -220,31 +220,26 @@ export default function EditSchedulePage() {
 
   const fetchSchedule = async () => {
     try {
-      const response = await apiClient.request(`/schedules/${params.id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSchedule(data)
-        
-        // Convert datetime to date format
-        const startTime = new Date(data.startTime).toISOString().split('T')[0]
-        const endTime = data.endTime ? new Date(data.endTime).toISOString().split('T')[0] : ""
-        
-        form.reset({
-          title: data.title,
-          description: data.description,
-          type: data.type,
-          status: data.status,
-          startTime,
-          endTime,
-          duration: data.duration?.toString() || "",
-          priority: data.priority?.toString() || "0",
-          assignedTo: data.assignee?.id || "none",
-          isRecurring: data.isRecurring,
-          tags: data.tags || ""
-        })
-      } else {
-        throw new Error("Failed to fetch schedule")
-      }
+      const data = await apiClient.request<any>(`/schedules/${params.id}`)
+      setSchedule(data)
+
+      // Convert datetime to date format
+      const startTime = new Date(data.startTime).toISOString().split('T')[0]
+      const endTime = data.endTime ? new Date(data.endTime).toISOString().split('T')[0] : ""
+
+      form.reset({
+        title: data.title,
+        description: data.description,
+        type: data.type,
+        status: data.status,
+        startTime,
+        endTime,
+        duration: data.duration?.toString() || "",
+        priority: data.priority?.toString() || "0",
+        assignedTo: data.assignee?.id || "none",
+        isRecurring: data.isRecurring,
+        tags: data.tags || ""
+      })
     } catch (error) {
       console.error("Failed to fetch schedule:", error)
       toast({
@@ -259,11 +254,8 @@ export default function EditSchedulePage() {
 
   const fetchStaff = async () => {
     try {
-      const response = await apiClient.request("/staff?perPage=100")
-      if (response.ok) {
-        const data = await response.json()
-        setStaff(data.staff || [])
-      }
+      const data = await apiClient.request<any>("/staff?perPage=100")
+      setStaff(data.staff || [])
     } catch (error) {
       console.error("Failed to fetch staff:", error)
     }
@@ -272,11 +264,8 @@ export default function EditSchedulePage() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true)
     try {
-      const response = await apiClient.request(`/schedules/${params.id}`, {
+      await apiClient.request(`/schedules/${params.id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
           title: data.title,
           description: data.description,
@@ -291,10 +280,6 @@ export default function EditSchedulePage() {
           tags: data.tags || undefined
         })
       })
-
-      if (!response.ok) {
-        throw new Error("Failed to update schedule")
-      }
 
       toast({
         title: "Success",

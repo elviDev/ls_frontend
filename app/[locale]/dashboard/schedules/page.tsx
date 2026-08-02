@@ -152,11 +152,23 @@ export default function SchedulesPage() {
   const fetchSchedules = async () => {
     try {
       setLoading(true)
-      // TODO: Implement schedules endpoint in backend
-      // For now, return empty data to prevent 404 errors
-      setSchedules([])
-      setTotalPages(1)
-      setTotalCount(0)
+      const params: Record<string, string> = {
+        page: String(currentPage),
+        limit: "12"
+      }
+      if (search) params.search = search
+      if (typeFilter !== "all") params.type = typeFilter
+      if (statusFilter !== "all") params.status = statusFilter
+      if (assigneeFilter !== "all") params.assignedTo = assigneeFilter
+      if (dateRange.start) params.startDate = dateRange.start.toISOString()
+      if (dateRange.end) params.endDate = dateRange.end.toISOString()
+
+      const data = await apiClient.request<any>(
+        `/schedules?${new URLSearchParams(params)}`
+      )
+      setSchedules(data.schedules || [])
+      setTotalPages(data.pagination?.pages || 1)
+      setTotalCount(data.pagination?.total || 0)
     } catch (error) {
       console.error("Failed to fetch schedules:", error)
       toast({
@@ -202,20 +214,16 @@ export default function SchedulesPage() {
 
     setDeleteDialog(prev => ({ ...prev, isDeleting: true }))
     try {
-      const response = await apiClient.request(`/schedules/${deleteDialog.schedule.id}`, {
+      await apiClient.request(`/schedules/${deleteDialog.schedule.id}`, {
         method: "DELETE"
       })
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Schedule deleted successfully"
-        })
-        fetchSchedules()
-        setDeleteDialog({ isOpen: false, schedule: null, isDeleting: false })
-      } else {
-        throw new Error("Failed to delete")
-      }
+      toast({
+        title: "Success",
+        description: "Schedule deleted successfully"
+      })
+      fetchSchedules()
+      setDeleteDialog({ isOpen: false, schedule: null, isDeleting: false })
     } catch (error) {
       toast({
         title: "Error",
@@ -228,25 +236,18 @@ export default function SchedulesPage() {
 
   const handleStatusToggle = async (id: string, newStatus: string) => {
     try {
-      const response = await apiClient.request(`/schedules/${id}`, {
+      await apiClient.request(`/schedules/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
           status: newStatus
         })
       })
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Schedule ${newStatus.toLowerCase()} successfully`
-        })
-        fetchSchedules() // Refresh the schedules list
-      } else {
-        throw new Error("Failed to update status")
-      }
+      toast({
+        title: "Success",
+        description: `Schedule ${newStatus.toLowerCase()} successfully`
+      })
+      fetchSchedules() // Refresh the schedules list
     } catch (error) {
       toast({
         title: "Error",
