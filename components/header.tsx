@@ -212,7 +212,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("home")}
                       </Link>
@@ -220,7 +220,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/podcasts"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("podcasts")}
                       </Link>
@@ -228,7 +228,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/audiobooks"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("audiobooks")}
                       </Link>
@@ -236,7 +236,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/archives"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("archives")}
                       </Link>
@@ -244,7 +244,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/programs"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("programs")}
                       </Link>
@@ -252,7 +252,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/events"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("events")}
                       </Link>
@@ -260,7 +260,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/about"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("about")}
                       </Link>
@@ -268,7 +268,7 @@ export default function Header() {
                     <SheetClose asChild>
                       <Link
                         href="/contact"
-                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-primary"
+                        className="px-2 py-1 text-lg font-medium text-foreground hover:text-cyan-700 dark:hover:text-cyan-400"
                       >
                         {t("contact")}
                       </Link>

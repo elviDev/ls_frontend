@@ -54,7 +54,7 @@ export default function FeaturedPodcasts() {
               </div>
             </div>
             <CardContent className="p-4">
-              <div className="text-xs font-medium text-primary dark:text-cyan-400 mb-1">
+              <div className="text-xs font-medium text-cyan-700 dark:text-cyan-400 mb-1">
                 {podcast.genre?.name || podcast.category?.replace('_', ' ') || t('uncategorized')}
               </div>
               <h3 className="font-semibold text-lg mb-1 line-clamp-1 dark:text-white">{podcast.title}</h3>

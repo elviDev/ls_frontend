@@ -30,28 +30,28 @@ export default function Footer() {
             <div className="flex space-x-4">
               <Link
                 href="#"
-                className="text-primary-foreground/60 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                className="text-primary-foreground/60 dark:text-gray-400 hover:text-cyan-400 transition-colors"
               >
                 <Facebook className="h-5 w-5" />
                 <span className="sr-only">Facebook</span>
               </Link>
               <Link
                 href="#"
-                className="text-primary-foreground/60 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                className="text-primary-foreground/60 dark:text-gray-400 hover:text-cyan-400 transition-colors"
               >
                 <Twitter className="h-5 w-5" />
                 <span className="sr-only">Twitter</span>
               </Link>
               <Link
                 href="#"
-                className="text-primary-foreground/60 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                className="text-primary-foreground/60 dark:text-gray-400 hover:text-cyan-400 transition-colors"
               >
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>
               <Link
                 href="#"
-                className="text-primary-foreground/60 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                className="text-primary-foreground/60 dark:text-gray-400 hover:text-cyan-400 transition-colors"
               >
                 <Youtube className="h-5 w-5" />
                 <span className="sr-only">YouTube</span>
@@ -67,7 +67,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {t("aboutUs")}
                 </Link>
@@ -75,7 +75,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/programs"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {tNav("programs")}
                 </Link>
@@ -83,7 +83,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/podcasts"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {tNav("podcasts")}
                 </Link>
@@ -91,7 +91,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/events"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {tNav("events")}
                 </Link>
@@ -99,7 +99,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {tNav("contact")}
                 </Link>
@@ -115,7 +115,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/help"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {t("helpCenter")}
                 </Link>
@@ -123,7 +123,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/advertise"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {t("advertiseWithUs")}
                 </Link>
@@ -131,7 +131,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/careers"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {t("careers")}
                 </Link>
@@ -139,7 +139,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/privacy"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {t("privacyPolicy")}
                 </Link>
@@ -147,7 +147,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/terms"
-                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 transition-colors"
+                  className="text-primary-foreground/70 dark:text-gray-400 hover:text-cyan-400 transition-colors"
                 >
                   {t("termsOfService")}
                 </Link>
@@ -182,19 +182,19 @@ export default function Footer() {
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link
               href="/privacy"
-              className="text-primary-foreground/60 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 text-sm transition-colors"
+              className="text-primary-foreground/60 dark:text-gray-400 hover:text-cyan-400 text-sm transition-colors"
             >
               {t("privacy")}
             </Link>
             <Link
               href="/terms"
-              className="text-primary-foreground/60 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 text-sm transition-colors"
+              className="text-primary-foreground/60 dark:text-gray-400 hover:text-cyan-400 text-sm transition-colors"
             >
               {t("terms")}
             </Link>
             <Link
               href="/cookies"
-              className="text-primary-foreground/60 dark:text-gray-400 hover:text-primary-foreground dark:hover:text-cyan-400 text-sm transition-colors"
+              className="text-primary-foreground/60 dark:text-gray-400 hover:text-cyan-400 text-sm transition-colors"
             >
               {t("cookies")}
             </Link>

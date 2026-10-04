@@ -91,8 +91,8 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             <div className="group cursor-pointer">
               <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card dark:bg-slate-900 shadow-sm hover:shadow-md transition-all group-hover:scale-105 dark:text-gray-100">
-                <div className="p-3 rounded-full bg-primary/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-primary/20 dark:group-hover:bg-cyan-500/30 transition-colors">
-                  <Radio className="w-8 h-8 text-primary dark:text-cyan-400" />
+                <div className="p-3 rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-cyan-500/20 dark:group-hover:bg-cyan-500/30 transition-colors">
+                  <Radio className="w-8 h-8 text-cyan-700 dark:text-cyan-400" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2 dark:text-white">
                   {t("features.liveBroadcasts.title")}
@@ -104,8 +104,8 @@ export default async function Home() {
             </div>
             <Link href="/podcasts" className="group">
               <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card dark:bg-slate-900 shadow-sm hover:shadow-md transition-all group-hover:scale-105 dark:text-gray-100">
-                <div className="p-3 rounded-full bg-primary/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-primary/20 dark:group-hover:bg-cyan-500/30 transition-colors">
-                  <Headphones className="w-8 h-8 text-primary dark:text-cyan-400" />
+                <div className="p-3 rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-cyan-500/20 dark:group-hover:bg-cyan-500/30 transition-colors">
+                  <Headphones className="w-8 h-8 text-cyan-700 dark:text-cyan-400" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2 dark:text-white">
                   {t("features.podcasts.title")}
@@ -117,8 +117,8 @@ export default async function Home() {
             </Link>
             <Link href="/audiobooks" className="group">
               <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card dark:bg-slate-900 shadow-sm hover:shadow-md transition-all group-hover:scale-105 dark:text-gray-100">
-                <div className="p-3 rounded-full bg-primary/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-primary/20 dark:group-hover:bg-cyan-500/30 transition-colors">
-                  <BookOpen className="w-8 h-8 text-primary dark:text-cyan-400" />
+                <div className="p-3 rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-cyan-500/20 dark:group-hover:bg-cyan-500/30 transition-colors">
+                  <BookOpen className="w-8 h-8 text-cyan-700 dark:text-cyan-400" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2 dark:text-white">
                   {t("features.audiobooks.title")}
@@ -130,8 +130,8 @@ export default async function Home() {
             </Link>
             <Link href="/events" className="group">
               <div className="flex flex-col items-center text-center p-6 rounded-xl bg-card dark:bg-slate-900 shadow-sm hover:shadow-md transition-all group-hover:scale-105 dark:text-gray-100">
-                <div className="p-3 rounded-full bg-primary/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-primary/20 dark:group-hover:bg-cyan-500/30 transition-colors">
-                  <Calendar className="w-8 h-8 text-primary dark:text-cyan-400" />
+                <div className="p-3 rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 mb-4 group-hover:bg-cyan-500/20 dark:group-hover:bg-cyan-500/30 transition-colors">
+                  <Calendar className="w-8 h-8 text-cyan-700 dark:text-cyan-400" />
                 </div>
                 <h3 className="text-xl font-serif font-semibold mb-2 dark:text-white">
                   {t("features.archives.title")}
@@ -150,7 +150,7 @@ export default async function Home() {
               </h2>
               <Link
                 href="/podcasts"
-                className="text-primary hover:text-primary/80 font-medium dark:text-cyan-400 dark:hover:text-cyan-300"
+                className="text-cyan-700 hover:text-cyan-600 font-medium dark:text-cyan-400 dark:hover:text-cyan-300"
               >
                 {t("viewAllPrograms")}
               </Link>
@@ -165,7 +165,7 @@ export default async function Home() {
               </h2>
               <Link
                 href="/events"
-                className="text-primary hover:text-primary/80 font-medium dark:text-cyan-400 dark:hover:text-cyan-300"
+                className="text-cyan-700 hover:text-cyan-600 font-medium dark:text-cyan-400 dark:hover:text-cyan-300"
               >
                 {t("viewAllEvents")}
               </Link>
@@ -180,7 +180,7 @@ export default async function Home() {
               </h2>
               <Link
                 href="/programs"
-                className="text-primary hover:text-primary/80 font-medium dark:text-cyan-400 dark:hover:text-cyan-300"
+                className="text-cyan-700 hover:text-cyan-600 font-medium dark:text-cyan-400 dark:hover:text-cyan-300"
               >
                 {t("viewAllPrograms")}
               </Link>

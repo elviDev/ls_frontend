@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary brand colors (Teal) */
-    --primary: 180 100% 20%;
+    /* Primary brand colors (darkTeam #0F172A, shared with dark mode) */
+    --primary: 222 47% 11%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary colors */
@@ -51,7 +51,7 @@
     /* Border and input */
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 180 100% 20%;
+    --ring: 192 91% 36%;
 
     /* Radius */
     --radius: 0.5rem;

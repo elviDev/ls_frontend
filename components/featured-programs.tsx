@@ -38,7 +38,7 @@ export default function FeaturedPrograms() {
                 className="object-cover"
               />
               <div className="absolute top-3 left-3">
-                <Badge className="bg-primary dark:bg-cyan-500 dark:text-darkTeam hover:bg-primary dark:hover:bg-cyan-400">
+                <Badge className="bg-cyan-500 text-darkTeam hover:bg-cyan-400">
                   {program.category.replace("_", " ")}
                 </Badge>
               </div>
@@ -50,7 +50,7 @@ export default function FeaturedPrograms() {
                   ? `with ${program.host.firstName} ${program.host.lastName}`
                   : "No host assigned"}
               </p>
-              <div className="text-xs font-medium bg-purple-100 dark:bg-cyan-500/20 text-primary dark:text-cyan-400 px-3 py-1 rounded-full inline-block">
+              <div className="text-xs font-medium bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 px-3 py-1 rounded-full inline-block">
                 {program.schedule}
               </div>
               {program._count && (program._count.broadcasts > 0 || program._count.episodes > 0) && (

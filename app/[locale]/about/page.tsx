@@ -55,13 +55,13 @@ export default async function AboutPage() {
       <div className="container mx-auto px-4 py-12 md:py-20">
         {/* Hero Section */}
         <div className="text-center max-w-4xl mx-auto mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 dark:from-cyan-400 dark:to-cyan-300 bg-clip-text text-transparent mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-cyan-700 to-cyan-500 dark:from-cyan-400 dark:to-cyan-300 bg-clip-text text-transparent mb-6">
             {t("title")}
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground dark:text-gray-400 mb-8">
             {t("subtitle")}
           </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 dark:from-cyan-400 dark:to-cyan-300 mx-auto rounded-full"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-cyan-700 to-cyan-500 dark:from-cyan-400 dark:to-cyan-300 mx-auto rounded-full"></div>
         </div>
 
         {/* Stats */}
@@ -72,7 +72,7 @@ export default async function AboutPage() {
               className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow dark:bg-slate-900 dark:border-gray-700"
             >
               <CardContent className="p-6">
-                <div className="text-3xl md:text-4xl font-bold text-primary dark:text-cyan-400 mb-2">
+                <div className="text-3xl md:text-4xl font-bold text-cyan-700 dark:text-cyan-400 mb-2">
                   {stat.value}
                 </div>
                 <p className="text-sm text-muted-foreground dark:text-gray-400">
@@ -102,8 +102,8 @@ export default async function AboutPage() {
             >
               <CardContent className="p-8">
                 <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                    <feature.icon className="w-6 h-6 text-primary dark:text-cyan-400" />
+                  <div className="flex-shrink-0 w-12 h-12 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                    <feature.icon className="w-6 h-6 text-cyan-700 dark:text-cyan-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-3 dark:text-white">
