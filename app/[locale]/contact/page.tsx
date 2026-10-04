@@ -65,8 +65,8 @@ export default function ContactPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
         {/* <Card className="dark:bg-slate-900 dark:border-gray-700">
           <CardContent className="p-6 flex flex-col items-center text-center">
-            <div className="rounded-full bg-primary/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
-              <Phone className="h-6 w-6 text-primary dark:text-cyan-400" />
+            <div className="rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
+              <Phone className="h-6 w-6 text-cyan-700 dark:text-cyan-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2 dark:text-white">
               {t("callUs")}
@@ -79,8 +79,8 @@ export default function ContactPage() {
         </Card> */}
         <Card className="dark:bg-slate-900 dark:border-gray-700">
           <CardContent className="p-6 flex flex-col items-center text-center">
-            <div className="rounded-full bg-primary/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-primary dark:text-cyan-400" />
+            <div className="rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
+              <Mail className="h-6 w-6 text-cyan-700 dark:text-cyan-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2 dark:text-white">
               {t("emailUs")}
@@ -95,8 +95,8 @@ export default function ContactPage() {
         </Card>
         {/* <Card className="dark:bg-slate-900 dark:border-gray-700">
           <CardContent className="p-6 flex flex-col items-center text-center">
-            <div className="rounded-full bg-primary/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
-              <MapPin className="h-6 w-6 text-primary dark:text-cyan-400" />
+            <div className="rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 p-3 w-14 h-14 flex items-center justify-center mb-4">
+              <MapPin className="h-6 w-6 text-cyan-700 dark:text-cyan-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2 dark:text-white">
               {t("visitUs")}
@@ -216,7 +216,7 @@ export default function ContactPage() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full dark:bg-cyan-500 dark:text-darkTeam dark:hover:bg-cyan-400"
+                  className="w-full bg-cyan-500 text-darkTeam hover:bg-cyan-400"
                 >
                   {t("form.sendMessage")}
                 </Button>

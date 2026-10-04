@@ -114,7 +114,7 @@ export default function UpcomingEvents() {
           key={event.id}
           className="overflow-hidden hover:shadow-md transition-all dark:bg-slate-900"
         >
-          <div className="bg-gradient-to-r from-brand-600 to-brand-800 dark:from-slate-800 dark:to-slate-900 p-4">
+          <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-4">
             <span className="text-xs font-medium text-white bg-white/20 px-2 py-1 rounded-full">
               {getEventCategory(event.eventType)}
             </span>
@@ -149,7 +149,7 @@ export default function UpcomingEvents() {
                 </div>
               )}
             </div>
-            <Button className="w-full bg-primary dark:bg-cyan-500 dark:text-darkTeam hover:bg-primary dark:hover:bg-cyan-400">
+            <Button className="w-full bg-cyan-500 text-darkTeam hover:bg-cyan-400">
               {event.isPaid
                 ? `$${event.ticketPrice} - Register`
                 : "Register Now"}
